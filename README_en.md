@@ -37,13 +37,24 @@ See `HOW_TO_USE_ja.txt` in the ZIP, or its [repository copy](packaging/public/HO
 
 | Purpose | Requirement |
 | --- | --- |
-| Running games from a pyz, source, or installed package | Python 3.10 or later and a terminal |
+| Running games from a pyz, source, or installed package | Python 3.10 or later and a terminal capable of text display and input |
 | Development, the full unit suite, and verification work | Python 3.11 or later |
 | Reproducing the exact Beta 1 archive bytes | Windows, Python 3.12.10, zlib 1.3.1, DEFLATE level 9 |
 
 The engine and unit tests use only the Python standard library. No additional runtime libraries, .NET installation, or runtime downloads are needed. Building a wheel or sdist separately requires `build` and setuptools 77 or later.
 
-Measurements have been made on Windows 10 and Linux. The r51 development history includes game execution on Windows 10 with Python 3.12 and 3.14, and Linux with Python 3.10–3.14. This history does not represent a full Beta 1 rerun on every environment. Windows 11 is a target platform, but sufficient testing on actual machines has not been completed. macOS has not been measured. Python 3.15 and later have not been verified.
+However, having Python and a terminal does not guarantee operation in every environment or with every variant. Platform-specific input handling and terminal control may have limitations; unverified environments remain unverified.
+
+Measurements have been made on Windows 10 and Linux. The r51 development history includes game execution on Windows 10 with Python 3.12 and 3.14, and Linux with Python 3.10–3.14. This history does not represent a full Beta 1 rerun on every environment. Python 3.15 and later have not been verified.
+
+### Other platforms
+
+Windows 11 is a target platform, but extensive testing on actual Windows 11 systems has not yet been completed.
+Because PyEmuera uses only the Python standard library, it may also run on macOS and Android environments such as Termux, provided Python 3.10 or later and a suitable terminal are available.
+However, macOS and Android have not yet been tested. Successful startup, input/output handling, and compatibility on these platforms are not guaranteed.
+Feedback and test reports from these environments are welcome.
+
+Termux is an example of a runtime environment on Android. This does not mean that PyEmuera is distributed as a native Android app.
 
 ## Run from source
 

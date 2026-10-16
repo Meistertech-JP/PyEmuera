@@ -8,9 +8,10 @@
 
 ## 環境と配置
 
-- ゲーム実行は Python 3.10 以上。全単体テストと検証作業には Python 3.11 以上を使用してください。一部の試験は `hashlib.file_digest` や `tomllib` を使います。
+- ゲーム実行は Python 3.10 以上と、文字表示・入力が可能なターミナルが必要です。全単体テストと検証作業には Python 3.11 以上を使用してください。一部の試験は `hashlib.file_digest` や `tomllib` を使います。
 - エンジンと単体テストは標準ライブラリのみを使います。wheel / sdist の作成には `build` と setuptools 77 以上が別途必要です。
-- Windows 10 と Linux に測定履歴があります。r51 の OS・Python 別成績は開発版の履歴であり、Beta 1 の全環境再試験結果ではありません。Windows 11 は十分な実機検証が未完了、macOS と Python 3.15 以降は未確認です。
+- Windows 10 と Linux に測定履歴があります。r51 の OS・Python 別成績は開発版の履歴であり、Beta 1 の全環境再試験結果ではありません。Windows 11 は動作対象ですが、十分な実機検証は未完了です。Python 3.15 以降は未確認です。
+- macOS・Android（Termux など）でも Python 3.10 以上と適切なターミナルがあれば動作する可能性がありますが、実機未検証です。標準ライブラリのみの実装でも、プラットフォーム固有の入力処理・端末制御には制限があり得るため、起動・入出力・互換性は保証しません。Termux は Android 上の実行環境の例であり、PyEmuera は Android ネイティブアプリではありません。動作報告は [GitHub Issues](https://github.com/Meistertech-JP/PyEmuera/issues) へ、Python のバージョン、ターミナル、入力・表示状況を添えてお寄せください。
 - `python` は用途に合う Python を指すものとします。Linux 等では必要に応じて `python3` に読み替えてください。原バイト再現には後述の固定環境が必要です。
 
 | リポジトリ内の場所 | 用途 |
