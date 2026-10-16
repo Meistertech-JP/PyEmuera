@@ -1,0 +1,113 @@
+# PyEmuera (ぱみゅーら / Pamyura)
+
+**PyEmuera 3.0.0 Beta 1 (`3.0.0b1`)**
+
+[日本語](README.md)
+
+PyEmuera is an independent Python implementation that aims for high compatibility with Emuera variants: games written in ERB and CSV. It loads variant files without rewriting them and runs them in a text-only terminal. Images, audio, mouse interaction, and the original GUI's font rendering are outside its scope.
+
+Think of it as an eramaker that can run Emuera-specific variants.
+
+The reference target is **Emuera1824+v24**. ERH files are also supported. PyEmuera is an independent implementation, not an official Emuera build. This is a beta; complete compatibility with every feature or variant is not guaranteed.
+
+## Download and run
+
+For normal use, visit the [PyEmuera 3.0.0 Beta 1 release](https://github.com/Meistertech-JP/PyEmuera/releases/tag/v3.0.0b1) and **[download PyEmuera-3.0.0b1.zip](https://github.com/Meistertech-JP/PyEmuera/releases/download/v3.0.0b1/PyEmuera-3.0.0b1.zip)**. Extract the entire archive.
+
+The `PyEmuera-3.0.0b1.zip` asset contains the engine, Windows launchers, user guides, a sample, source code, and tests. GitHub's automatically generated `Source code (zip)` / `Source code (tar.gz)` archives are source snapshots for developers.
+
+Install Python 3.10 or later separately, then run these commands from the extracted distribution directory:
+
+```console
+python PyEmuera.pyz --version
+python PyEmuera.pyz "path/to/variant"
+```
+
+The variant directory must contain `ERB` and `CSV`. On Windows, you can also drag that directory onto `Start_PyEmuera.bat`. On Linux, use the commands above. Use `python3` instead of `python` if that is how your Python installation is named.
+
+Run the distribution's sample with:
+
+```console
+python PyEmuera.pyz sample --inputs sample/replay.txt --no-wait
+```
+
+See `HOW_TO_USE_ja.txt` in the ZIP, or its [repository copy](packaging/public/HOW_TO_USE_ja.txt), for the detailed Japanese user guide.
+
+## Requirements and platform coverage
+
+| Purpose | Requirement |
+| --- | --- |
+| Running games from a pyz, source, or installed package | Python 3.10 or later and a terminal |
+| Development, the full unit suite, and verification work | Python 3.11 or later |
+| Reproducing the exact Beta 1 archive bytes | Windows, Python 3.12.10, zlib 1.3.1, DEFLATE level 9 |
+
+The engine and unit tests use only the Python standard library. No additional runtime libraries, .NET installation, or runtime downloads are needed. Building a wheel or sdist separately requires `build` and setuptools 77 or later.
+
+Measurements have been made on Windows 10 and Linux. The r51 development history includes game execution on Windows 10 with Python 3.12 and 3.14, and Linux with Python 3.10–3.14. This history does not represent a full Beta 1 rerun on every environment. Windows 11 is a target platform, but sufficient testing on actual machines has not been completed. macOS has not been measured. Python 3.15 and later have not been verified.
+
+## Run from source
+
+The repository root contains the files located under `source/` in the distribution ZIP. Run these commands from the root of your clone:
+
+```console
+python run_pyemuera.py --version
+python run_pyemuera.py "path/to/variant"
+python run_pyemuera.py examples/smoke --inputs examples/smoke/replay.txt --no-wait
+python run_pyemuera.py examples/smoke --check
+```
+
+`--check` performs static loading, registration, and declaration checks. Passing it does not prove that a game can be played to completion. Running the sample may create `examples/smoke/.pyemuera/`.
+
+For tests, pyz builds, distribution ZIP reproduction, and Python package builds, use the [GitHub development supplement (Japanese)](DEVELOPING_ON_GITHUB_ja.md). The included `PyEmuera.pyz` is ready to use for testing. The [original developer guide (Japanese)](README_DEVELOPERS_ja.md) assumes the ZIP's `source/` layout; use the supplement's paths when working from a clone.
+
+## Scope and known limitations
+
+- PyEmuera handles logical text output and terminal display. The original GUI's images, backgrounds, audio, mouse interaction, font rendering, and pixel positioning are outside its scope. You can still configure your terminal's own font. Features exclusive to extensions such as EE or EM are also outside the target.
+- Windows uses the OS's native NLS collation APIs. Other platforms use the bundled portable `ja-JP` implementation. Some Old Hangul / Jamo sequences may sort differently from the original in string `ARRAYSORT` and `ARRAYMSORT` operations on the portable backend.
+- Japanese IME input and input/interruption in Windows Terminal (ConPTY) have been checked on Windows, without covering every IME product, version, and configuration.
+- Saves are written under the variant's `.pyemuera/` directory, without overwriting the original Emuera saves. Reading and writing native-format saves does not guarantee complete interoperability for every variable or variant.
+- Time functions have fixed-clock and boundary tests. Exact comparison against synchronized live clocks in both engines at every boundary remains incomplete. Interruption tests have a documented intermittent failure.
+- Unsupported commands or features stop with a load-time or runtime error.
+
+See [Compatibility](COMPATIBILITY_ja.md), [Known Limitations](packaging/public/KNOWN_ISSUES_ja.txt), and the [development supplement](DEVELOPING_ON_GITHUB_ja.md) for details in Japanese.
+
+## Variant verification history
+
+These are **bounded observations from different development revisions**. They are not a rerun of every route on Beta 1 and do not guarantee every branch or complete operation of each variant.
+
+| Variant | Observed scope |
+| --- | --- |
+| 東方触手宮 Ver1.18.2修正版 | Development revision r16 on an actual Windows machine: new game through the day-17 escape ending and return to the title screen |
+| 東方触手宮 Ver1.02.1 | Progressed from an existing day-6 save to day 9; loaded an existing day-224 save (not a continuous playthrough from day 1 to day 224) |
+| eratohoJ+ v1.05.5 | New game through day 2, saving/loading, purchases, Stage 1 encounters, and retreat |
+| eratohoYM Mk-3改8proto6 | Reached the GAMEOVER screen on day 4; this is not a normal game clear |
+| eratohoM3S | Executed a shooting stage |
+| eratohoW | Executed a fixed route covering normal game screens, menus, and events |
+
+See [Compatibility](COMPATIBILITY_ja.md) for the evidence categories and scope. These variants, their saves, and their play logs are not bundled. The included sample is an independent demo.
+
+## License and sources
+
+PyEmuera itself uses the [MIT License](LICENSE). Third-party material retains its own terms; PyEmuera's MIT License does not replace them.
+
+- [Third-Party Notices](THIRD_PARTY_NOTICES.md) cover five Emuera source files used as test fixtures, SFMT-related work, Microsoft Reference Source, and Unicode-related data.
+- [Microsoft NLS data sources and terms (Japanese)](THIRD_PARTY_MS_NLS_NOTICE_ja.md) and [license texts](licenses/).
+- [Sources](SOURCES.md), [Architecture (Japanese)](ARCHITECTURE_ja.md), and the [existing package README (Japanese)](README_ja.md).
+
+
+### MIT permission for the SFMT reference material
+
+For the HOBARA-origin material referenced by `pyemuera/random1824.py`, PyEmuera selects the MIT option offered on [Rei HOBARA's official distribution page](https://www.rei.to/random.html). Copyright (C) Rei HOBARA 2007. The permission, conditions, and disclaimer in the [official MIT notice](https://www.rei.to/MITL.txt) correspond to the identical text reproduced in the accompanying [LICENSE](LICENSE). This relies on HOBARA's own permission and does not replace any third-party terms with PyEmuera's license.
+
+This clarification applies to these exact release artifacts. The copyright notice and permission text are already included in the ZIP's `THIRD_PARTY_NOTICES.txt` and `LICENSE.txt`, their counterparts under `source/`, and the standalone pyz's `THIRD_PARTY_NOTICES.md` and `LICENSE`.
+
+| Release artifact | SHA-256 |
+| --- | --- |
+| `PyEmuera-3.0.0b1.zip` | `df2f302490b638a6f7e74313bc40f98d36dfe7e0515e202f26deae7d5bc319a3` |
+| `PyEmuera-3.0.0b1.pyz` | `305fcf27c723b9ca155ac087928f993eb32b141288fee689b0a621c0f337f1a7` |
+
+## Report a bug
+
+Use [GitHub Issues](https://github.com/Meistertech-JP/PyEmuera/issues). Include the PyEmuera version, OS, terminal and Python versions, variant name and version, reproduction steps, expected and actual behavior, and error messages. A minimal reproduction without game text is helpful.
+
+Section 10 of the [user guide (Japanese)](packaging/public/HOW_TO_USE_ja.txt) explains diagnostic records and checks before sharing them. Do not post private logs, credentials, personal information, absolute paths containing usernames, entered names, or game text verbatim. Do not attach variant files or private saves without permission. If a record cannot be shared, describe the situation in words instead.

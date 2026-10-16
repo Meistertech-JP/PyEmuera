@@ -1,0 +1,31 @@
+{
+  "schema": "r45-unobserved-unary-sortkey-neighbor-plan-1",
+  "inputs": 42,
+  "pairs": 1764,
+  "sorts": 0,
+  "expected_native_results": null,
+  "native_execution": "UNOBSERVED",
+  "retained_known_received_pair": {
+    "r44_oracle_row": 5613,
+    "left_index": 22,
+    "right_index": 31,
+    "Framework_CompareTo_CompareInfo_NLS_sign": 1,
+    "new_SortKey_and_LCMap_expectations": null
+  },
+  "question": "CompareTo/CompareInfo/CompareStringEx versus unary GetSortKey(None)/SortKey.Compare/LCMapStringEx bytes, raw-context boundaries and secondary/case stages",
+  "inputs_reencoded_or_normalized": false,
+  "probe_source": "tools/windows_sortkey_probe_r45.cs",
+  "probe_source_sha256": "ddf81c28d49a258f7d127166858a998a318f99b4ae617761ba149278f68b0006",
+  "files": [
+    {
+      "path": "inputs_utf16hex.txt",
+      "bytes": 958,
+      "sha256": "ab4b09c5a0a1e0d467995b546b7626fa7422408f504d5caaf5416686d71a9471"
+    },
+    {
+      "path": "pairs.tsv",
+      "bytes": 9744,
+      "sha256": "69ec903e882be841bd5d14a9b170cddcc93e708ab8ce82c8f80d1859610f1e08"
+    }
+  ]
+}

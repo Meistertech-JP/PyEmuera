@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "path": "oracle_rule_excerpts.json.gz",
+      "bytes": 5741,
+      "sha256": "f787794d1797dfe49f59873ed5e3613b687422c9fb5dfc3d8a5d1af53ab4e226"
+    },
+    {
+      "path": "collation_jamo_r44.py.txt",
+      "bytes": 6171,
+      "sha256": "2fcc9a1edc94ea6a16f965b138a8b12bc34e289b501b7ca4d3647527156f41a1",
+      "copied_into_tests": true,
+      "source": "sealed r44 pyz pyemuera/collation_jamo.py"
+    }
+  ]
+}

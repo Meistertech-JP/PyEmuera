@@ -1,0 +1,465 @@
+{
+  "reference": "Emuera1824+v24",
+  "eligible_methods": {
+    "ABS": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1027,
+      "end_line": 1043,
+      "sha256": "f6d939b1e85bf80905671a2d58f8ef9422b538ae6e53dc88df845943dafe00b1"
+    },
+    "BARSTR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 639,
+      "end_line": 654,
+      "sha256": "7c4a6a3c2203254ccea93de973bbea0d162c82ee4a47a6325b02eff599a32509"
+    },
+    "CBRT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1085,
+      "end_line": 1100,
+      "sha256": "572f4c569ca6741d1e0f712503084f965bfab6ff67979a12b660ee24a58add5f"
+    },
+    "CHARATU": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2637,
+      "end_line": 2653,
+      "sha256": "a1facf60c0d9a8c1975ee92dcfce9c1efc2ec3d222eb39c85a3a43431eb38845"
+    },
+    "CHKFONT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 393,
+      "end_line": 419,
+      "sha256": "35b64ceeb187d9b899c33f41e472adc83d96db02a35fcb1901e953bf7f11e11c"
+    },
+    "COLOR_FROMNAME": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 689,
+      "end_line": 713,
+      "sha256": "e2f6844a8e8442610e837c0508a19ff03a6b3de6e8ba2b84a92a99525e746939"
+    },
+    "COLOR_FROMRGB": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 715,
+      "end_line": 736,
+      "sha256": "63a08620b00a84f75e778336ed077465a94c8e24c1d8b68f559e985ed62b05fb"
+    },
+    "CONVERT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2528,
+      "end_line": 2543,
+      "sha256": "f8583ab09d8e7f48b4e101e3dc80537f830582d0128fd2927405447c9b4c0a76"
+    },
+    "CSVABL": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVBASE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVCALLNAME": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 91,
+      "end_line": 132,
+      "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+    },
+    "CSVCFLAG": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVCSTR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 134,
+      "end_line": 171,
+      "sha256": "8875f8be062c9b3cb6814501addd5fefd9f618244c298a6537b1035b173971ac"
+    },
+    "CSVEQUIP": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVEXP": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVJUEL": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVMARK": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVMASTERNAME": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 91,
+      "end_line": 132,
+      "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+    },
+    "CSVNAME": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 91,
+      "end_line": 132,
+      "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+    },
+    "CSVNICKNAME": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 91,
+      "end_line": 132,
+      "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+    },
+    "CSVRELATION": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "CSVTALENT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 173,
+      "end_line": 219,
+      "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+    },
+    "ENCODETOUNI": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2600,
+      "end_line": 2635,
+      "sha256": "b2c432f0e138a874e3f6c74de5e212db953f6610aa1a7a32beb0522dc4d3d6cf"
+    },
+    "ESCAPE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2586,
+      "end_line": 2598,
+      "sha256": "1a43f7f6077876a8887ca45fdef310190671847a364f9237b229d53b64b73b1a"
+    },
+    "EXISTCSV": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 296,
+      "end_line": 329,
+      "sha256": "0531425b3ab88b9f81e9cccac18d23dcfa29cda5de108c7a0c5e8f5db7f1e214"
+    },
+    "EXPONENT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1141,
+      "end_line": 1162,
+      "sha256": "0262bc39529e2836d87208e5f45c4733e111236690d494060e3439326a896d03"
+    },
+    "GETBIT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1601,
+      "end_line": 1631,
+      "sha256": "9b40f620df2e727448bf9e10322b36cc5a956d6415114c317aa7c37d9863975a"
+    },
+    "GETCONFIG": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2794,
+      "end_line": 2841,
+      "sha256": "3e9ee4392466985939c3659967857b6e05c7a23e811d0b4bdf7ba3e33f3a9072"
+    },
+    "GETCONFIGS": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2794,
+      "end_line": 2841,
+      "sha256": "3e9ee4392466985939c3659967857b6e05c7a23e811d0b4bdf7ba3e33f3a9072"
+    },
+    "GETFOCUSCOLOR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 568,
+      "end_line": 580,
+      "sha256": "47c32aff524c3f87441ef11cf34815465e8aa2338befdeb15be0ee0e5ccafd54"
+    },
+    "GETLINESTR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2655,
+      "end_line": 2670,
+      "sha256": "4d9b0865fbb3279ce32e8e8f36065f7226214d98a8e2310aadc874bcf9a7578b"
+    },
+    "GETNUMB": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1673,
+      "end_line": 1707,
+      "sha256": "f777efc23ae84019c733188089370fdf7643bd7566678adb0ddcc905fa7cf9ca"
+    },
+    "INRANGE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1854,
+      "end_line": 1869,
+      "sha256": "566114043f1cb502df40edf67132a567e0adb5ec6ef447db03e2bc0d10a2e945"
+    },
+    "ISNUMERIC": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2545,
+      "end_line": 2584,
+      "sha256": "3e118db7d83ae36f644a43ca154044f5ce346fb20bd2bd62cffc21f173bbdedc"
+    },
+    "LIMIT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1180,
+      "end_line": 1202,
+      "sha256": "64ead50853332a65114518b2a002141a4adaad39a8d3f9e07bde91f9eafdd1ac"
+    },
+    "LOG": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1102,
+      "end_line": 1139,
+      "sha256": "b70e8ed4657e1be9f98f667c4aa06fa9c11d0f3ca97504036a9533fdf095b181"
+    },
+    "LOG10": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1102,
+      "end_line": 1139,
+      "sha256": "b70e8ed4657e1be9f98f667c4aa06fa9c11d0f3ca97504036a9533fdf095b181"
+    },
+    "MAX": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 975,
+      "end_line": 1025,
+      "sha256": "4825ba369b98088ae639ff16eba48cd83d65da2fd2b36075490bdd8af52ee853"
+    },
+    "MIN": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 975,
+      "end_line": 1025,
+      "sha256": "4825ba369b98088ae639ff16eba48cd83d65da2fd2b36075490bdd8af52ee853"
+    },
+    "MONEYSTR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 768,
+      "end_line": 808,
+      "sha256": "c9eef1dc9b49af61bef2b80fc12200e2ef94e25fd40865953eea468750d2b7cf"
+    },
+    "POWER": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1045,
+      "end_line": 1066,
+      "sha256": "3528b40507c4e2ef2588057c9962f8b2debeb022078ae33ee9dc19aeb0fa701c"
+    },
+    "PRINTCLENGTH": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 824,
+      "end_line": 836,
+      "sha256": "6cd484721d032e0eb5b4d9b2ed61406fa04e4bbfaab03c72c26cfe95b0f67671"
+    },
+    "PRINTCPERLINE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 810,
+      "end_line": 822,
+      "sha256": "6eae4a280f77a2b8e1646e5f4da13d9ceb5237c23ba394bb6632a00311162174"
+    },
+    "REPLACE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2453,
+      "end_line": 2475,
+      "sha256": "32948b1656b2908087ab6906e8965f951d278df44a7158934d4884127d980fe7"
+    },
+    "SAVENOS": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 838,
+      "end_line": 850,
+      "sha256": "6f786c8c58febb7337c02678e63649eaedcc131291b1b31523098a88c72364ad"
+    },
+    "SIGN": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1164,
+      "end_line": 1178,
+      "sha256": "2f701bad4f9301d53e1df826ee1a202077b9d32bfdd83a0dc1c2d06af447e5cf"
+    },
+    "SQRT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 1068,
+      "end_line": 1083,
+      "sha256": "9ad3e593e999c83c78b8b753eb49d9808e8f7e082c5dd9c5eaf2e6b0512b6ba6"
+    },
+    "STRCOUNT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2283,
+      "end_line": 2304,
+      "sha256": "480c73c38c1656f3d6cc3d6b2393e386a81cca0bece8c0ad6a1eb31bd3b7f0d7"
+    },
+    "STRFIND": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2223,
+      "end_line": 2281,
+      "sha256": "dbb5a5606d5ba644d11b4bc05aea3927bb27066170f2d8fdf5e033cd67582c4a"
+    },
+    "STRFINDU": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2223,
+      "end_line": 2281,
+      "sha256": "dbb5a5606d5ba644d11b4bc05aea3927bb27066170f2d8fdf5e033cd67582c4a"
+    },
+    "STRLENS": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2096,
+      "end_line": 2109,
+      "sha256": "988c0c025e41fd098b4206009eb3291547b3a5e63e351f2c0a8b4e7ddfb0f796"
+    },
+    "STRLENSU": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2111,
+      "end_line": 2124,
+      "sha256": "edf70630999007fcbda7f287aea925674a1508ae1f8026e1a036473ebf9dbfbd"
+    },
+    "SUBSTRING": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2126,
+      "end_line": 2166,
+      "sha256": "deaea9293fe6dd515e94bcb7a241632bf28d0d2badb34bf4effb3f37eca686a6"
+    },
+    "SUBSTRINGU": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2168,
+      "end_line": 2221,
+      "sha256": "b40db80ed84d64152838506d811c800e0cba6cfc378eb7884f67170339e72ba9"
+    },
+    "TOFULL": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2402,
+      "end_line": 2437,
+      "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+    },
+    "TOHALF": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2402,
+      "end_line": 2437,
+      "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+    },
+    "TOINT": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2349,
+      "end_line": 2389,
+      "sha256": "60d236e67b313840005102a650bd10cdbc6f4a6910db101acd8642690ba75911"
+    },
+    "TOLOWER": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2402,
+      "end_line": 2437,
+      "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+    },
+    "TOSTR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2306,
+      "end_line": 2347,
+      "sha256": "7492f126dbe92e206749400995945c57044ef5bcc7b56917d43421ab8f7bde06"
+    },
+    "TOUPPER": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2402,
+      "end_line": 2437,
+      "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+    },
+    "UNICODE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2477,
+      "end_line": 2506,
+      "sha256": "cfa52c4b853321c27d68f3860a47a015632a97f0cd3b2ce13d840875457a571b"
+    },
+    "UNICODEBYTE": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 2508,
+      "end_line": 2526,
+      "sha256": "0d6841b957511b24b5188d6885f30bd5ab3605a6f950a1ed6656c15bdf05be36"
+    },
+    "GETDEFBGCOLOR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 582,
+      "end_line": 598,
+      "sha256": "77493bdb03cb2f119a5e89a05821335b10ed584a6c741a0e2ed70e9f5ccba17d"
+    },
+    "GETDEFCOLOR": {
+      "file": "GameData/Function/Creator.Method.cs",
+      "start_line": 550,
+      "end_line": 566,
+      "sha256": "4be65809720a26a9ff7acb721d63a1edeadfd9a1f9f91144027f091de2921571"
+    }
+  },
+  "excluded_methods": [
+    "ALLSAMES",
+    "ARRAYMSORT",
+    "CHKDATA",
+    "CMATCH",
+    "CSVSTR",
+    "CURRENTALIGN",
+    "CURRENTREDRAW",
+    "EXISTFUNCTION",
+    "EXISTVAR",
+    "FINDCHARA",
+    "FINDELEMENT",
+    "FINDLASTCHARA",
+    "FINDLASTELEMENT",
+    "GETBGCOLOR",
+    "GETCHARA",
+    "GETCOLOR",
+    "GETEXPLV",
+    "GETFONT",
+    "GETMILLISECOND",
+    "GETPALAMLV",
+    "GETPRINTCLENGTH",
+    "GETPRINTCPERLINE",
+    "GETSECOND",
+    "GETSPCHARA",
+    "GETSTYLE",
+    "GETTIME",
+    "GETTIMES",
+    "GROUPMATCH",
+    "HTML_ESCAPE",
+    "HTML_TOPLAINTEXT",
+    "INRANGEARRAY",
+    "INRANGECARRAY",
+    "ISDEFINED",
+    "ISSKIP",
+    "LINEISEMPTY",
+    "LOADTEXT",
+    "MATCH",
+    "MAXARRAY",
+    "MAXCARRAY",
+    "MESSKIP",
+    "MINARRAY",
+    "MINCARRAY",
+    "MOUSESKIP",
+    "NOSAMES",
+    "RAND",
+    "SAVETEXT",
+    "STRFORM",
+    "STRJOIN",
+    "STRLEN",
+    "STRLENU",
+    "SUMARRAY",
+    "SUMCARRAY",
+    "VARSIZE",
+    "CHKCHARADATA",
+    "FIND_CHARADATA",
+    "HTML_GETPRINTEDSTR",
+    "HTML_POPPRINTINGSTR",
+    "GETKEY",
+    "GETKEYTRIGGERED",
+    "ISACTIVE",
+    "CLIENTWIDTH",
+    "CLIENTHEIGHT"
+  ],
+  "rule": "All arguments must restructure to SingleTerm; user methods and mutable variables not constant. Unique/conditional/inherited flags excluded pending review.",
+  "unique_methods": {
+    "GETNUM": {
+      "strategy": "descriptor_and_constant_keyword",
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1633,
+        "end_line": 1671,
+        "sha256": "63f6c59320635a197a6c0eba736bfbbfe35aa4cbfb55a9c9797af164fa115789"
+      }
+    }
+  }
+}

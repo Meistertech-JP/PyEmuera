@@ -1,0 +1,916 @@
+{
+  "schema": 1,
+  "culture": "ja-JP-default-profile",
+  "new_windows_execution": false,
+  "cases": [
+    {
+      "case_id": "standard-001",
+      "category": "standard",
+      "value": 12,
+      "format": "",
+      "expected": "12",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-002",
+      "category": "standard",
+      "value": -7,
+      "format": "D4",
+      "expected": "-0007",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-003",
+      "category": "standard",
+      "value": 0,
+      "format": "d0",
+      "expected": "0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-004",
+      "category": "standard",
+      "value": -1,
+      "format": "X",
+      "expected": "FFFFFFFFFFFFFFFF",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-005",
+      "category": "standard",
+      "value": -1,
+      "format": "x20",
+      "expected": "0000ffffffffffffffff",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-006",
+      "category": "standard",
+      "value": -9223372036854775808,
+      "format": "D",
+      "expected": "-9223372036854775808",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-007",
+      "category": "standard",
+      "value": 9223372036854775807,
+      "format": "G",
+      "expected": "9223372036854775807",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-008",
+      "category": "standard",
+      "value": 9223372036854775807,
+      "format": "E2",
+      "expected": "9.22E+018",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-009",
+      "category": "standard",
+      "value": 1250,
+      "format": "E1",
+      "expected": "1.3E+003",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-010",
+      "category": "standard",
+      "value": -1250,
+      "format": "e1",
+      "expected": "-1.3e+003",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-011",
+      "category": "standard",
+      "value": 999,
+      "format": "G2",
+      "expected": "1E+03",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-012",
+      "category": "standard",
+      "value": 1250,
+      "format": "g2",
+      "expected": "1.3e+03",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-013",
+      "category": "standard",
+      "value": 0,
+      "format": "E2",
+      "expected": "0.00E+000",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-014",
+      "category": "standard",
+      "value": 12000,
+      "format": "G3",
+      "expected": "1.2E+04",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-015",
+      "category": "standard",
+      "value": 120,
+      "format": "G3",
+      "expected": "120",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-016",
+      "category": "standard",
+      "value": 12345,
+      "format": "F2",
+      "expected": "12345.00",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-017",
+      "category": "standard",
+      "value": -12345,
+      "format": "N0",
+      "expected": "-12,345",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-018",
+      "category": "standard",
+      "value": 12345,
+      "format": "n3",
+      "expected": "12,345.000",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-019",
+      "category": "standard",
+      "value": 10,
+      "format": "C",
+      "expected": "¥10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-020",
+      "category": "standard",
+      "value": -10,
+      "format": "C2",
+      "expected": "-¥10.00",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-021",
+      "category": "standard",
+      "value": 0,
+      "format": "P0",
+      "expected": "0%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "standard-022",
+      "category": "standard",
+      "value": -10,
+      "format": "P1",
+      "expected": "-1,000.0%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-023",
+      "category": "parser",
+      "value": 7,
+      "format": "D100",
+      "expected": "D107",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-024",
+      "category": "parser",
+      "value": 7,
+      "format": "D1000000",
+      "expected": "D1000007",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-025",
+      "category": "parser",
+      "value": 7,
+      "format": "D1000001",
+      "expected": "D1000071",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-026",
+      "category": "parser",
+      "value": 7,
+      "format": "D0004",
+      "expected": "0007",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-027",
+      "category": "parser",
+      "value": 7,
+      "format": "D0099",
+      "expected": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-028",
+      "category": "parser",
+      "value": 7,
+      "format": "Q100",
+      "expected": "Q107",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-029",
+      "category": "parser",
+      "value": 7,
+      "format": " D2",
+      "expected": " D2",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-030",
+      "category": "parser",
+      "value": 7,
+      "format": "D-2",
+      "expected": "D-2",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-031",
+      "category": "parser",
+      "value": 7,
+      "format": "D4 ",
+      "expected": "D4 ",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-032",
+      "category": "parser",
+      "value": 10,
+      "format": "G\u0000invalid",
+      "expected": "10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "parser-033",
+      "category": "parser",
+      "value": 10,
+      "format": "\u0000Q",
+      "expected": "10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-034",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "Named",
+      "expected": "Named",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-035",
+      "category": "custom_literal",
+      "value": -10,
+      "format": "Named",
+      "expected": "-Named",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-036",
+      "category": "custom_literal",
+      "value": 0,
+      "format": "Named",
+      "expected": "Named",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-037",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "OtherName",
+      "expected": "OtherName",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-038",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "日本円",
+      "expected": "日本円",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-039",
+      "category": "custom_literal",
+      "value": 0,
+      "format": "#",
+      "expected": "",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-040",
+      "category": "custom_literal",
+      "value": 0,
+      "format": "#0",
+      "expected": "0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-041",
+      "category": "custom_literal",
+      "value": 7,
+      "format": "#000",
+      "expected": "007",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-042",
+      "category": "custom_literal",
+      "value": -7,
+      "format": "0000",
+      "expected": "-0007",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-043",
+      "category": "custom_literal",
+      "value": 12345,
+      "format": "00",
+      "expected": "12345",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-044",
+      "category": "custom_literal",
+      "value": 7,
+      "format": "0.00",
+      "expected": "7.00",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-045",
+      "category": "custom_literal",
+      "value": 7,
+      "format": "0.##",
+      "expected": "7",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-046",
+      "category": "custom_literal",
+      "value": 0,
+      "format": ".00",
+      "expected": ".00",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-047",
+      "category": "custom_literal",
+      "value": 10,
+      "format": ".##",
+      "expected": "10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-048",
+      "category": "custom_literal",
+      "value": 12,
+      "format": "0.0.0",
+      "expected": "12.00",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-049",
+      "category": "custom_literal",
+      "value": 12,
+      "format": "00-00",
+      "expected": "00-12",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-050",
+      "category": "custom_literal",
+      "value": 12345,
+      "format": "00-00",
+      "expected": "123-45",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-051",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "prefix0suffix",
+      "expected": "prefix10suffix",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-052",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "'0#.,;%‰E+00'0",
+      "expected": "0#.,;%‰E+0010",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-053",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "\"0#.,;%‰E+00\"0",
+      "expected": "0#.,;%‰E+0010",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-054",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "\\#0\\%",
+      "expected": "#10%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-055",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "0\\\\",
+      "expected": "10\\",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-056",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "'unterminated",
+      "expected": "unterminated",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-057",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "0\\",
+      "expected": "10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-058",
+      "category": "custom_literal",
+      "value": 10,
+      "format": "a;b;c;ignored",
+      "expected": "a",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-059",
+      "category": "custom_literal",
+      "value": -10,
+      "format": "a;b;c;ignored",
+      "expected": "b",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_literal-060",
+      "category": "custom_literal",
+      "value": 0,
+      "format": "a;b;c;ignored",
+      "expected": "c",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-061",
+      "category": "custom_scale",
+      "value": 1234567,
+      "format": "#,##0",
+      "expected": "1,234,567",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-062",
+      "category": "custom_scale",
+      "value": 1234567,
+      "format": "#,##0,,.00",
+      "expected": "1.23",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-063",
+      "category": "custom_scale",
+      "value": 1234567890,
+      "format": "#,##0,,",
+      "expected": "1,235",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-064",
+      "category": "custom_scale",
+      "value": 1499,
+      "format": "0,",
+      "expected": "1",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-065",
+      "category": "custom_scale",
+      "value": 1500,
+      "format": "0,",
+      "expected": "2",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-066",
+      "category": "custom_scale",
+      "value": -1500,
+      "format": "0,",
+      "expected": "-2",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-067",
+      "category": "custom_scale",
+      "value": 1,
+      "format": "0,",
+      "expected": "0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-068",
+      "category": "custom_scale",
+      "value": -1,
+      "format": "0,",
+      "expected": "0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-069",
+      "category": "custom_scale",
+      "value": 10,
+      "format": "0%",
+      "expected": "1000%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-070",
+      "category": "custom_scale",
+      "value": 10,
+      "format": "0‰",
+      "expected": "10000‰",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-071",
+      "category": "custom_scale",
+      "value": 10,
+      "format": "0%%",
+      "expected": "100000%%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-072",
+      "category": "custom_scale",
+      "value": 10,
+      "format": "0'%'",
+      "expected": "10%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-073",
+      "category": "custom_scale",
+      "value": 10,
+      "format": "0\\%",
+      "expected": "10%",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-074",
+      "category": "custom_scale",
+      "value": 1234,
+      "format": "#,##0.00",
+      "expected": "1,234.00",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scale-075",
+      "category": "custom_scale",
+      "value": 1234,
+      "format": "000,000",
+      "expected": "001,234",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-076",
+      "category": "custom_section",
+      "value": 10,
+      "format": "0;(0);zero",
+      "expected": "10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-077",
+      "category": "custom_section",
+      "value": -10,
+      "format": "0;(0);zero",
+      "expected": "(10)",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-078",
+      "category": "custom_section",
+      "value": 0,
+      "format": "0;(0);zero",
+      "expected": "zero",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-079",
+      "category": "custom_section",
+      "value": -10,
+      "format": "0;;zero",
+      "expected": "-10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-080",
+      "category": "custom_section",
+      "value": 0,
+      "format": "0;(0);",
+      "expected": "0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-081",
+      "category": "custom_section",
+      "value": -10,
+      "format": "0;",
+      "expected": "-10",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-082",
+      "category": "custom_section",
+      "value": 0,
+      "format": ";negative;zero",
+      "expected": "zero",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-083",
+      "category": "custom_section",
+      "value": 10,
+      "format": ";negative;zero",
+      "expected": "",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-084",
+      "category": "custom_section",
+      "value": -10,
+      "format": ";negative;zero",
+      "expected": "negative",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-085",
+      "category": "custom_section",
+      "value": -1,
+      "format": "0,;(0,);zero",
+      "expected": "zero",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-086",
+      "category": "custom_section",
+      "value": 1,
+      "format": "0,;(0,);zero",
+      "expected": "zero",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-087",
+      "category": "custom_section",
+      "value": 1500,
+      "format": "0,;(0,);zero",
+      "expected": "2",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-088",
+      "category": "custom_section",
+      "value": -1500,
+      "format": "0,;(0,);zero",
+      "expected": "(2)",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-089",
+      "category": "custom_section",
+      "value": 10,
+      "format": "0';';(0);zero",
+      "expected": "10;",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-090",
+      "category": "custom_scientific",
+      "value": 1234,
+      "format": "0.00E+00",
+      "expected": "1.23E+03",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-091",
+      "category": "custom_scientific",
+      "value": 1234,
+      "format": "00.0E+00",
+      "expected": "12.3E+02",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-092",
+      "category": "custom_scientific",
+      "value": 1234,
+      "format": "0.0e-000",
+      "expected": "1.2e003",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-093",
+      "category": "custom_scientific",
+      "value": 1234,
+      "format": "0.0E000",
+      "expected": "1.2E003",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-094",
+      "category": "custom_scientific",
+      "value": 1234,
+      "format": "0.0E+0 E+0",
+      "expected": "1.2E+3 E+0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-095",
+      "category": "custom_scientific",
+      "value": 1250,
+      "format": "0.0E+0",
+      "expected": "1.3E+3",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-096",
+      "category": "custom_scientific",
+      "value": 999,
+      "format": "0.0E+0",
+      "expected": "1.0E+3",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-097",
+      "category": "custom_scientific",
+      "value": 0,
+      "format": "0.0E+0",
+      "expected": "0.0E+0",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-098",
+      "category": "custom_scientific",
+      "value": 1,
+      "format": "0,.0E+00",
+      "expected": "1.0E-03",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-099",
+      "category": "custom_scientific",
+      "value": -1,
+      "format": "0,.0E+00",
+      "expected": "-1.0E-03",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_scientific-100",
+      "category": "custom_scientific",
+      "value": 10,
+      "format": "0.0E+000000000000",
+      "expected": "1.0E+0000000001",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    },
+    {
+      "case_id": "custom_section-101",
+      "category": "custom_section",
+      "value": -7,
+      "format": "0;\\",
+      "expected": "",
+      "expectation_basis": "native_source_and_primary_dotnet_contract",
+      "native_windows_observed": false
+    }
+  ]
+}

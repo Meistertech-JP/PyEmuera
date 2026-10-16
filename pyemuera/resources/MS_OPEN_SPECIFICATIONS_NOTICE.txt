@@ -1,0 +1,14 @@
+Microsoft Open Specifications Documentation — copyright permission
+
+Source: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-ucoderef/4a045e08-fc29-4f22-baf4-16f38c2825fb
+Referenced Windows Sorting Weight Table: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-ucoderef/226ad305-8a0b-469e-b30d-630c931faad2
+Download source: https://www.microsoft.com/en-us/download/details.aspx?id=10921
+
+Copyrights. This documentation is covered by Microsoft copyrights. Regardless of any other terms that are contained in the terms of use for the Microsoft website that hosts this documentation, you can make copies of it in order to develop implementations of the technologies that are described in this documentation and can distribute portions of it in your implementations that use these technologies or in your documentation as necessary to properly document the implementation. You can also distribute in your implementation, with or without modification, any schemas, IDLs, or code samples that are included in the documentation. This permission also applies to any documents that are referenced in the Open Specifications documentation.
+
+The derived resource contains the portions of Microsoft's published Windows 10 Sorting Weight Table needed by this Japanese implementation. It does not include other cultures' exception/contraction tables or the complete original document.
+
+The Open Specifications notice separately reserves patent and trademark rights; this copyright permission is not a grant of all such rights. Read the linked full Intellectual Property Rights Notice for those terms.
+
+Original Microsoft specification and source weights: Microsoft Corporation.
+Portable compiler/runtime implementation: PyEmuera project, independently written from the documented algorithm stages. No Wine/ReactOS implementation or binary NLS data is included.

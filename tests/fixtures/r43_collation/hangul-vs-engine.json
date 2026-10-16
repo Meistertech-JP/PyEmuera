@@ -1,0 +1,56 @@
+{
+ "clr": "4.0.30319.42000",
+ "culture": "ja-JP",
+ "inputs": 36,
+ "pairs": 1296,
+ "windows": {
+  "match": 1296,
+  "mismatch": 0,
+  "unsupported_exception": 0,
+  "examples": []
+ },
+ "portable": {
+  "match": 568,
+  "mismatch": 340,
+  "unsupported_exception": 388,
+  "examples": [
+   [
+    "'\\uac00'",
+    "'\\u1161'",
+    -1,
+    1
+   ],
+   [
+    "'\\uac00'",
+    "'\\u11a8'",
+    -1,
+    1
+   ],
+   [
+    "'\\uac00'",
+    "'\\u110b'",
+    -1,
+    1
+   ],
+   [
+    "'\\uac00'",
+    "'\\u115f'",
+    -1,
+    1
+   ],
+   [
+    "'\\uac00'",
+    "'\\u1160'",
+    -1,
+    1
+   ],
+   [
+    "'\\uac00'",
+    "'\\ud7b0'",
+    -1,
+    1
+   ]
+  ]
+ },
+ "CompareTo_vs_CompareInfo_diff": 0
+}

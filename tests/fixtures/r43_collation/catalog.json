@@ -1,0 +1,115 @@
+{
+  "schema": "r43-archived-collation-fixture-catalog-1",
+  "run_id": "r42run-20261014-120034",
+  "new_native_execution": false,
+  "files": [
+    {
+      "path": "framework-probe-new.json",
+      "source": "verification/r43/received_r42/evidence/collation/framework-probe-new.json",
+      "bytes": 2980448,
+      "sha256": "8c64a2f24f1384cbf3fb13117cc139fadf4fa1a764a37eefc13ab927ef1c9dfd",
+      "copy_mode": "byte_exact"
+    },
+    {
+      "path": "hangul-framework.json",
+      "source": "verification/r43/received_r42/evidence/collation/hangul-framework.json",
+      "bytes": 60185,
+      "sha256": "958342ee33b51cffcff3ac66dfe4be30aa23bdcd2c6c46541bbae0e44973bbcd",
+      "copy_mode": "byte_exact"
+    },
+    {
+      "path": "hangul_inputs.txt",
+      "source": "verification/r43/received_r42/evidence/collation/hangul_inputs.txt",
+      "bytes": 290,
+      "sha256": "a2b61ba9a0c5dd03c29c69892db2dd066290a7b77db8f2f3e42a0e7561ae89c8",
+      "copy_mode": "byte_exact"
+    },
+    {
+      "path": "hangul_probe.cs",
+      "source": "verification/r43/received_r42/evidence/collation/hangul_probe.cs",
+      "bytes": 872,
+      "sha256": "33925edaf163963875f97296aeda4bceea87679353f58d281552cb499b2b9c43",
+      "copy_mode": "byte_exact"
+    },
+    {
+      "path": "probe-new-vs-engine.json",
+      "source": "verification/r43/received_r42/evidence/collation/probe-new-vs-engine.json",
+      "bytes": 16041,
+      "sha256": "f290a66534165f5b4ed8057e5a1d4011b3a5725c6bd945ca2373b7dd6b68f04c",
+      "copy_mode": "byte_exact"
+    },
+    {
+      "path": "hangul-vs-engine.json",
+      "source": "verification/r43/received_r42/evidence/collation/hangul-vs-engine.json",
+      "bytes": 731,
+      "sha256": "9b720b6d2472c9f45334a3647cdeebdd5a54451dac764d9959ee2ccdc870133f",
+      "copy_mode": "byte_exact"
+    },
+    {
+      "path": "public_source_model_rows.json",
+      "bytes": 256586,
+      "sha256": "757ace7e011b7dd7a8f9d6080c2af491ecca5a29a70863209318ec1cef0912ac",
+      "copy_mode": "independently_parsed_public_source_subset",
+      "source_sha256": "81fcfa1e5ed3e3a94d329959ff7d97d522ddf9d653d2c4d6ddcccc5cd4df663f",
+      "generator": "tools/generate_collation_review_rows_r43.py"
+    },
+    {
+      "path": "framework_sort_r42.py.txt",
+      "bytes": 6565,
+      "sha256": "37612cfc6ae03ae21b772b1a5e6297f46847993aadc6cb7f2aade034c24db087",
+      "copy_mode": "frozen_r42_source_byte_exact",
+      "origin_pyz_sha256": "06ae5e5bde44401391d7224a5db5dc8a2574a1ce9b82637aed8f6b6f93c15f01",
+      "origin_member": "pyemuera/sort1824.py",
+      "license_notice": "licenses/MICROSOFT_REFERENCE_SOURCE_MIT.txt"
+    },
+    {
+      "path": "windows_unseen_inputs_utf16hex.txt",
+      "bytes": 100449,
+      "sha256": "09e4d00a4c76c91de60c2713094ff8c328c2dbe0120020dace0e0760758c5afb",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    },
+    {
+      "path": "windows_unseen_pairs.tsv",
+      "bytes": 263303,
+      "sha256": "36bea9a959c43b56486dd3f77195f5225fb548e06be30f1c3adfcc2be96523f8",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    },
+    {
+      "path": "windows_jamo_sort_orders.tsv",
+      "bytes": 344,
+      "sha256": "e290dfc507cc7406194c52da8925131bb517579a8217b569d432a12a03aee7a6",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    },
+    {
+      "path": "windows_unseen_probe_manifest.json",
+      "bytes": 1762,
+      "sha256": "3c4eedc6b83a23771436842a79b979250077b5e47219ce54ad020b6bd072cbbd",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    },
+    {
+      "path": "windows_jamo_arraymsort/ERB/Header.ERH",
+      "bytes": 31,
+      "sha256": "2c39a7f79faa17657ae706a4045617819fd11a96d7b209f856a4044014b88c8f",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    },
+    {
+      "path": "windows_jamo_arraymsort/ERB/Main.ERB",
+      "bytes": 3618,
+      "sha256": "28ad8a5f64cbd7fafbf4e28e06dca12ca241212890fe8be4e75c2dcca4ba4629",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    },
+    {
+      "path": "windows_jamo_arraymsort/emuera.config",
+      "bytes": 2164,
+      "sha256": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "copy_mode": "new_neutral_fixture_or_probe_input",
+      "new_native_execution": false
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "schema": "r44-jamo-baseline-source-1",
+  "baseline_pyz_sha256": "ea35934020a05d6e24c92468832fbe0ddfcec9372dd97ea5f18e796161de16e4",
+  "source_path": "pyemuera/collation_jamo.py",
+  "source_sha256": "d4f1932eb356e9aded76610bad9cca26bf855cd40375aa50546e8e0e7cb73236",
+  "source_bytes": 5609
+}

@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "reference": "Emuera 1.8.2.4 source (src1824.zip)",
+  "scope": "Default dimension corrections only; not all variable metadata or CSV coupling rules",
+  "variables": {
+    "UP": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "DOWN": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "LOSEBASE": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "PALAMLV": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "EXPLV": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "RESULT": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "COUNT": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "MONEY": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "DAY": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "TIME": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "TARGET": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "MASTER": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "ASSI": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "PLAYER": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "ASSIPLAY": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "PREVCOM": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "NEXTCOM": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "BOUGHT": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "NOITEM": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "PBAND": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        1
+      ],
+      "source": "ConstantData.setDefaultArrayLength / VariableCode.__ARRAY_1D__"
+    },
+    "SOURCE": {
+      "dimensions": [
+        1000
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength + decideActualArraySize"
+    },
+    "JUEL": {
+      "dimensions": [
+        200
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength + decideActualArraySize"
+    },
+    "GOTJUEL": {
+      "dimensions": [
+        200
+      ],
+      "legacy_a9_dimensions": [
+        100
+      ],
+      "source": "ConstantData.setDefaultArrayLength + decideActualArraySize"
+    },
+    "RELATION": {
+      "dimensions": [
+        100
+      ],
+      "legacy_a9_dimensions": [
+        1000
+      ],
+      "source": "ConstantData.setDefaultArrayLength + decideActualArraySize"
+    }
+  }
+}

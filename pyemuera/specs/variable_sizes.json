@@ -1,0 +1,1037 @@
+{
+  "reference": "Emuera1824+v24 VariableCode / ConstantData.changeVariableSizeData",
+  "targets": {
+    "DAY": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "MONEY": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "ITEM": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "FLAG": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TFLAG": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "UP": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "PALAMLV": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "EXPLV": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "EJAC": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DOWN": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "RESULT": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "COUNT": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "TARGET": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "ASSI": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "MASTER": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NOITEM": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "LOSEBASE": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "SELECTCOM": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "ASSIPLAY": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "PREVCOM": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NOTUSE_14": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NOTUSE_15": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TIME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "ITEMSALES": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "PLAYER": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NEXTCOM": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "PBAND": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "BOUGHT": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NOTUSE_1C": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "NOTUSE_1D": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "A": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "B": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "C": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "D": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "E": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "F": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "G": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "H": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "I": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "J": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "K": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "L": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "M": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "N": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "O": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "P": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "Q": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "R": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "S": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "T": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "U": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "V": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "W": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "X": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "Y": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "Z": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NOTUSE_38": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "NOTUSE_39": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "NOTUSE_3A": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "NOTUSE_3B": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "ITEMPRICE": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "LOCAL": {
+      "rank": 1,
+      "local": true,
+      "forbid": true,
+      "changeable": true
+    },
+    "ARG": {
+      "rank": 1,
+      "local": true,
+      "forbid": true,
+      "changeable": true
+    },
+    "GLOBAL": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "RANDDATA": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "SAVESTR": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "STR": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "RESULTS": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "LOCALS": {
+      "rank": 1,
+      "local": true,
+      "forbid": true,
+      "changeable": true
+    },
+    "ARGS": {
+      "rank": 1,
+      "local": true,
+      "forbid": true,
+      "changeable": true
+    },
+    "GLOBALS": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TSTR": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "SAVEDATA_TEXT": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "ISASSI": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "NO": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "BASE": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "MAXBASE": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "ABL": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TALENT": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "EXP": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "MARK": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "PALAM": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "SOURCE": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "EX": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CFLAG": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "JUEL": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "RELATION": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "EQUIP": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TEQUIP": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "STAIN": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "GOTJUEL": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NOWEX": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DOWNBASE": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CUP": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CDOWN": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TCVAR": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "NAME": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "CALLNAME": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "NICKNAME": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "MASTERNAME": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "CSTR": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CDFLAG": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DITEMTYPE": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DA": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DB": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DC": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DD": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "DE": {
+      "rank": 2,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TA": {
+      "rank": 3,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TB": {
+      "rank": 3,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "RAND": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "CHARANUM": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "ABLNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "EXPNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TALENTNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "PALAMNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TRAINNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "MARKNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "ITEMNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "BASENAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "SOURCENAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "EXNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "EQUIPNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TEQUIPNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "FLAGNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TFLAGNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CFLAGNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TCVARNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CSTRNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "STAINNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CDFLAGNAME1": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "CDFLAGNAME2": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "STRNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "TSTRNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "SAVESTRNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "GLOBALNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "GLOBALSNAME": {
+      "rank": 1,
+      "local": false,
+      "forbid": true,
+      "changeable": true
+    },
+    "GAMEBASE_AUTHER": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_AUTHOR": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_INFO": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_YEAR": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_TITLE": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "WINDOW_TITLE": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "MONEYLABEL": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "DRAWLINESTR": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "EMUERA_VERSION": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "LASTLOAD_TEXT": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_GAMECODE": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_VERSION": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_ALLOWVERSION": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_DEFAULTCHARA": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "GAMEBASE_NOITEM": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "LASTLOAD_VERSION": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "LASTLOAD_NO": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "LINECOUNT": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "ISTIMEOUT": {
+      "rank": 0,
+      "local": false,
+      "forbid": false,
+      "changeable": false
+    },
+    "CVAR": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "CVARS": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "CVAR2D": {
+      "rank": 2,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "CVARS2D": {
+      "rank": 2,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "REF": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "REFS": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "REF2D": {
+      "rank": 2,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "REFS2D": {
+      "rank": 2,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "REF3D": {
+      "rank": 3,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "REFS3D": {
+      "rank": 3,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "VAR": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "VARS": {
+      "rank": 1,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "VAR2D": {
+      "rank": 2,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "VARS2D": {
+      "rank": 2,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "VAR3D": {
+      "rank": 3,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    },
+    "VARS3D": {
+      "rank": 3,
+      "local": false,
+      "forbid": false,
+      "changeable": true
+    }
+  }
+}

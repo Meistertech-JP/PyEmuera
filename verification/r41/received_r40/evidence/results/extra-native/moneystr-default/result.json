@@ -1,0 +1,12 @@
+{
+  "schema": "r50-public-historical-result-projection-1",
+  "original_artifact_sha256": "308b5b1192ecaf19cc5fe6538eb71bbf1b8015ba79bb05b55236e1ce1045a910",
+  "public_projection": true,
+  "original_raw_evidence_retained_privately": true,
+  "native_markers": [
+    "R40_MONEY|$10|$Named"
+  ],
+  "status": "FAIL",
+  "procedure": "Only test-consumed native_markers and historical status retained; original raw metadata is private.",
+  "new_native_measurement": false
+}

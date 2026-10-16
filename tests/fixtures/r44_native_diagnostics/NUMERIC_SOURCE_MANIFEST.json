@@ -1,0 +1,54 @@
+{
+  "schema": "r44-Decimal-overflow-source-contract-1",
+  "source_zip_sha256": "fd0dd5b83ab3f929e69de0b9af739fa9bf785b6f510b30d11aaf44db35af182a",
+  "source_exe_build_same": "UNPROVEN",
+  "source_files": [
+    {
+      "native_path": "GameProc/Process.cs",
+      "source_zip_member": "Emuera1824+v24/src1824+v24/src1824/Emuera/GameProc/Process.cs",
+      "local_path": "numeric_sources/Process.cs",
+      "bytes": 18725,
+      "sha256": "ef8ecc12e0321091127f600e581932986a50d2bd94b22fc4acae82921507e362",
+      "source_quotes": [
+        {
+          "line": 500,
+          "text": "\t\t\t\tconsole.PrintError(posString + \"予期しないエラーが発生しました:\" + Program.ExeName);"
+        },
+        {
+          "line": 501,
+          "text": "\t\t\t\tconsole.PrintError(exc.GetType().ToString() + \":\" + exc.Message);"
+        }
+      ],
+      "unaltered": true
+    },
+    {
+      "native_path": "GameProc/Function/Instraction.Child.cs",
+      "source_zip_member": "Emuera1824+v24/src1824+v24/src1824/Emuera/GameProc/Function/Instraction.Child.cs",
+      "local_path": "numeric_sources/Instraction.Child.cs",
+      "bytes": 82505,
+      "sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+      "source_quotes": [
+        {
+          "line": 937,
+          "text": "                {"
+        },
+        {
+          "line": 944,
+          "text": "                else"
+        },
+        {
+          "line": 948,
+          "text": "                    {"
+        },
+        {
+          "line": 954,
+          "text": "                            var.SetValue((Int64)((double)d), exm);"
+        }
+      ],
+      "unaltered": true
+    }
+  ],
+  "license": "sources/Emuera1824_LICENSE.txt",
+  "framework_resource_sha256": "c959d490fe7ba08c651551c3c7e8d034a11572cf8df529d0af0e004799fc9de3",
+  "new_native_execution": false
+}

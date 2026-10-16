@@ -1,0 +1,48 @@
+{
+  "schema": "r43-windows-neutral-probe-input-manifest-1",
+  "inputs": 5213,
+  "original_hangul_inputs": 36,
+  "additional_model_inputs": 5177,
+  "pairs": 31991,
+  "native_execution": "NOT_EXECUTED_HERE",
+  "input_character_encoding": "hex of original UTF16LE code units; no normalization",
+  "fixture_character_encoding": "BOM UTF8 Main.ERB/Header.ERH newlyauthored neutral fixture; CP932 emuera.config byteexact copied from receivedneutralfixture. Original receiptfiles unchanged.",
+  "expected_scope": "No expectednative signs generated. Independent Framework/NLS probe produces actual signs; source-model expectations remain separate.",
+  "sort_orders": [
+    "JAMO_ORIGINAL",
+    "JAMO_REVERSED",
+    "JAMO_SHUFFLED_4301296"
+  ],
+  "files": [
+    {
+      "path": "windows_jamo_arraymsort/ERB/Header.ERH",
+      "bytes": 31,
+      "sha256": "2c39a7f79faa17657ae706a4045617819fd11a96d7b209f856a4044014b88c8f"
+    },
+    {
+      "path": "windows_jamo_arraymsort/ERB/Main.ERB",
+      "bytes": 3618,
+      "sha256": "28ad8a5f64cbd7fafbf4e28e06dca12ca241212890fe8be4e75c2dcca4ba4629"
+    },
+    {
+      "path": "windows_jamo_arraymsort/emuera.config",
+      "bytes": 2164,
+      "sha256": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc"
+    },
+    {
+      "path": "windows_jamo_sort_orders.tsv",
+      "bytes": 344,
+      "sha256": "e290dfc507cc7406194c52da8925131bb517579a8217b569d432a12a03aee7a6"
+    },
+    {
+      "path": "windows_unseen_inputs_utf16hex.txt",
+      "bytes": 100449,
+      "sha256": "09e4d00a4c76c91de60c2713094ff8c328c2dbe0120020dace0e0760758c5afb"
+    },
+    {
+      "path": "windows_unseen_pairs.tsv",
+      "bytes": 263303,
+      "sha256": "36bea9a959c43b56486dd3f77195f5225fb548e06be30f1c3adfcc2be96523f8"
+    }
+  ]
+}

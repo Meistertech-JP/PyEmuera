@@ -1,0 +1,621 @@
+{
+  "schema": "r44-native-diagnostic-goldens-1",
+  "origin": "Exact source-derived Japanese spelling; independent of Python-generated message outputs",
+  "source_zip_sha256": "fd0dd5b83ab3f929e69de0b9af739fa9bf785b6f510b30d11aaf44db35af182a",
+  "source_exe_build_same": "UNPROVEN",
+  "Header.ERH_sha256": "580c7d66d5c392df0eac4e273352dfd72a7a5aa5351779ad8dd0c9b32557125b",
+  "cases": [
+    {
+      "id": "power_missing_first",
+      "command_or_function": "POWER",
+      "statement": "POWER ,2,3",
+      "fixture": "cases/power_missing_first/ERB/Main.ERB",
+      "fixture_sha256": "d98b83d4b9521f04dcdf966480b66bfc1b9176cfc92369718a8bda2b5f10aea6",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 80,
+          "text": "\t\t\t\t\twarn(\"第\" + (i + 1).ToString() + \"引数を認識できません\", line, 2, false);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 1221,
+          "text": "\t\t\t\tIOperandTerm[] terms = popTerms(line);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 1222,
+          "text": "\t\t\t\tif (!checkArgumentType(line, exm, terms))"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "POWER命令:第1引数を認識できません",
+      "pyemuera_message": "POWER命令:第1引数を認識できません",
+      "error_code": "E_ARGUMENT",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "power_first_type",
+      "command_or_function": "POWER",
+      "statement": "POWER OR_TEXT,2,3",
+      "fixture": "cases/power_first_type/ERB/Main.ERB",
+      "fixture_sha256": "b12aee38ba94473e9e18f5a70964ac8a0113f0eb7204a271437f9353243f7941",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 85,
+          "text": "\t\t\t\t\twarn(\"第\" + (i + 1).ToString() + \"引数の型が正しくありません\", line, 2, false);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 1216,
+          "text": "\t\t\t\targumentTypeArray = new Type[] { typeof(Int64), typeof(Int64), typeof(Int64) };"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "POWER命令:第1引数の型が正しくありません",
+      "pyemuera_message": "POWER命令:第1引数の型が正しくありません",
+      "error_code": "E_TYPE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "power_first_reference",
+      "command_or_function": "POWER",
+      "statement": "POWER 1,2,3",
+      "fixture": "cases/power_first_reference/ERB/Main.ERB",
+      "fixture_sha256": "a8b3e3d1ffdd7383bfc45e1c34a5c626e76fec760b419cbf4a1a5cc90ac8b267",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 103,
+          "text": "                warn(\"第\" + i + \"引数に変数以外を指定することはできません\", line, 2, false);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 1224,
+          "text": "\t\t\t\tVariableTerm varTerm = getChangeableVariable(terms, 1, line);"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "POWER命令:第1引数に変数以外を指定することはできません",
+      "pyemuera_message": "POWER命令:第1引数に変数以外を指定することはできません",
+      "error_code": "E_REFERENCE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "times_first_reference",
+      "command_or_function": "TIMES",
+      "statement": "TIMES 1,2.0",
+      "fixture": "cases/times_first_reference/ERB/Main.ERB",
+      "fixture_sha256": "856aa282a0be62741941d534d274cdcabc3fab5d3ff585bc1bbabb244ad40f6b",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 275,
+          "text": "                { warn(\"第１引数に変数以外を指定することはできません\", line, 2, false); return null; }"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "TIMES命令:第１引数に変数以外を指定することはできません",
+      "pyemuera_message": "TIMES命令:第１引数に変数以外を指定することはできません",
+      "error_code": "E_REFERENCE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "times_first_type",
+      "command_or_function": "TIMES",
+      "statement": "TIMES OR_TEXT,2.0",
+      "fixture": "cases/times_first_type/ERB/Main.ERB",
+      "fixture_sha256": "9097df2322aa536febc852f69e31751d32c9629ddc739387f662eb76cac1dacd",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 277,
+          "text": "                { warn(\"第１引数を文字列変数にすることはできません\", line, 2, false); return null; }"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "TIMES命令:第１引数を文字列変数にすることはできません",
+      "pyemuera_message": "TIMES命令:第１引数を文字列変数にすることはできません",
+      "error_code": "E_TYPE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "getbit_literal_64",
+      "command_or_function": "GETBIT",
+      "statement": "OR_TARGET=GETBIT(1,64)",
+      "fixture": "cases/getbit_literal_64/ERB/Main.ERB",
+      "fixture_sha256": "63f9d7aa6ce03789e3315e64d50d2920985e372139e3ba5234551ec4472454ce",
+      "native_source_location": [
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1618,
+          "text": "                        return \"GETBIT関数の第２引数(\" + m.ToString() + \")が範囲(０～６３)を超えています\";"
+        },
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1627,
+          "text": "                    throw new CodeEE(\"GETBIT関数の第２引数(\" + m.ToString() + \")が範囲(０～６３)を超えています\");"
+        }
+      ],
+      "native_source_sha256": {
+        "GameData/Function/Creator.Method.cs": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+      },
+      "native_message": "GETBIT関数の第２引数(64)が範囲(０～６３)を超えています",
+      "pyemuera_message": "GETBIT関数の第２引数(64)が範囲(０～６３)を超えています",
+      "error_code": "E_INDEX",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "CheckArgumentType or GetIntValue",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "getbit_literal_minus1",
+      "command_or_function": "GETBIT",
+      "statement": "OR_TARGET=GETBIT(1,-1)",
+      "fixture": "cases/getbit_literal_minus1/ERB/Main.ERB",
+      "fixture_sha256": "d3cfc1c2c865ca42605db5621ad8adb29eec1f3391e2a3f89d6b2aa2ba2af9b1",
+      "native_source_location": [
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1618,
+          "text": "                        return \"GETBIT関数の第２引数(\" + m.ToString() + \")が範囲(０～６３)を超えています\";"
+        },
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1627,
+          "text": "                    throw new CodeEE(\"GETBIT関数の第２引数(\" + m.ToString() + \")が範囲(０～６３)を超えています\");"
+        }
+      ],
+      "native_source_sha256": {
+        "GameData/Function/Creator.Method.cs": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+      },
+      "native_message": "GETBIT関数の第２引数(-1)が範囲(０～６３)を超えています",
+      "pyemuera_message": "GETBIT関数の第２引数(-1)が範囲(０～６３)を超えています",
+      "error_code": "E_INDEX",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "CheckArgumentType or GetIntValue",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "getbit_dynamic_64",
+      "command_or_function": "GETBIT",
+      "statement": "OR_TARGET=GETBIT(1,OR_BIT)",
+      "fixture": "cases/getbit_dynamic_64/ERB/Main.ERB",
+      "fixture_sha256": "ce1dafc8eea848ff8b56024d5580557ed4084d94b70846fd9ba89140ea532e1b",
+      "native_source_location": [
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1627,
+          "text": "                    throw new CodeEE(\"GETBIT関数の第２引数(\" + m.ToString() + \")が範囲(０～６３)を超えています\");"
+        }
+      ],
+      "native_source_sha256": {
+        "GameData/Function/Creator.Method.cs": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+      },
+      "native_message": "GETBIT関数の第２引数(64)が範囲(０～６３)を超えています",
+      "pyemuera_message": "GETBIT関数の第２引数(64)が範囲(０～６３)を超えています",
+      "error_code": "E_INDEX",
+      "diagnostic_level": null,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": false,
+      "source_stage": "GetIntValue",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "arraymsort_minimum",
+      "command_or_function": "ARRAYMSORT",
+      "statement": "OR_TARGET=ARRAYMSORT(OR_ARRAY)",
+      "fixture": "cases/arraymsort_minimum/ERB/Main.ERB",
+      "fixture_sha256": "75dca07a0c23724e652c450d513de282f3e4e80139d789ab526a8dcb2ed5eb2a",
+      "native_source_location": [
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1957,
+          "text": "\t\t\t\tif (arguments.Length < 2)"
+        },
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 1958,
+          "text": "\t\t\t\t\treturn string.Format(\"{0}関数:少なくとも{1}の引数が必要です\", name, 2);"
+        }
+      ],
+      "native_source_sha256": {
+        "GameData/Function/Creator.Method.cs": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+      },
+      "native_message": "ARRAYMSORT関数:少なくとも2の引数が必要です",
+      "pyemuera_message": "ARRAYMSORT関数:少なくとも2の引数が必要です",
+      "error_code": "E_ARGUMENT",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "savetext_minimum",
+      "command_or_function": "SAVETEXT",
+      "statement": "OR_TARGET=SAVETEXT(\"body\")",
+      "fixture": "cases/savetext_minimum/ERB/Main.ERB",
+      "fixture_sha256": "51effbdbb492a255d71fb064d149623a7eebb8b6a78c097e5687dc813f74a68f",
+      "native_source_location": [
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 4143,
+          "text": "\t\t\t\tif (arguments.Length > 4)"
+        },
+        {
+          "path": "GameData/Function/Creator.Method.cs",
+          "sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+          "line": 4144,
+          "text": "\t\t\t\t\treturn string.Format(Properties.Resources.SyntaxErrMesMethodDefaultArgumentNum2, name);"
+        },
+        {
+          "path": "Properties/Resources.resx",
+          "sha256": "f58aa58913e97e4f9a6324a623aacdea686c19b8bd5b1bc989afde1c553f55e0",
+          "line": 159,
+          "text": "  <data name=\"SyntaxErrMesMethodDefaultArgumentNum1\" xml:space=\"preserve\">"
+        },
+        {
+          "path": "Properties/Resources.resx",
+          "sha256": "f58aa58913e97e4f9a6324a623aacdea686c19b8bd5b1bc989afde1c553f55e0",
+          "line": 160,
+          "text": "    <value>{0}関数:少なくとも{1}個の引数が必要です</value>"
+        }
+      ],
+      "native_source_sha256": {
+        "GameData/Function/Creator.Method.cs": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08",
+        "Properties/Resources.resx": "f58aa58913e97e4f9a6324a623aacdea686c19b8bd5b1bc989afde1c553f55e0"
+      },
+      "native_message": "SAVETEXT関数:少なくとも2個の引数が必要です",
+      "pyemuera_message": "SAVETEXT関数:少なくとも2個の引数が必要です",
+      "error_code": "E_ARGUMENT",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "power_warning_then_first_failure",
+      "command_or_function": "POWER",
+      "statement": "POWER ,\"bad\",3,1/0",
+      "fixture": "cases/power_warning_then_first_failure/ERB/Main.ERB",
+      "fixture_sha256": "aa5447b15cafa3bafe5167a8e3a08a0484376fcdda0983e917efe370dae5c794",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 64,
+          "text": "\t\t\t\twarn(\"引数が多すぎます\", line, 1, false);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 80,
+          "text": "\t\t\t\t\twarn(\"第\" + (i + 1).ToString() + \"引数を認識できません\", line, 2, false);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 92,
+          "text": "\t\t\t\tif (arguments[i] == null)"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "POWER命令:第1引数を認識できません",
+      "pyemuera_message": "POWER命令:第1引数を認識できません",
+      "error_code": "E_ARGUMENT",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [
+        {
+          "level": 1,
+          "message": "POWER命令:引数が多すぎます"
+        }
+      ],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "times_warning_then_first_failure",
+      "command_or_function": "TIMES",
+      "statement": "TIMES 1,bad",
+      "fixture": "cases/times_warning_then_first_failure/ERB/Main.ERB",
+      "fixture_sha256": "70cf5be955777b0e4856c1f3710a6a97bfc35b98b9fb0e7b2e43e69b5a43b5a9",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 268,
+          "text": "\t\t\t\t\twarn(\"第２引数が実数値ではありません（常に0と解釈されます）\", line, 1, false);"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 275,
+          "text": "                { warn(\"第１引数に変数以外を指定することはできません\", line, 2, false); return null; }"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "TIMES命令:第１引数に変数以外を指定することはできません",
+      "pyemuera_message": "TIMES命令:第１引数に変数以外を指定することはできません",
+      "error_code": "E_REFERENCE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [
+        {
+          "level": 1,
+          "message": "TIMES命令:第２引数が実数値ではありません（常に0と解釈されます）"
+        }
+      ],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "Builder/CheckArgumentType",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "times_warning_then_string_failure",
+      "command_or_function": "TIMES",
+      "statement": "TIMES OR_TEXT,bad",
+      "fixture": "cases/times_warning_then_string_failure/ERB/Main.ERB",
+      "fixture_sha256": "1e2c75e80d38f848f4d84e7dcd1ca37db8c8e153d3e24be6ae07ddbeab671601",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 277,
+          "text": "                { warn(\"第１引数を文字列変数にすることはできません\", line, 2, false); return null; }"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 268,
+          "text": "\t\t\t\t\twarn(\"第２引数が実数値ではありません（常に0と解釈されます）\", line, 1, false);"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "TIMES命令:第１引数を文字列変数にすることはできません",
+      "pyemuera_message": "TIMES命令:第１引数を文字列変数にすることはできません",
+      "error_code": "E_TYPE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [
+        {
+          "level": 1,
+          "message": "TIMES命令:第２引数が実数値ではありません（常に0と解釈されます）"
+        }
+      ],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "SP_TIMES_ArgumentBuilder:varTerm.IsString before GetIntValue",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    },
+    {
+      "id": "times_string_index_side_effect",
+      "command_or_function": "TIMES",
+      "statement": "TIMES OR_TEXT:R44_SIDE(),2.0",
+      "fixture": "cases/times_string_index_side_effect/ERB/Main.ERB",
+      "fixture_sha256": "e61ed5678abc7129c0d563e9cb88547f3727cb5a669f41b6b0bf1f72ae1d1bff",
+      "native_source_location": [
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 27,
+          "text": "\t\t\tmes = line.Function.Name + \"命令:\" + mes;"
+        },
+        {
+          "path": "GameProc/Function/ArgumentBuilder.cs",
+          "sha256": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9",
+          "line": 277,
+          "text": "                { warn(\"第１引数を文字列変数にすることはできません\", line, 2, false); return null; }"
+        }
+      ],
+      "native_source_sha256": {
+        "GameProc/Function/ArgumentBuilder.cs": "3df8f94f041dcee9e703f3f170cc48ad82d1d3016ce96b7f87a06ec5bba3ace9"
+      },
+      "native_message": "TIMES命令:第１引数を文字列変数にすることはできません",
+      "pyemuera_message": "TIMES命令:第１引数を文字列変数にすることはできません",
+      "error_code": "E_TYPE",
+      "diagnostic_level": 2,
+      "file_line": {
+        "file": "Main.ERB",
+        "line": 2
+      },
+      "comparison_status": "SOURCE_CONTRACT_MATCH",
+      "native_execution_status": "UNOBSERVED",
+      "warning_prefix": [],
+      "load_mode_fatal_at_load": true,
+      "source_stage": "SP_TIMES_ArgumentBuilder:varTerm.IsString before GetIntValue",
+      "diagnostic_level_scope": "Load analyzer Lv2 when statically rejected; runtime CodeEE/EraError has no numeric warning level"
+    }
+  ],
+  "forbidden_normalization": [
+    "NFC",
+    "NFKC",
+    "casefold",
+    "digit width harmonization",
+    "counter insertion",
+    "punctuation/space edits"
+  ],
+  "new_native_executions": 0,
+  "new_windows_executions": 0
+}

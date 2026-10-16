@@ -1,0 +1,1409 @@
+{
+  "reference": "Emuera1824+v24",
+  "scope": "static type metadata only; no constant evaluation",
+  "functions": {
+    "ABS": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1027,
+        "end_line": 1043,
+        "sha256": "f6d939b1e85bf80905671a2d58f8ef9422b538ae6e53dc88df845943dafe00b1"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ALLSAMES": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1472,
+        "end_line": 1518,
+        "sha256": "2c096124414881398343b99bb59004b4e4b787ce9ec9385ac35247cc4ed97e52"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ARRAYMSORT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1946,
+        "end_line": 2092,
+        "sha256": "d679de65bb3b28d4521fd950cf646c1649f678102e0eca175732190eb76c7182"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "BARSTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "long",
+        "long",
+        "long"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 639,
+        "end_line": 654,
+        "sha256": "7c4a6a3c2203254ccea93de973bbea0d162c82ee4a47a6325b02eff599a32509"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CBRT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1085,
+        "end_line": 1100,
+        "sha256": "572f4c569ca6741d1e0f712503084f965bfab6ff67979a12b660ee24a58add5f"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CHARATU": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string",
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2637,
+        "end_line": 2653,
+        "sha256": "a1facf60c0d9a8c1975ee92dcfce9c1efc2ec3d222eb39c85a3a43431eb38845"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CHKDATA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 421,
+        "end_line": 443,
+        "sha256": "72ae6a6b6c143bb87ff6e32d7d6f0fba695f3f7a43dceda1ec57de26f58a39cc"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CHKFONT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 393,
+        "end_line": 419,
+        "sha256": "35b64ceeb187d9b899c33f41e472adc83d96db02a35fcb1901e953bf7f11e11c"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CMATCH": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1272,
+        "end_line": 1369,
+        "sha256": "eac58899aa541d8e133d49b9af0f98f8e141c1e1b64dfabc013bec41035f3c96"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "COLOR_FROMNAME": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 689,
+        "end_line": 713,
+        "sha256": "e2f6844a8e8442610e837c0508a19ff03a6b3de6e8ba2b84a92a99525e746939"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "COLOR_FROMRGB": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "long",
+        "long",
+        "long"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 715,
+        "end_line": 736,
+        "sha256": "63a08620b00a84f75e778336ed077465a94c8e24c1d8b68f559e985ed62b05fb"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CONVERT": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "Int64",
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2528,
+        "end_line": 2543,
+        "sha256": "f8583ab09d8e7f48b4e101e3dc80537f830582d0128fd2927405447c9b4c0a76"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVABL": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVBASE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVCALLNAME": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 91,
+        "end_line": 132,
+        "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVCFLAG": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVCSTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 134,
+        "end_line": 171,
+        "sha256": "8875f8be062c9b3cb6814501addd5fefd9f618244c298a6537b1035b173971ac"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVEQUIP": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVEXP": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVJUEL": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVMARK": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVMASTERNAME": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 91,
+        "end_line": 132,
+        "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVNAME": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 91,
+        "end_line": 132,
+        "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVNICKNAME": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 91,
+        "end_line": 132,
+        "sha256": "b2fbcaf4fea8b16893c84b78ba7ecde184a6625e30af44b4da3db9b1f2aeaa68"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVRELATION": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CSVTALENT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 173,
+        "end_line": 219,
+        "sha256": "84df028c2e28760b15ce1d3b6f6a36f950dbdd94f1854cd9bb9128ae4c8fc804"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CURRENTALIGN": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 656,
+        "end_line": 673,
+        "sha256": "24ce4b3405d3e181c4227374916285376a209916c4c3da44c4b716a4917cd0ec"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CURRENTREDRAW": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 675,
+        "end_line": 687,
+        "sha256": "8a47365a4c0d20e7c826c8376c5708e7d057ba837ed068a0d8f3128e9630f66d"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ENCODETOUNI": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2600,
+        "end_line": 2635,
+        "sha256": "b2c432f0e138a874e3f6c74de5e212db953f6610aa1a7a32beb0522dc4d3d6cf"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ESCAPE": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2586,
+        "end_line": 2598,
+        "sha256": "1a43f7f6077876a8887ca45fdef310190671847a364f9237b229d53b64b73b1a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "EXISTCSV": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 296,
+        "end_line": 329,
+        "sha256": "0531425b3ab88b9f81e9cccac18d23dcfa29cda5de108c7a0c5e8f5db7f1e214"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "EXPONENT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1141,
+        "end_line": 1162,
+        "sha256": "0262bc39529e2836d87208e5f45c4733e111236690d494060e3439326a896d03"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "FINDCHARA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 221,
+        "end_line": 294,
+        "sha256": "94d0e9f09dfcd7d65fc5d77b99bb28deca0b3076d1e3980768298ed85e241f6e"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "FINDELEMENT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1761,
+        "end_line": 1852,
+        "sha256": "d72b3e5453a0ab769794797e9ca9c009101f4f9f19bac8628e86ab1ca466821a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "FINDLASTCHARA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 221,
+        "end_line": 294,
+        "sha256": "94d0e9f09dfcd7d65fc5d77b99bb28deca0b3076d1e3980768298ed85e241f6e"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "FINDLASTELEMENT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1761,
+        "end_line": 1852,
+        "sha256": "d72b3e5453a0ab769794797e9ca9c009101f4f9f19bac8628e86ab1ca466821a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETBGCOLOR": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 582,
+        "end_line": 598,
+        "sha256": "77493bdb03cb2f119a5e89a05821335b10ed584a6c741a0e2ed70e9f5ccba17d"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETBIT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1601,
+        "end_line": 1631,
+        "sha256": "9b40f620df2e727448bf9e10322b36cc5a956d6415114c317aa7c37d9863975a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETCHARA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 23,
+        "end_line": 72,
+        "sha256": "b60bd3a371f0c2586f46a1fc596371148aae4f5510dab2c554ea16b6f8376bc5"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETCOLOR": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 550,
+        "end_line": 566,
+        "sha256": "4be65809720a26a9ff7acb721d63a1edeadfd9a1f9f91144027f091de2921571"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETCONFIG": {
+      "return_type": null,
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2794,
+        "end_line": 2841,
+        "sha256": "3e9ee4392466985939c3659967857b6e05c7a23e811d0b4bdf7ba3e33f3a9072"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETCONFIGS": {
+      "return_type": null,
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2794,
+        "end_line": 2841,
+        "sha256": "3e9ee4392466985939c3659967857b6e05c7a23e811d0b4bdf7ba3e33f3a9072"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETDEFBGCOLOR": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 582,
+        "end_line": 598,
+        "sha256": "77493bdb03cb2f119a5e89a05821335b10ed584a6c741a0e2ed70e9f5ccba17d"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETDEFCOLOR": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 550,
+        "end_line": 566,
+        "sha256": "4be65809720a26a9ff7acb721d63a1edeadfd9a1f9f91144027f091de2921571"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETEXPLV": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1735,
+        "end_line": 1759,
+        "sha256": "bd630b99234fc93301e7008054ddef5961bd8aafbe94b6243cea52762cd3f8db"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETFOCUSCOLOR": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 568,
+        "end_line": 580,
+        "sha256": "47c32aff524c3f87441ef11cf34815465e8aa2338befdeb15be0ee0e5ccafd54"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETFONT": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 625,
+        "end_line": 637,
+        "sha256": "1d624ff1d77e5c605d15391298ae9d21270c37433f0adcdc0f22a0c1ed8cb8c7"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETLINESTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2655,
+        "end_line": 2670,
+        "sha256": "4d9b0865fbb3279ce32e8e8f36065f7226214d98a8e2310aadc874bcf9a7578b"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETMILLISECOND": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 887,
+        "end_line": 901,
+        "sha256": "ee87ff983952f46ccd0710edc4271f600fcb0e6f970eef877ab5d721b1310bfc"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETNUM": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1633,
+        "end_line": 1671,
+        "sha256": "63f6c59320635a197a6c0eba736bfbbfe35aa4cbfb55a9c9797af164fa115789"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETNUMB": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1673,
+        "end_line": 1707,
+        "sha256": "f777efc23ae84019c733188089370fdf7643bd7566678adb0ddcc905fa7cf9ca"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETPALAMLV": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1709,
+        "end_line": 1733,
+        "sha256": "2e82997ea6c993785bea667c76918e4664a63aff6398e5be8bc4add84be9a1b0"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETSECOND": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 903,
+        "end_line": 917,
+        "sha256": "c4b0bdf8e9a3819c69e96827235aea91f9227604a236200a6a8f203db7904c75"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETSPCHARA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 74,
+        "end_line": 89,
+        "sha256": "5ea4ea9b90c7a94028cca85939b05325c272260a81859064df0687d3c4e682c1"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETSTYLE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 600,
+        "end_line": 623,
+        "sha256": "89151f668e3b4aa16d20b6f58b8ce22484b7aeb61e5d98180979dec89a7948aa"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETTIME": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 852,
+        "end_line": 871,
+        "sha256": "09569f87247ffadf6b29a9ef4fd992da13fbb0cf95b672f389a09148de6cd2c4"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETTIMES": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 873,
+        "end_line": 885,
+        "sha256": "901965595021103e53d1700b8aa94d5342fe1b970af9b4350ca713707ea3627d"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GROUPMATCH": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1371,
+        "end_line": 1418,
+        "sha256": "677bdd09a54ea848377903e90fe880e672b568cfcd6320f463549856e3b03e55"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "HTML_ESCAPE": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2911,
+        "end_line": 2923,
+        "sha256": "867181c33e73a70b710ffa541335c84b9244d1ad52b84631070988866b543a0a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "HTML_TOPLAINTEXT": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2898,
+        "end_line": 2910,
+        "sha256": "a7af6f6b4327e7e360bcfb36f372474d88498202d8bdd1e1a1d8568753930dad"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "INRANGE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64",
+        "Int64",
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1854,
+        "end_line": 1869,
+        "sha256": "566114043f1cb502df40edf67132a567e0adb5ec6ef447db03e2bc0d10a2e945"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "INRANGEARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1871,
+        "end_line": 1944,
+        "sha256": "f8aab45bd99ffad33271b2c5f8b638dad57e774a569eb354e4289c852c7d400b"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "INRANGECARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1871,
+        "end_line": 1944,
+        "sha256": "f8aab45bd99ffad33271b2c5f8b638dad57e774a569eb354e4289c852c7d400b"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ISNUMERIC": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2545,
+        "end_line": 2584,
+        "sha256": "3e118db7d83ae36f644a43ca154044f5ce346fb20bd2bd62cffc21f173bbdedc"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ISSKIP": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 510,
+        "end_line": 522,
+        "sha256": "5d3b85f8a10bf8f2d626c6b697505d6f611970f379f5fb50b847285419d424c7"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "LIMIT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64",
+        "Int64",
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1180,
+        "end_line": 1202,
+        "sha256": "64ead50853332a65114518b2a002141a4adaad39a8d3f9e07bde91f9eafdd1ac"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "LINEISEMPTY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2439,
+        "end_line": 2451,
+        "sha256": "a3085d29f0f12b4f810113890bbc9641d0486e0578f609726d6d6d24a698c04b"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "LOADTEXT": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 4185,
+        "end_line": 4234,
+        "sha256": "d8769ecff8119965b81461b013b34da88ea3cbf6665ab4e0c23fd8317fd4e4ef"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "LOG": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1102,
+        "end_line": 1139,
+        "sha256": "b70e8ed4657e1be9f98f667c4aa06fa9c11d0f3ca97504036a9533fdf095b181"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "LOG10": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1102,
+        "end_line": 1139,
+        "sha256": "b70e8ed4657e1be9f98f667c4aa06fa9c11d0f3ca97504036a9533fdf095b181"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MATCH": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1272,
+        "end_line": 1369,
+        "sha256": "eac58899aa541d8e133d49b9af0f98f8e141c1e1b64dfabc013bec41035f3c96"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MAX": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 975,
+        "end_line": 1025,
+        "sha256": "4825ba369b98088ae639ff16eba48cd83d65da2fd2b36075490bdd8af52ee853"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MAXARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1520,
+        "end_line": 1599,
+        "sha256": "c1a66f4ec1a2a3a7b46a670bbc35c400c62d5923f7f96b3c23be63e7bd2157e8"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MAXCARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1520,
+        "end_line": 1599,
+        "sha256": "c1a66f4ec1a2a3a7b46a670bbc35c400c62d5923f7f96b3c23be63e7bd2157e8"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MESSKIP": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 524,
+        "end_line": 547,
+        "sha256": "f5e1ac868b5a48a1360d99f7a23f5faaa35ca24aff10ccab802d2601c7c05dc3"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MIN": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 975,
+        "end_line": 1025,
+        "sha256": "4825ba369b98088ae639ff16eba48cd83d65da2fd2b36075490bdd8af52ee853"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MINARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1520,
+        "end_line": 1599,
+        "sha256": "c1a66f4ec1a2a3a7b46a670bbc35c400c62d5923f7f96b3c23be63e7bd2157e8"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MINCARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1520,
+        "end_line": 1599,
+        "sha256": "c1a66f4ec1a2a3a7b46a670bbc35c400c62d5923f7f96b3c23be63e7bd2157e8"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MONEYSTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 768,
+        "end_line": 808,
+        "sha256": "c9eef1dc9b49af61bef2b80fc12200e2ef94e25fd40865953eea468750d2b7cf"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "MOUSESKIP": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 524,
+        "end_line": 547,
+        "sha256": "f5e1ac868b5a48a1360d99f7a23f5faaa35ca24aff10ccab802d2601c7c05dc3"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "NOSAMES": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1420,
+        "end_line": 1470,
+        "sha256": "746e652249473f67b5b79205c87782cebbc822efa8416e4f4411bfc05abb45c9"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "POWER": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64",
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1045,
+        "end_line": 1066,
+        "sha256": "3528b40507c4e2ef2588057c9962f8b2debeb022078ae33ee9dc19aeb0fa701c"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "PRINTCLENGTH": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 824,
+        "end_line": 836,
+        "sha256": "6cd484721d032e0eb5b4d9b2ed61406fa04e4bbfaab03c72c26cfe95b0f67671"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "PRINTCPERLINE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 810,
+        "end_line": 822,
+        "sha256": "6eae4a280f77a2b8e1646e5f4da13d9ceb5237c23ba394bb6632a00311162174"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "RAND": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 921,
+        "end_line": 973,
+        "sha256": "99f891e90a1ddb98bf93b0fcd4b0dd27e0378934f708d966b615e00edd035f2b"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "REPLACE": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string",
+        "string",
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2453,
+        "end_line": 2475,
+        "sha256": "32948b1656b2908087ab6906e8965f951d278df44a7158934d4884127d980fe7"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SAVENOS": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 838,
+        "end_line": 850,
+        "sha256": "6f786c8c58febb7337c02678e63649eaedcc131291b1b31523098a88c72364ad"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SAVETEXT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 4130,
+        "end_line": 4181,
+        "sha256": "9b3457efa1d542cbcbcd2b0b8fa2cc15fa268a363ffb61da890f652d3faabd84"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SIGN": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1164,
+        "end_line": 1178,
+        "sha256": "2f701bad4f9301d53e1df826ee1a202077b9d32bfdd83a0dc1c2d06af447e5cf"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SQRT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1068,
+        "end_line": 1083,
+        "sha256": "9ad3e593e999c83c78b8b753eb49d9808e8f7e082c5dd9c5eaf2e6b0512b6ba6"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRCOUNT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string",
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2283,
+        "end_line": 2304,
+        "sha256": "480c73c38c1656f3d6cc3d6b2393e386a81cca0bece8c0ad6a1eb31bd3b7f0d7"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRFIND": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2223,
+        "end_line": 2281,
+        "sha256": "dbb5a5606d5ba644d11b4bc05aea3927bb27066170f2d8fdf5e033cd67582c4a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRFINDU": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2223,
+        "end_line": 2281,
+        "sha256": "dbb5a5606d5ba644d11b4bc05aea3927bb27066170f2d8fdf5e033cd67582c4a"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRFORM": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2672,
+        "end_line": 2725,
+        "sha256": "edaec2463a3cfc910cae16659c43e10148fa5fafec06ed31081f81594bcffd26"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRJOIN": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2727,
+        "end_line": 2792,
+        "sha256": "a480d58c8d5f0b99a4d1fce92d74671eef4d4f044ddb806b5391a1ab3da11616"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRLENS": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2096,
+        "end_line": 2109,
+        "sha256": "988c0c025e41fd098b4206009eb3291547b3a5e63e351f2c0a8b4e7ddfb0f796"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "STRLENSU": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2111,
+        "end_line": 2124,
+        "sha256": "edf70630999007fcbda7f287aea925674a1508ae1f8026e1a036473ebf9dbfbd"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SUBSTRING": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2126,
+        "end_line": 2166,
+        "sha256": "deaea9293fe6dd515e94bcb7a241632bf28d0d2badb34bf4effb3f37eca686a6"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SUBSTRINGU": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2168,
+        "end_line": 2221,
+        "sha256": "b40db80ed84d64152838506d811c800e0cba6cfc378eb7884f67170339e72ba9"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SUMARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1206,
+        "end_line": 1270,
+        "sha256": "28ea8031d6bbd345e6ec4e7f952c0a7330e711d3c88ef9c42f93d02f515b40d4"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "SUMCARRAY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 1206,
+        "end_line": 1270,
+        "sha256": "28ea8031d6bbd345e6ec4e7f952c0a7330e711d3c88ef9c42f93d02f515b40d4"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "TOFULL": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2402,
+        "end_line": 2437,
+        "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "TOHALF": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2402,
+        "end_line": 2437,
+        "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "TOINT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2349,
+        "end_line": 2389,
+        "sha256": "60d236e67b313840005102a650bd10cdbc6f4a6910db101acd8642690ba75911"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "TOLOWER": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2402,
+        "end_line": 2437,
+        "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "TOSTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2306,
+        "end_line": 2347,
+        "sha256": "7492f126dbe92e206749400995945c57044ef5bcc7b56917d43421ab8f7bde06"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "TOUPPER": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2402,
+        "end_line": 2437,
+        "sha256": "abd8067cc244027f33e550493fa51342c5eb5188bd38b91a1365926e6083cc0c"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "UNICODE": {
+      "return_type": "string",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2477,
+        "end_line": 2506,
+        "sha256": "cfa52c4b853321c27d68f3860a47a015632a97f0cd3b2ce13d840875457a571b"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "UNICODEBYTE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2508,
+        "end_line": 2526,
+        "sha256": "0d6841b957511b24b5188d6885f30bd5ab3605a6f950a1ed6656c15bdf05be36"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "VARSIZE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 333,
+        "end_line": 391,
+        "sha256": "58497b5e589f7da597e1480e8609c6f11cb1a7643b81fc8f70f68eb4dcdbabd7"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CHKCHARADATA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "string"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 448,
+        "end_line": 466,
+        "sha256": "ed44e29395262ee5a980689472e479aa47ffd3d721971a74d5e0272ae19a00d9"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "FIND_CHARADATA": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 471,
+        "end_line": 507,
+        "sha256": "b0b32b966e6c8e151e7af4a44cfd4ed19ff8ea7ebf6f4c7b26132db9aa7a45d8"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "HTML_GETPRINTEDSTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2846,
+        "end_line": 2878,
+        "sha256": "b96aec97937c1f10a3d3e6353b63840d8f92d5dcaa50fa39f856a9918c96f9de"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "HTML_POPPRINTINGSTR": {
+      "return_type": "string",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 2880,
+        "end_line": 2896,
+        "sha256": "718577ff8ba9e0d82383206223752402eee97240a3330c2c31e9908cbb232dfa"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETKEY": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 4048,
+        "end_line": 4073,
+        "sha256": "4975a5133bc8038c5fdf2c93132848938db18e013bfae2be98642eeada7cc0f5"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "GETKEYTRIGGERED": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [
+        "Int64"
+      ],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 4048,
+        "end_line": 4073,
+        "sha256": "4975a5133bc8038c5fdf2c93132848938db18e013bfae2be98642eeada7cc0f5"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "ISACTIVE": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 4095,
+        "end_line": 4107,
+        "sha256": "7e781df502f3a9227346645a51c81175b5f5f3142f8b891175f8de225722ba28"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CLIENTWIDTH": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 3287,
+        "end_line": 3306,
+        "sha256": "6a82407b78351f83c5913822e8e3d63bf460e05fcdc976e341da2efc2badc1fd"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    },
+    "CLIENTHEIGHT": {
+      "return_type": "Int64",
+      "fixed_parameter_types": [],
+      "source": {
+        "file": "GameData/Function/Creator.Method.cs",
+        "start_line": 3287,
+        "end_line": 3306,
+        "sha256": "6a82407b78351f83c5913822e8e3d63bf460e05fcdc976e341da2efc2badc1fd"
+      },
+      "source_file_sha256": "e4efac8f8a81734e9cc75f893008dd8d5120e44e3391c44c075a582c0661cf08"
+    }
+  }
+}

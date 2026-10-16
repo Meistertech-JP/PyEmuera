@@ -1,0 +1,215 @@
+{
+  "source": "received r40 Windows captures; no generated native goldens",
+  "run_id": "r40-win-20261013T132804Z",
+  "cases": [
+    {
+      "case_id": "functions",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/functions/native/Analysis.log",
+      "native_sha256": "b030a7733f6323874238a9e5f147054e35b90ffb501c3b59b9a6568acbf74e7b",
+      "native_source_root": "C:\\example\\native-analysis\\functions",
+      "fixture_sha256": {
+        "emuera.config": "4e38b5b704c88e87b0cb04eeb4e0c3a826538bfc5c16888b1fa58f3c4466b8e4",
+        "ERB/Main.ERB": "cf73f8472f20253137e99f87b0da2c8ce7faffcd319e4ca2242682195431a410",
+        "CSV/_fixed.config": "d728475908333e5c7a4c250749b9b5239acd876eb0b667314b628ce9342bcd1c"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "undefined-expressions",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/undefined-expressions/native/Analysis.log",
+      "native_sha256": "f7a7fcc387e5dea2edee486f79799acc34455718177e04b25595536c9dad72cb",
+      "native_source_root": "C:\\example\\native-analysis\\undefined-expressions",
+      "fixture_sha256": {
+        "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+        "ERB/Main.ERB": "5c1ff6f7f5cdb0f577770f6e5c5c8b1a9d56ca9ba0da9bfc57f4b29c310d1599"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "multiple-files",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/multiple-files/native/Analysis.log",
+      "native_sha256": "ac3081a442538c3bcceb070597bb72aa90f6b460890f712c1f1d5a3b8174bfd4",
+      "native_source_root": "C:\\example\\native-analysis\\multiple-files",
+      "fixture_sha256": {
+        "emuera.config": "75689456f03630110d660a60de954502526953403b8a5b921cc4e946b9c50006",
+        "ERB/Z.ERB": "240de841a16fae79d415f220cfdec23dde63384cf699d23dfd64307b8e396677",
+        "ERB/A.ERB": "b78e61215351de136597d5d28529130e0ac7828f7d832b41fb850fce356cebbb",
+        "CSV/_fixed.config": "23bec990293e42083b7599703da4b78ec11661c9ceaec7a41a142f799aec6abc",
+        "ERB/sub/S.ERB": "adc602d83889cd5e009b80165b00d49446703ec24a4d6a63a8a56c885291601b"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "syntax-error",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/syntax-error/native/Analysis.log",
+      "native_sha256": "4815648a0098958a233b8b94c004f549e27dd288e1f12bf961f80d2587764b88",
+      "native_source_root": "C:\\example\\native-analysis\\syntax-error",
+      "fixture_sha256": {
+        "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+        "ERB/Main.ERB": "596fb0a37bb4dae5c5c2480f4eaaa88fead4a6a6d7cebbc97f83a0ae7ac5798b"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "replace-no-game",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/replace-no-game/native/Analysis.log",
+      "native_sha256": "e08c6fa74635927c1b25247f1a43bbc59df87c8a0c581696dd512545e080f50c",
+      "native_source_root": "C:\\example\\native-analysis\\replace-no-game",
+      "fixture_sha256": {
+        "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+        "ERB/Main.ERB": "3e435dfe74a8c5b6242b7b898eba7cea6ecb17be93b26dd86a0eaf73e763d44a",
+        "CSV/_Replace.csv": "d2f6212cfd01314ac0a5289d48bf7da23582ba82cda000e44473e9637e7ce519"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "constant-form",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/constant-form/native/Analysis.log",
+      "native_sha256": "7b65db5b95ebaf79cd3c28e3a66267899bbef6de84fda3995f5c28b96f635487",
+      "native_source_root": "C:\\example\\native-analysis\\constant-form",
+      "fixture_sha256": {
+        "emuera.config": "4e38b5b704c88e87b0cb04eeb4e0c3a826538bfc5c16888b1fa58f3c4466b8e4",
+        "ERB/Main.ERB": "775b729ecdb08e6598f9dfc8892c5fe6971a74e8c5dd07cf818c5024fb4f2244",
+        "CSV/_fixed.config": "c76f29d10e076aaea366b6cdd714d5cefe78255e67ab156fb2cc0afa44dca099"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "leading-label",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/leading-label/native/Analysis.log",
+      "native_sha256": "18c60974ec470201fa98b412b5a1bc718269d5d00be00a7a4fe2d892e91ab7f0",
+      "native_source_root": "C:\\example\\native-analysis\\leading-label",
+      "fixture_sha256": {
+        "emuera.config": "4e38b5b704c88e87b0cb04eeb4e0c3a826538bfc5c16888b1fa58f3c4466b8e4",
+        "ERB/Main.ERB": "c41e0833fbb480f2b0325479e67c06e58de79e48307c933f3cec017d559470a9",
+        "CSV/_fixed.config": "c76f29d10e076aaea366b6cdd714d5cefe78255e67ab156fb2cc0afa44dca099"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "rand-declaration-reject",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/rand-declaration-reject/native-interactive/Analysis.log",
+      "native_sha256": "64b01f71bd2d0215cd23127eb3443b96dee864de97b22cb82b75ea414c39c456",
+      "native_source_root": "C:\\example\\native-analysis\\rand-declaration-reject",
+      "fixture_sha256": {
+        "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+        "ERB/Main.ERB": "7883b4796d0ac814e3756b10e3b6e52890d557926a4c0dc41208058d33c56ce0"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "warnings-analysis",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/warnings-analysis/native/Analysis.log",
+      "native_sha256": "1faafbd43ddb7f4236ef9403a10da437c69c1d15b40761e49a9690a3b2ef8fc6",
+      "native_source_root": "C:\\example\\native-analysis\\warnings-analysis",
+      "fixture_sha256": {
+        "emuera.config": "effc00e68004e0e9f63298dd9c43760962c4cf9cd10ad1c76077e11780a72cad",
+        "ERB/Main.ERB": "3a06ceea126c9c543e617f703506b484dc92769df690442e8f16558228ebb4d8",
+        "CSV/_fixed.config": "2dd14b35416b4ea12b805e54386429f87c131c414915b8dd7084596ac10e5729"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "display-report",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/display-report/native/Analysis.log",
+      "native_sha256": "c3773fd9649eff5715bc56e6068250ece1711c22ad429c9c69535d5a6b818ff7",
+      "native_source_root": "C:\\example\\native-analysis\\display-report",
+      "fixture_sha256": {
+        "emuera.config": "eb77efa2d2f6feb9a0b499c99787b792495afd089f05b92d94fa2e4c30a987a5",
+        "ERB/Vars.ERH": "ef3377baa938fbc34e6b6a68e655ea811bc42557034ca6592d54a62a58e6af00",
+        "ERB/Main.ERB": "b2b56ce8cd96ebafe42198c6a296f55f6cf43a2b82c0556a58bb6245bef47ddf",
+        "CSV/ABL.csv": "1497ee62615a0d34602dc76c4cae31bb5e0dbcf7fe3feb282592c57a939c8dbc",
+        "CSV/Chara0.csv": "43e3e7ba0a34970b618356c2049048d98ddcbd6a3ed6642c9fdcb60b8544a2df",
+        "CSV/_fixed.config": "c8927ad88300c43fc0945193b856a999ee306d574d778d7a9011ecfe9404f492"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "const-array-form",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/const-array-form/native/Analysis.log",
+      "native_sha256": "f675f6e5f8c1c984af5ac91a9d1a9a86bbf4d76d3f4021666b6f3229f4fd7859",
+      "native_source_root": "C:\\example\\native-analysis\\const-array-form",
+      "fixture_sha256": {
+        "emuera.config": "4e38b5b704c88e87b0cb04eeb4e0c3a826538bfc5c16888b1fa58f3c4466b8e4",
+        "ERB/Main.ERB": "67ea72171b719b94445b2a2b890c96898d5f6cf5b9cdd4059195a4d8e1553c17",
+        "CSV/_fixed.config": "c76f29d10e076aaea366b6cdd714d5cefe78255e67ab156fb2cc0afa44dca099"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "config-form",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/config-form/native/Analysis.log",
+      "native_sha256": "d82e9ae29ef6da0738c370daa11924f6755398fc9519421cddd0593a9fd810b7",
+      "native_source_root": "C:\\example\\native-analysis\\config-form",
+      "fixture_sha256": {
+        "emuera.config": "4e38b5b704c88e87b0cb04eeb4e0c3a826538bfc5c16888b1fa58f3c4466b8e4",
+        "ERB/Main.ERB": "25e4201bf4742a2a24692ac69905f210c7b8bef308778facf822dd9048354dcf",
+        "CSV/_fixed.config": "c76f29d10e076aaea366b6cdd714d5cefe78255e67ab156fb2cc0afa44dca099"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "analysis-maxlog",
+      "r40_windows_status": "PASS",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/analysis-maxlog/native/Analysis.log",
+      "native_sha256": "753f99a05e7fe9346c5b5ed5991ddef7fb998f3d6ec291aac46310121d62296f",
+      "native_source_root": "C:\\example\\native-analysis\\analysis-maxlog",
+      "fixture_sha256": {
+        "emuera.config": "b49f4773ceda233b793ddc5f9b6857fc1eea8edd00b9d47424d14b39be2d8bf0",
+        "ERB/Main.ERB": "309f7cd1a7c23be5745a625d20cb391c4d86551310146172e564e309e9def2ce",
+        "CSV/_fixed.config": "c4f994396ab1fe321f163ac84dc984bf18caf0c0e301474d519d755a575b6979"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    },
+    {
+      "case_id": "optional-null-form",
+      "r40_windows_status": "FAIL",
+      "native_evidence": "verification/r41/received_r40/evidence/results/analysis14/optional-null-form/native/Analysis.log",
+      "native_sha256": "8fb1fbe5c7c6b13e6cb459870b4e3799ee5bf14a526f7c65364908845d4b374f",
+      "native_source_root": "C:\\example\\native-analysis\\optional-null-form",
+      "fixture_sha256": {
+        "emuera.config": "4e38b5b704c88e87b0cb04eeb4e0c3a826538bfc5c16888b1fa58f3c4466b8e4",
+        "ERB/Main.ERB": "85208615aadf589c52d11b2cc24c28fd076cf48ff8859880fab0582174740940",
+        "CSV/_fixed.config": "c76f29d10e076aaea366b6cdd714d5cefe78255e67ab156fb2cc0afa44dca099"
+      },
+      "native_execution_stop": "owned_process_terminated_after_log",
+      "native_execution_exit_code": 1
+    }
+  ],
+  "public_derivative": {
+    "schema": "r50-public-analysis-fixture-projection-1",
+    "original_catalog_sha256": "7891122b7a68b88b988b12e25d2a1da24732f358e44067198dc6b60ab0f723b4",
+    "ledger": "R50_PUBLIC_INPUT_DERIVATIVES.json",
+    "scope": "Fourteen existing native captures; exact source-root substitution only. No new native measurement.",
+    "changed_existing_fields": [
+      "cases[*].native_source_root",
+      "cases[*].native_sha256"
+    ],
+    "original_diagnostic_and_fixture_expectations_preserved": true
+  }
+}

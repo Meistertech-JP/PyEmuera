@@ -1,0 +1,205 @@
+{
+  "schema": "r44-unobserved-collation-boundary-probe-1",
+  "inputs": 76,
+  "pairs": 292,
+  "sorts": 1,
+  "groups": [
+    {
+      "case_id": "word-elements-62",
+      "input_indices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "case_id": "word-elements-63",
+      "input_indices": [
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "case_id": "word-elements-64",
+      "input_indices": [
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "case_id": "word-elements-8191",
+      "input_indices": [
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "case_id": "word-elements-8192",
+      "input_indices": [
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    {
+      "case_id": "word-elements-8193",
+      "input_indices": [
+        20,
+        21,
+        22,
+        23
+      ]
+    },
+    {
+      "case_id": "word-elements-16383",
+      "input_indices": [
+        24,
+        25,
+        26,
+        27
+      ]
+    },
+    {
+      "case_id": "word-elements-16384",
+      "input_indices": [
+        28,
+        29,
+        30,
+        31
+      ]
+    },
+    {
+      "case_id": "word-elements-16385",
+      "input_indices": [
+        32,
+        33,
+        34,
+        35
+      ]
+    },
+    {
+      "case_id": "long-symbols-8191",
+      "input_indices": [
+        36,
+        37,
+        38,
+        39
+      ]
+    },
+    {
+      "case_id": "long-symbols-8192",
+      "input_indices": [
+        40,
+        41,
+        42,
+        43
+      ]
+    },
+    {
+      "case_id": "long-symbols-8193",
+      "input_indices": [
+        44,
+        45,
+        46,
+        47
+      ]
+    },
+    {
+      "case_id": "old-jamo-clusters-1",
+      "input_indices": [
+        48,
+        49,
+        50,
+        51
+      ]
+    },
+    {
+      "case_id": "old-jamo-clusters-63",
+      "input_indices": [
+        52,
+        53,
+        54,
+        55
+      ]
+    },
+    {
+      "case_id": "old-jamo-clusters-2048",
+      "input_indices": [
+        56,
+        57,
+        58,
+        59
+      ]
+    },
+    {
+      "case_id": "old-jamo-clusters-2049",
+      "input_indices": [
+        60,
+        61,
+        62,
+        63
+      ]
+    },
+    {
+      "case_id": "context-elements-e3f8-64",
+      "input_indices": [
+        64,
+        65,
+        66
+      ]
+    },
+    {
+      "case_id": "context-elements-e3f8-8192",
+      "input_indices": [
+        67,
+        68,
+        69
+      ]
+    },
+    {
+      "case_id": "context-elements-3400-4096",
+      "input_indices": [
+        70,
+        71,
+        72
+      ]
+    },
+    {
+      "case_id": "context-elements-d800-8192",
+      "input_indices": [
+        73,
+        74,
+        75
+      ]
+    }
+  ],
+  "expected_native_results": null,
+  "native_execution": "UNOBSERVED",
+  "known_local_condition": "The inferred 16bit positional encoding repeats every8192weight elements. This may create local leading/trailing punctuation ties; actual modern CompareTo behavior remains unobserved.",
+  "immutable_prior_plan": "Originalr43 5213inputs/31991pairs plans are retained byteexact separately.",
+  "files": [
+    {
+      "path": "inputs_utf16hex.txt",
+      "bytes": 1989128,
+      "sha256": "5d4cc3f9cde8fe318cf5d097b4233ee9b3179040e313fb739c2506e9bb658aa9"
+    },
+    {
+      "path": "pairs.tsv",
+      "bytes": 1672,
+      "sha256": "8be896fc3fb256524875b0811ffb765fba20b2a777ec20951c9071bf1a1112e6"
+    },
+    {
+      "path": "sort_orders.tsv",
+      "bytes": 234,
+      "sha256": "d437b31f888e746ad345ac0936fc4c11e531580713e774083c2506625eeba491"
+    }
+  ]
+}

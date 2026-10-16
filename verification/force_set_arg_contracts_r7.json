@@ -1,0 +1,398 @@
+{
+  "reference_id": "emuera1824-v24:fd0dd5b83ab3f929e69de0b9af739fa9bf785b6f510b30d11aaf44db35af182a",
+  "source_tree_sha256": "2c40bd1375b96b1194b18406df3de289bf9e709040f36d640a9589991e129be5",
+  "reference_exe_sha256": "14cf28c137c6b76396c4d02fcb23ba6a31132301ce1fe0fcbab8c9f1c29d8964",
+  "new_windows_execution": false,
+  "source_contracts": [
+    {
+      "file": "GameProc/ErbLoader.cs",
+      "start_line": 847,
+      "end_line": 875,
+      "file_sha256": "00d1c7dd1c5a6051e3a413db8ab83e10b5ce788f09c7a34493c59408354d14ab",
+      "span_sha256_utf8": "b8992c32b164cfa69cde9a985bcde024b52f7d0709284ba298b96d686617141f"
+    },
+    {
+      "file": "GameProc/Function/ArgumentParser.cs",
+      "start_line": 14,
+      "end_line": 61,
+      "file_sha256": "52b9125eca0d26db82f3fedafaf7da2855e6cac198bb68e2f866c5f855a7882b",
+      "span_sha256_utf8": "0b890569ac1c93d6c09ceaa331370b97a77c67d756a22b288ba1c177d161242e"
+    },
+    {
+      "file": "GameProc/Function/FunctionIdentifier.cs",
+      "start_line": 563,
+      "end_line": 566,
+      "file_sha256": "027e88946fe95accc7025224956d246721eedb412df7f97df1194929fad3e334",
+      "span_sha256_utf8": "038640346cd584c22c922f501f495d0222122a6a7493070291307372d9a38c5f"
+    }
+  ],
+  "forced_groups": [
+    {
+      "instruction_class": "CALLF_Instruction",
+      "commands": [
+        "CALLF",
+        "CALLFORMF"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 840,
+        "end_line": 852,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "c46d62577fc50923e0edca7a8b0d0ee3e7ede5aeae0b93d136fb6dab0f4f2738"
+      },
+      "registrations": [
+        {
+          "line": 337,
+          "text": "addFunction(FunctionCode.CALLF, new CALLF_Instruction(false));"
+        },
+        {
+          "line": 338,
+          "text": "addFunction(FunctionCode.CALLFORMF, new CALLF_Instruction(true));"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "SIF_Instruction",
+      "commands": [
+        "SIF"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 1804,
+        "end_line": 1813,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "e00c9eea350e4384a356a5c623497e303d5467f41c3842cd84d75ff8a32724ae"
+      },
+      "registrations": [
+        {
+          "line": 229,
+          "text": "addFunction(FunctionCode.SIF, new SIF_Instruction());//一行のみIF"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "ELSEIF_Instruction",
+      "commands": [
+        "ELSE",
+        "ELSEIF",
+        "CASE",
+        "CASEELSE"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 1846,
+        "end_line": 1855,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "8cd67b93cece3b5b6abfbf05e54936180173bef7972f7064768d02f96c25f8b0"
+      },
+      "registrations": [
+        {
+          "line": 231,
+          "text": "addFunction(FunctionCode.ELSE, new ELSEIF_Instruction(FunctionArgType.VOID));"
+        },
+        {
+          "line": 232,
+          "text": "addFunction(FunctionCode.ELSEIF, new ELSEIF_Instruction(FunctionArgType.INT_EXPRESSION));"
+        },
+        {
+          "line": 235,
+          "text": "addFunction(FunctionCode.CASE, new ELSEIF_Instruction(FunctionArgType.CASE), EXTENDED);"
+        },
+        {
+          "line": 236,
+          "text": "addFunction(FunctionCode.CASEELSE, new ELSEIF_Instruction(FunctionArgType.VOID), EXTENDED);"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "ENDIF_Instruction",
+      "commands": [
+        "ENDIF",
+        "ENDSELECT",
+        "DO",
+        "ENDCATCH",
+        "ENDFUNC"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 1863,
+        "end_line": 1872,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "becb6fb1ce0f938e0d83cf9c6ed093c80fb22eb3878744bd5649bb128baa89d7"
+      },
+      "registrations": [
+        {
+          "line": 233,
+          "text": "addFunction(FunctionCode.ENDIF, new ENDIF_Instruction(), METHOD_SAFE);"
+        },
+        {
+          "line": 237,
+          "text": "addFunction(FunctionCode.ENDSELECT, new ENDIF_Instruction(), METHOD_SAFE | EXTENDED);"
+        },
+        {
+          "line": 245,
+          "text": "addFunction(FunctionCode.DO, new ENDIF_Instruction(), METHOD_SAFE | EXTENDED);"
+        },
+        {
+          "line": 349,
+          "text": "addFunction(FunctionCode.ENDCATCH, new ENDIF_Instruction(), METHOD_SAFE | EXTENDED);"
+        },
+        {
+          "line": 354,
+          "text": "addFunction(FunctionCode.ENDFUNC, new ENDIF_Instruction(), EXTENDED);"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "IF_Instruction",
+      "commands": [
+        "IF"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 1875,
+        "end_line": 1884,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "98ba03d4ced892fcdcdf2c4f7ee32ec3a75048bc6b219f19f5405ee30cb68dcb"
+      },
+      "registrations": [
+        {
+          "line": 230,
+          "text": "addFunction(FunctionCode.IF, new IF_Instruction());"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "SELECTCASE_Instruction",
+      "commands": [
+        "SELECTCASE"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 1924,
+        "end_line": 1933,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "dbbe727c2854c24c2682b403f24e493d8dd4946b717ba391e09d606f84748f2e"
+      },
+      "registrations": [
+        {
+          "line": 234,
+          "text": "addFunction(FunctionCode.SELECTCASE, new SELECTCASE_Instruction());"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "LOOP_Instruction",
+      "commands": [
+        "LOOP"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 2219,
+        "end_line": 2228,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "97c69ee24ee3ce69c7db0e2593a91c3b858d0a23c8e8d41efa119c79eb8589c9"
+      },
+      "registrations": [
+        {
+          "line": 246,
+          "text": "addFunction(FunctionCode.LOOP, new LOOP_Instruction());"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "CALL_Instruction",
+      "commands": [
+        "JUMP",
+        "CALL",
+        "TRYJUMP",
+        "TRYCALL",
+        "JUMPFORM",
+        "CALLFORM",
+        "TRYJUMPFORM",
+        "TRYCALLFORM",
+        "TRYCJUMP",
+        "TRYCCALL",
+        "TRYCJUMPFORM",
+        "TRYCCALLFORM"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 2278,
+        "end_line": 2290,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "d2296b05bd5ec46a5ff954a04c8e5ed649ef478253c2cf527765b3b926292799"
+      },
+      "registrations": [
+        {
+          "line": 324,
+          "text": "addFunction(FunctionCode.JUMP, new CALL_Instruction(false, true, false, false));//関数に移動"
+        },
+        {
+          "line": 325,
+          "text": "addFunction(FunctionCode.CALL, new CALL_Instruction(false, false, false, false));//関数に移動。移動元を記憶し、RETURNで帰る。"
+        },
+        {
+          "line": 326,
+          "text": "addFunction(FunctionCode.TRYJUMP, new CALL_Instruction(false, true, true, false), EXTENDED);"
+        },
+        {
+          "line": 327,
+          "text": "addFunction(FunctionCode.TRYCALL, new CALL_Instruction(false, false, true, false), EXTENDED);"
+        },
+        {
+          "line": 328,
+          "text": "addFunction(FunctionCode.JUMPFORM, new CALL_Instruction(true, true, false, false), EXTENDED);"
+        },
+        {
+          "line": 329,
+          "text": "addFunction(FunctionCode.CALLFORM, new CALL_Instruction(true, false, false, false), EXTENDED);"
+        },
+        {
+          "line": 330,
+          "text": "addFunction(FunctionCode.TRYJUMPFORM, new CALL_Instruction(true, true, true, false), EXTENDED);"
+        },
+        {
+          "line": 331,
+          "text": "addFunction(FunctionCode.TRYCALLFORM, new CALL_Instruction(true, false, true, false), EXTENDED);"
+        },
+        {
+          "line": 332,
+          "text": "addFunction(FunctionCode.TRYCJUMP, new CALL_Instruction(false, true, true, true), EXTENDED);"
+        },
+        {
+          "line": 333,
+          "text": "addFunction(FunctionCode.TRYCCALL, new CALL_Instruction(false, false, true, true), EXTENDED);"
+        },
+        {
+          "line": 334,
+          "text": "addFunction(FunctionCode.TRYCJUMPFORM, new CALL_Instruction(true, true, true, true), EXTENDED);"
+        },
+        {
+          "line": 335,
+          "text": "addFunction(FunctionCode.TRYCCALLFORM, new CALL_Instruction(true, false, true, true), EXTENDED);"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "instruction_class": "GOTO_Instruction",
+      "commands": [
+        "GOTO",
+        "TRYGOTO",
+        "GOTOFORM",
+        "TRYGOTOFORM",
+        "TRYCGOTO",
+        "TRYCGOTOFORM"
+      ],
+      "constructor_contract": {
+        "file": "GameProc/Function/Instraction.Child.cs",
+        "start_line": 2407,
+        "end_line": 2420,
+        "file_sha256": "c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4",
+        "span_sha256_utf8": "a02c37472ee3f7d6c06ad9046c63c2673d6ad97a4f3c9fbbd78dc64cae7cdd4d"
+      },
+      "registrations": [
+        {
+          "line": 340,
+          "text": "addFunction(FunctionCode.GOTO, new GOTO_Instruction(false, false, false));//$ラベルへジャンプ"
+        },
+        {
+          "line": 341,
+          "text": "addFunction(FunctionCode.TRYGOTO, new GOTO_Instruction(false, true, false), EXTENDED);"
+        },
+        {
+          "line": 342,
+          "text": "addFunction(FunctionCode.GOTOFORM, new GOTO_Instruction(true, false, false), EXTENDED);"
+        },
+        {
+          "line": 343,
+          "text": "addFunction(FunctionCode.TRYGOTOFORM, new GOTO_Instruction(true, true, false), EXTENDED);"
+        },
+        {
+          "line": 344,
+          "text": "addFunction(FunctionCode.TRYCGOTO, new GOTO_Instruction(false, true, true), EXTENDED);"
+        },
+        {
+          "line": 345,
+          "text": "addFunction(FunctionCode.TRYCGOTOFORM, new GOTO_Instruction(true, true, true), EXTENDED);"
+        }
+      ],
+      "status": "source_verified_runtime_pending"
+    },
+    {
+      "commands": [
+        "FUNC"
+      ],
+      "registration_contract": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "start_line": 353,
+        "end_line": 353,
+        "file_sha256": "027e88946fe95accc7025224956d246721eedb412df7f97df1194929fad3e334",
+        "span_sha256_utf8": "c1620f948c9403f61ffd05c3eccd938b4982f3f06f8353df59465c6cfe642029"
+      },
+      "status": "source_verified_runtime_pending"
+    }
+  ],
+  "forced_commands": [
+    "CALL",
+    "CALLF",
+    "CALLFORM",
+    "CALLFORMF",
+    "CASE",
+    "CASEELSE",
+    "DO",
+    "ELSE",
+    "ELSEIF",
+    "ENDCATCH",
+    "ENDFUNC",
+    "ENDIF",
+    "ENDSELECT",
+    "FUNC",
+    "GOTO",
+    "GOTOFORM",
+    "IF",
+    "JUMP",
+    "JUMPFORM",
+    "LOOP",
+    "SELECTCASE",
+    "SIF",
+    "TRYCALL",
+    "TRYCALLFORM",
+    "TRYCCALL",
+    "TRYCCALLFORM",
+    "TRYCGOTO",
+    "TRYCGOTOFORM",
+    "TRYCJUMP",
+    "TRYCJUMPFORM",
+    "TRYGOTO",
+    "TRYGOTOFORM",
+    "TRYJUMP",
+    "TRYJUMPFORM"
+  ],
+  "loader_condition": "NeedReduceArgumentOnLoad OR AnalysisMode OR IsForceSetArg, subject to selected uncalled-function policy and method safety checks",
+  "runtime_values_executed_at_load": false,
+  "r7_implementation": "NO-mode full ForceSetArg parity not implemented; current compiler structure parsing remains unchanged. YES static analysis retains nonexecuting reducer.",
+  "negative_nonforced": [
+    "POWER",
+    "RETURNF",
+    "REF"
+  ],
+  "limitations": [
+    "constructor-based source inventory is not a runtime proof",
+    "CALL/CALLF destination binding/default argument validation not fully mirrored",
+    "GOTO/IF/CASE/LOOP static errors need new Windows run",
+    "ONCE policy and full static argument parsing pending"
+  ],
+  "status": "source_verified_runtime_pending",
+  "tests": [
+    "ForceInventoryR7"
+  ]
+}

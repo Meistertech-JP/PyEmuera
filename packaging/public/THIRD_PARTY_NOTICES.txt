@@ -1,0 +1,93 @@
+﻿PyEmuera - Third-party notices / 第三者の権利表示
+==============================================================
+
+PyEmuera is an independently written Python program. It is not Emuera,
+not an official Emuera build, and is not endorsed by the authors of Emuera
+or of any game. PyEmuera itself is released under the MIT License (LICENSE.txt).
+The following third-party material is used or referenced. Each item keeps its
+own terms; the MIT License of PyEmuera does not replace them.
+
+PyEmuera は独立して作成された Python プログラムであり、Emuera 本体や公式版ではなく、
+Emuera およびバリアントの作者による承認を受けたものではありません。
+以下の第三者の資料は、それぞれ元の条件に従います。
+
+
+1. Emuera
+--------------------------------------------------------------
+Copyright (C) 2008- MinorShift, 妊）|дﾟ)の中の人
+
+PyEmuera reproduces the behavior of Emuera1824+v24. Parts of PyEmuera
+(for example the save-file codecs, the SFMT-based random number generator,
+command tables and sorting behavior) were written in Python by studying the
+Emuera source code; they are not a clean-room implementation.
+
+The Emuera license notice is reproduced unchanged in licenses/Emuera1824.txt.
+It permits use, modification and redistribution, provided that the origin is
+not misrepresented, altered source is marked as such, and the notice is kept.
+
+Emuera source files in the "source" folder (test data only):
+  The following five files from the Emuera1824+v24 archive are included,
+  unmodified, because tests compare diagnostic texts with the original.
+  They are not part of PyEmuera.pyz and are covered by the Emuera license
+  above, not by PyEmuera's MIT License. A copy of that license is kept next to
+  them as source\tests\fixtures\r44_native_diagnostics\sources\Emuera1824_LICENSE.txt.
+    source\tests\fixtures\r44_native_diagnostics\sources\ArgumentBuilder.cs
+    source\tests\fixtures\r44_native_diagnostics\sources\Creator.Method.cs
+    source\tests\fixtures\r44_native_diagnostics\sources\Resources.resx
+    source\tests\fixtures\r44_native_diagnostics\numeric_sources\Instraction.Child.cs
+    source\tests\fixtures\r44_native_diagnostics\numeric_sources\Process.cs
+  No Emuera executable and no other Emuera source file is included.
+
+Emuera's random number generator (SFMT.cs) credits:
+  Copyright (C) Rei HOBARA 2007, with modifications by MinorShift (2009-07-02).
+  SFMT algorithm by Mutsuo Saito and Makoto Matsumoto.
+
+
+2. Microsoft Reference Source (.NET Framework)
+--------------------------------------------------------------
+Copyright (c) Microsoft Corporation. Licensed under the MIT License.
+
+The sorting code in PyEmuera.pyz (pyemuera/sort1824.py and
+pyemuera/arraysort1824.py) is a Python adaptation of the sorting control flow in
+mscorlib/system/collections/generic/arraysorthelper.cs and list.cs from
+https://github.com/microsoft/referencesource .
+The license text is in licenses/MICROSOFT_REFERENCE_SOURCE_MIT.txt.
+
+
+3. Microsoft Windows Sorting Weight Table
+--------------------------------------------------------------
+Original specification and weight data: Microsoft Corporation.
+
+pyemuera/resources/nls_ja_windows10.bin.zlib (inside PyEmuera.pyz) contains
+the portions of Microsoft's published Windows 10 Sorting Weight Table needed for
+Japanese string comparison on non-Windows systems. It is used under the copyright
+permission of the Microsoft Open Specifications documentation ([MS-UCODEREF]).
+That permission does not grant patent or trademark rights. The notice and the
+source links are in licenses/MS_OPEN_SPECIFICATIONS_NOTICE.txt.
+No Wine or ReactOS code or data is included.
+
+
+4. Unicode / Microsoft CP932 best-fit table
+--------------------------------------------------------------
+pyemuera/specs/cp932_bestfit.json (inside PyEmuera.pyz) is derived from
+https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/bestfit932.txt
+(Microsoft vendor data published by Unicode, Inc.), under the Unicode License V3.
+The license text is in licenses/UNICODE_LICENSE_V3.txt.
+
+
+5. Test and measurement data / テスト用データ
+--------------------------------------------------------------
+The test data in the "source" folder was created for PyEmuera: neutral test
+scripts, their output logs from the original Emuera program, and .NET Framework /
+Windows measurement results. It contains no game text. Sources and references
+are listed in source\SOURCES.md and source\THIRD_PARTY_NOTICES.md.
+
+
+6. Not included / 同梱していないもの
+--------------------------------------------------------------
+This package does not include Emuera.exe, any game, game text, or save data.
+Apart from the five test files listed in section 1, it contains no Emuera
+source code. The sample game in the "sample" folder was written for PyEmuera.
+本パッケージには、Emuera 本体・バリアント・バリアントの文章・セーブデータは含まれていません。
+Emuera のソースコードは、1章に記載したテスト用の5ファイル（無改変）だけを含みます。
+sample フォルダーのサンプルは PyEmuera 用に作成したものです。

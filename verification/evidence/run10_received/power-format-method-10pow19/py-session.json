@@ -1,0 +1,161 @@
+{
+  "format": "PyEmueraSession1",
+  "engine_version": "3.0.0a10.dev4+r10",
+  "language_specs_sha256": "ca3076136c3dcd0f20108a8f99ec5c39aa4593c66fecee5dbed4abdd2dd8e328",
+  "started_at": "2026-10-09T07:45:07.439338+00:00",
+  "finished_at": "2026-10-09T07:45:07.581462+00:00",
+  "environment": {
+    "python": "3.14.6",
+    "os": "Windows",
+    "machine": "AMD64"
+  },
+  "outcome": "error",
+  "gameplay_verified": false,
+  "scope_notice": "Execution evidence for this one path only. A clean run, source hash or instruction coverage is not proof of full-game compatibility.",
+  "seed": 42,
+  "no_wait": true,
+  "sources_sha256": "58da0c70759be935d7814bdc82927c9b032f6467ebfc12922c31e6453f78cf4e",
+  "rng_algorithm": "sfmt19937-emuera1824",
+  "native_rng_policy": "source",
+  "terminal_projection": null,
+  "sources": [
+    {
+      "file": "CSV\\Abl.csv",
+      "sha256": "af7541203401c30c626dc047f9fd1afecc3f0d259d3bec797af148515e301378",
+      "bytes": 13,
+      "encoding": "utf-8-sig"
+    },
+    {
+      "file": "CSV\\Chara7.csv",
+      "sha256": "be74484a0611e244697aac64e5798e8e6449d91d050f90e8772eafc821130b91",
+      "bytes": 93,
+      "encoding": "utf-8-sig"
+    },
+    {
+      "file": "CSV\\Gamebase.csv",
+      "sha256": "9e0ea72fc1fe4894b5deb58d37ab6c83ff73257b034937d59f05f65f32a06b96",
+      "bytes": 79,
+      "encoding": "utf-8-sig"
+    },
+    {
+      "file": "ERB\\Oracle.ERB",
+      "sha256": "5e016960fcb7f20b52e98aef46dc5f3668e180887bb83b155e37ec9337ab3f86",
+      "bytes": 75,
+      "encoding": "utf-8-sig"
+    },
+    {
+      "file": "ERB\\Oracle.ERH",
+      "sha256": "fd33c019d1cba2b197fc1965fffa21481bc097c99ec4244905401f743e38f679",
+      "bytes": 98,
+      "encoding": "utf-8-sig"
+    },
+    {
+      "file": "emuera.config",
+      "sha256": "8b087249331f99f53adebfeb148e67f7694e634f1b0d686d45d15b526bf32be3",
+      "bytes": 95,
+      "encoding": "utf-8-sig"
+    }
+  ],
+  "steps": 4,
+  "input_responses": 0,
+  "wait_instructions": 0,
+  "source_instructions_visited": 3,
+  "compiled_instructions_total": 4,
+  "function_entries": {
+    "SYSTEM_TITLE": 1
+  },
+  "executed_commands": {
+    "OUTPUTLOG": 1,
+    "PRINTFORML": 1,
+    "PRINTL": 1
+  },
+  "history_limit": 128,
+  "history_truncated": false,
+  "recent_execution": [
+    {
+      "event": "state",
+      "step": 1,
+      "location": null,
+      "phase": "TITLE",
+      "state": "TITLE"
+    },
+    {
+      "event": "instruction",
+      "step": 2,
+      "phase": "TITLE",
+      "location": {
+        "file": "ERB\\Oracle.ERB",
+        "line": 2,
+        "function": "SYSTEM_TITLE"
+      },
+      "command": "PRINTL"
+    },
+    {
+      "event": "instruction",
+      "step": 3,
+      "phase": "TITLE",
+      "location": {
+        "file": "ERB\\Oracle.ERB",
+        "line": 3,
+        "function": "SYSTEM_TITLE"
+      },
+      "command": "OUTPUTLOG"
+    },
+    {
+      "event": "instruction",
+      "step": 4,
+      "phase": "TITLE",
+      "location": {
+        "file": "ERB\\Oracle.ERB",
+        "line": 4,
+        "function": "SYSTEM_TITLE"
+      },
+      "command": "PRINTFORML"
+    }
+  ],
+  "error": {
+    "code": "E_ARITH",
+    "message": "Math overflow",
+    "diagnostic_message": "Math overflow",
+    "internal_message": "Math overflow",
+    "file": "ERB\\Oracle.ERB",
+    "line": 4,
+    "stack": [
+      {
+        "function": "SYSTEM_TITLE",
+        "file": "ERB\\Oracle.ERB",
+        "line": 4
+      }
+    ]
+  },
+  "diagnostics": [],
+  "logical_output_capture": {
+    "schema": "pyemuera-outputlog-capture-1",
+    "final_history_sha256": "d73774638a90b1b74f8ed65d9267e427cfcffa9af0cf53e85dfd5bb3db64a381",
+    "final_history_bytes": 14,
+    "records": [
+      {
+        "generation": 1,
+        "file": "output-20261009-164507-562350.txt",
+        "sha256": "d73774638a90b1b74f8ed65d9267e427cfcffa9af0cf53e85dfd5bb3db64a381",
+        "bytes": 14,
+        "step": 3,
+        "location": {
+          "file": "ERB\\Oracle.ERB",
+          "line": 3
+        }
+      }
+    ],
+    "bounded_history": true,
+    "selection_requires_final_history_digest": true
+  },
+  "final_state": {
+    "mutable_state_sha256": "20d10222d0d1d6269d80b59b9ce16323cc8bb280c8f6e47ef460aa406462ed5e",
+    "rng_state_sha256": "79dc36257d4a3ce9a13f9081098d4972b00e8f310242108bb44f27e3d8838471",
+    "steps": 4,
+    "frames_after_run": 0,
+    "method_depth": 0,
+    "scope": "global/static/legacy mutable variables and character count; no unobserved reference-state claim"
+  },
+  "privacy_notice": "Normal PRINT output, variable snapshots, and input text are not collected here. Error messages may quote game prose. File/function names can also be sensitive. Review before sharing. --record-inputs separately includes typed text."
+}

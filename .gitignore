@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pyemuera/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+/htmlcov/
+/.venv/
+/venv/
+/build/
+/dist/
+/*.egg-info/
+/pip-wheel-metadata/
+*.tmp
+*.swp
+*~

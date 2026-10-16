@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "reference": "Emuera 1.8.2.4 source (src1824.zip)",
+  "scope": "Supported subset, not a full compatibility assertion",
+  "syntax": {
+    "BREAK": {
+      "kind": "loop_transfer"
+    },
+    "CASE": {
+      "kind": "marker"
+    },
+    "CASEELSE": {
+      "kind": "marker"
+    },
+    "CATCH": {
+      "kind": "marker"
+    },
+    "CONTINUE": {
+      "kind": "loop_transfer"
+    },
+    "DATA": {
+      "kind": "marker"
+    },
+    "DATAFORM": {
+      "kind": "marker"
+    },
+    "DATALIST": {
+      "kind": "marker"
+    },
+    "DO": {
+      "kind": "loop",
+      "closes_with": "LOOP",
+      "primitive": "_DO"
+    },
+    "ELSE": {
+      "kind": "marker"
+    },
+    "ELSEIF": {
+      "kind": "marker"
+    },
+    "ENDCATCH": {
+      "kind": "marker"
+    },
+    "ENDDATA": {
+      "kind": "marker"
+    },
+    "ENDFUNC": {
+      "kind": "marker"
+    },
+    "ENDIF": {
+      "kind": "marker"
+    },
+    "ENDLIST": {
+      "kind": "marker"
+    },
+    "ENDNOSKIP": {
+      "kind": "marker"
+    },
+    "ENDSELECT": {
+      "kind": "marker"
+    },
+    "FOR": {
+      "kind": "loop",
+      "closes_with": "NEXT",
+      "primitive": "_FOR"
+    },
+    "FUNC": {
+      "kind": "marker"
+    },
+    "IF": {
+      "kind": "conditional",
+      "closes_with": "ENDIF",
+      "branches": [
+        "ELSEIF",
+        "ELSE"
+      ]
+    },
+    "LOOP": {
+      "kind": "marker"
+    },
+    "NEXT": {
+      "kind": "marker"
+    },
+    "NOSKIP": {
+      "kind": "display_guard",
+      "closes_with": "ENDNOSKIP"
+    },
+    "PRINTDATA": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": false,
+      "wait": false,
+      "kana": false,
+      "default_color": false,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 158
+      }
+    },
+    "PRINTDATAD": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": false,
+      "wait": false,
+      "kana": false,
+      "default_color": true,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 164
+      }
+    },
+    "PRINTDATADL": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": true,
+      "wait": false,
+      "kana": false,
+      "default_color": true,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 165
+      }
+    },
+    "PRINTDATADW": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": true,
+      "wait": true,
+      "kana": false,
+      "default_color": true,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 166
+      }
+    },
+    "PRINTDATAK": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": false,
+      "wait": false,
+      "kana": true,
+      "default_color": false,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 161
+      }
+    },
+    "PRINTDATAKL": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": true,
+      "wait": false,
+      "kana": true,
+      "default_color": false,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 162
+      }
+    },
+    "PRINTDATAKW": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": true,
+      "wait": true,
+      "kana": true,
+      "default_color": false,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 163
+      }
+    },
+    "PRINTDATAL": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": true,
+      "wait": false,
+      "kana": false,
+      "default_color": false,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 159
+      }
+    },
+    "PRINTDATAW": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "newline": true,
+      "wait": true,
+      "kana": false,
+      "default_color": false,
+      "source": {
+        "file": "GameProc/Function/FunctionIdentifier.cs",
+        "line": 160
+      }
+    },
+    "REND": {
+      "kind": "marker"
+    },
+    "REPEAT": {
+      "kind": "loop",
+      "closes_with": "REND",
+      "primitive": "_REPEAT"
+    },
+    "SELECTCASE": {
+      "kind": "select",
+      "closes_with": "ENDSELECT",
+      "branches": [
+        "CASE",
+        "CASEELSE"
+      ]
+    },
+    "SIF": {
+      "kind": "single_if"
+    },
+    "STRDATA": {
+      "kind": "data",
+      "closes_with": "ENDDATA",
+      "string_destination": true,
+      "newline": false,
+      "wait": false,
+      "kana": false,
+      "default_color": false
+    },
+    "TRYCALLLIST": {
+      "kind": "try_list",
+      "closes_with": "ENDFUNC"
+    },
+    "TRYCCALL": {
+      "kind": "try_catch",
+      "closes_with": "ENDCATCH",
+      "branches": [
+        "CATCH"
+      ]
+    },
+    "TRYCCALLFORM": {
+      "kind": "try_catch",
+      "closes_with": "ENDCATCH",
+      "branches": [
+        "CATCH"
+      ]
+    },
+    "TRYCGOTO": {
+      "kind": "try_catch",
+      "closes_with": "ENDCATCH",
+      "branches": [
+        "CATCH"
+      ]
+    },
+    "TRYCGOTOFORM": {
+      "kind": "try_catch",
+      "closes_with": "ENDCATCH",
+      "branches": [
+        "CATCH"
+      ]
+    },
+    "TRYCJUMP": {
+      "kind": "try_catch",
+      "closes_with": "ENDCATCH",
+      "branches": [
+        "CATCH"
+      ]
+    },
+    "TRYCJUMPFORM": {
+      "kind": "try_catch",
+      "closes_with": "ENDCATCH",
+      "branches": [
+        "CATCH"
+      ]
+    },
+    "TRYGOTOLIST": {
+      "kind": "try_list",
+      "closes_with": "ENDFUNC"
+    },
+    "TRYJUMPLIST": {
+      "kind": "try_list",
+      "closes_with": "ENDFUNC"
+    },
+    "WEND": {
+      "kind": "marker"
+    },
+    "WHILE": {
+      "kind": "loop",
+      "closes_with": "WEND",
+      "primitive": "_IF"
+    }
+  }
+}

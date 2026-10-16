@@ -1,0 +1,56 @@
+{
+  "schema": "r43-console-neutral-byte-fixtures-1",
+  "source_text_utf16le_sha256": "7ea6befc37374c8d8924dc5098d8b42247ddd45548a4ff9f1f38d330f6a67938",
+  "rows": [
+    {
+      "file": "cp932_lf.ERB",
+      "encoding_at_creation": "cp932",
+      "newlines": "lf",
+      "sha256": "6d7e537ad564833ff00e2decd85424902215fc8e94230856c6b8e5edba897854",
+      "bytes": 29,
+      "derived_neutral_fixture": true,
+      "game_fixture": false,
+      "expected_auto_decoder": "cp932"
+    },
+    {
+      "file": "cp932_crlf.ERB",
+      "encoding_at_creation": "cp932",
+      "newlines": "crlf",
+      "sha256": "86b927324708df35af96a61145245028755b4cf352110e7c535b713641dc500a",
+      "bytes": 32,
+      "derived_neutral_fixture": true,
+      "game_fixture": false,
+      "expected_auto_decoder": "cp932"
+    },
+    {
+      "file": "utf_8_sig_lf.ERB",
+      "encoding_at_creation": "utf-8-sig",
+      "newlines": "lf",
+      "sha256": "832dde0766348bc5dc3eb631bbc3005730261222a5305f62ef81cebad340fcc3",
+      "bytes": 36,
+      "derived_neutral_fixture": true,
+      "game_fixture": false,
+      "expected_auto_decoder": "utf-8-sig"
+    },
+    {
+      "file": "utf_8_sig_crlf.ERB",
+      "encoding_at_creation": "utf-8-sig",
+      "newlines": "crlf",
+      "sha256": "b621a684ee26049b20090234098b5ed9e48aa65e305a371733203beaf4e45a42",
+      "bytes": 39,
+      "derived_neutral_fixture": true,
+      "game_fixture": false,
+      "expected_auto_decoder": "utf-8-sig"
+    },
+    {
+      "file": "utf_8_lf.ERB",
+      "encoding_at_creation": "utf-8",
+      "newlines": "lf",
+      "sha256": "fe5fba7848ae46833bace2b54079d7be20d25938a8f83c3cc39f2ff7b4d8f8e5",
+      "bytes": 33,
+      "derived_neutral_fixture": true,
+      "game_fixture": false,
+      "expected_auto_decoder": "cp932"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "system_labels": [
+    "EVENTFIRST",
+    "EVENTTRAIN",
+    "EVENTSHOP",
+    "EVENTBUY",
+    "EVENTCOM",
+    "EVENTTURNEND",
+    "EVENTCOMEND",
+    "EVENTEND",
+    "SHOW_STATUS",
+    "SHOW_USERCOM",
+    "USERCOM",
+    "SOURCE_CHECK",
+    "CALLTRAINEND",
+    "SHOW_JUEL",
+    "SHOW_ABLUP_SELECT",
+    "USERABLUP",
+    "SHOW_SHOP",
+    "SAVEINFO",
+    "USERSHOP",
+    "EVENTLOAD",
+    "TITLE_LOADGAME",
+    "SYSTEM_AUTOSAVE",
+    "SYSTEM_TITLE",
+    "SYSTEM_LOADEND"
+  ],
+  "system_patterns": [
+    "COM[0-9]+",
+    "COM_ABLE[0-9]+",
+    "ABLUP[0-9]+"
+  ],
+  "source": "GameData/IdentifierDictionary.cs:65-107",
+  "sha256": "f08f454def3847ce33cf396a42c1e6cb83354ad586df439916aa881e6d9977e9"
+}

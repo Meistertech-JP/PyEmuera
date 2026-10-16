@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyemuera-experimental"
+version = "3.0.0b1"
+description = "Experimental text-only independent Python Emuera-compatible subset"
+readme = "README_ja.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE", "licenses/*", "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_MS_NLS_NOTICE_ja.md"]
+dependencies = []
+
+[project.scripts]
+pyemuera = "pyemuera.cli:entrypoint"
+
+[tool.setuptools.packages.find]
+include = ["pyemuera*"]
+
+[tool.setuptools.package-data]
+pyemuera = ["specs/*.json", "resources/*"]

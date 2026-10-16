@@ -1,0 +1,627 @@
+{
+ "schema": "pyemuera-run09-power-format-probe-1",
+ "author": "PyEmuera verification (supplementary .NET Framework probe)",
+ "created_utc": "2026-10-09T04:50:30.080516+00:00",
+ "what": "double.ToString() of the .NET Framework runtime on this machine vs Python renderings of the same double. Supplementary; not a kit case; not an Emuera observation. Emuera itself was observed for one value only (2^63, case power-overflow).",
+ "dotnet": {
+  "clr": "4.0.30319.42000",
+  "ps": "5.1.19041.7725",
+  "framework_release": 533325,
+  "culture": "ja-JP",
+  "decimal_separator": "."
+ },
+ "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+ "exit_code_powershell": 0,
+ "values": 24,
+ "summary": {
+  "dotnet_default_equals_python_str": 0,
+  "dotnet_default_equals_python_format_15G": 24,
+  "dotnet_default_equals_dotnet_G15": 24,
+  "dotnet_default_equals_dotnet_invariant_in_this_culture": 24,
+  "python_math_pow_gives_the_same_double": 24,
+  "values_out_of_int64_range": 24,
+  "not_equal_to_format_15G": []
+ },
+ "rows": [
+  {
+   "x": 2,
+   "y": 63,
+   "double_bits_int64": "4890909195324358656",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "9.22337203685478E+18",
+    "invariant": "9.22337203685478E+18",
+    "de_DE": "9,22337203685478E+18",
+    "R": "9.2233720368547758E+18",
+    "G15": "9.22337203685478E+18",
+    "G17": "9.2233720368547758E+18"
+   },
+   "python": {
+    "str": "9.223372036854776e+18",
+    "repr": "9.223372036854776e+18",
+    "format_.15G": "9.22337203685478E+18",
+    "format_.17G": "9.2233720368547758E+18"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 2,
+   "y": 64,
+   "double_bits_int64": "4895412794951729152",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.84467440737096E+19",
+    "invariant": "1.84467440737096E+19",
+    "de_DE": "1,84467440737096E+19",
+    "R": "1.8446744073709552E+19",
+    "G15": "1.84467440737096E+19",
+    "G17": "1.8446744073709552E+19"
+   },
+   "python": {
+    "str": "1.8446744073709552e+19",
+    "repr": "1.8446744073709552e+19",
+    "format_.15G": "1.84467440737096E+19",
+    "format_.17G": "1.8446744073709552E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": -2,
+   "y": 63,
+   "double_bits_int64": "-4332462841530417152",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "-9.22337203685478E+18",
+    "invariant": "-9.22337203685478E+18",
+    "de_DE": "-9,22337203685478E+18",
+    "R": "-9.2233720368547758E+18",
+    "G15": "-9.22337203685478E+18",
+    "G17": "-9.2233720368547758E+18"
+   },
+   "python": {
+    "str": "-9.223372036854776e+18",
+    "repr": "-9.223372036854776e+18",
+    "format_.15G": "-9.22337203685478E+18",
+    "format_.17G": "-9.2233720368547758E+18"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": -2,
+   "y": 65,
+   "double_bits_int64": "-4323455642275676160",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "-3.68934881474191E+19",
+    "invariant": "-3.68934881474191E+19",
+    "de_DE": "-3,68934881474191E+19",
+    "R": "-3.6893488147419103E+19",
+    "G15": "-3.68934881474191E+19",
+    "G17": "-3.6893488147419103E+19"
+   },
+   "python": {
+    "str": "-3.6893488147419103e+19",
+    "repr": "-3.6893488147419103e+19",
+    "format_.15G": "-3.68934881474191E+19",
+    "format_.17G": "-3.6893488147419103E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 3,
+   "y": 40,
+   "double_bits_int64": "4892341955784418301",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.21576654590569E+19",
+    "invariant": "1.21576654590569E+19",
+    "de_DE": "1,21576654590569E+19",
+    "R": "1.2157665459056929E+19",
+    "G15": "1.21576654590569E+19",
+    "G17": "1.2157665459056929E+19"
+   },
+   "python": {
+    "str": "1.2157665459056929e+19",
+    "repr": "1.2157665459056929e+19",
+    "format_.15G": "1.21576654590569E+19",
+    "format_.17G": "1.2157665459056929E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 3,
+   "y": 41,
+   "double_bits_int64": "4899813735455503868",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "3.64729963771708E+19",
+    "invariant": "3.64729963771708E+19",
+    "de_DE": "3,64729963771708E+19",
+    "R": "3.6472996377170788E+19",
+    "G15": "3.64729963771708E+19",
+    "G17": "3.6472996377170788E+19"
+   },
+   "python": {
+    "str": "3.647299637717079e+19",
+    "repr": "3.647299637717079e+19",
+    "format_.15G": "3.64729963771708E+19",
+    "format_.17G": "3.6472996377170788E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 5,
+   "y": 28,
+   "double_bits_int64": "4899960268460593793",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "3.72529029846191E+19",
+    "invariant": "3.72529029846191E+19",
+    "de_DE": "3,72529029846191E+19",
+    "R": "3.7252902984619139E+19",
+    "G15": "3.72529029846191E+19",
+    "G17": "3.7252902984619139E+19"
+   },
+   "python": {
+    "str": "3.725290298461914e+19",
+    "repr": "3.725290298461914e+19",
+    "format_.15G": "3.72529029846191E+19",
+    "format_.17G": "3.7252902984619139E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 7,
+   "y": 23,
+   "double_bits_int64": "4897591018405433098",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "2.73687473400809E+19",
+    "invariant": "2.73687473400809E+19",
+    "de_DE": "2,73687473400809E+19",
+    "R": "2.7368747340080914E+19",
+    "G15": "2.73687473400809E+19",
+    "G17": "2.7368747340080914E+19"
+   },
+   "python": {
+    "str": "2.7368747340080914e+19",
+    "repr": "2.7368747340080914e+19",
+    "format_.15G": "2.73687473400809E+19",
+    "format_.17G": "2.7368747340080914E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 10,
+   "y": 19,
+   "double_bits_int64": "4891288408196988160",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1E+19",
+    "invariant": "1E+19",
+    "de_DE": "1E+19",
+    "R": "1E+19",
+    "G15": "1E+19",
+    "G17": "1E+19"
+   },
+   "python": {
+    "str": "1e+19",
+    "repr": "1e+19",
+    "format_.15G": "1E+19",
+    "format_.17G": "1E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 10,
+   "y": 20,
+   "double_bits_int64": "4906019910204099648",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1E+20",
+    "invariant": "1E+20",
+    "de_DE": "1E+20",
+    "R": "1E+20",
+    "G15": "1E+20",
+    "G17": "1E+20"
+   },
+   "python": {
+    "str": "1e+20",
+    "repr": "1e+20",
+    "format_.15G": "1E+20",
+    "format_.17G": "1E+20"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 10,
+   "y": 22,
+   "double_bits_int64": "4936209963552724370",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1E+22",
+    "invariant": "1E+22",
+    "de_DE": "1E+22",
+    "R": "1E+22",
+    "G15": "1E+22",
+    "G17": "1E+22"
+   },
+   "python": {
+    "str": "1e+22",
+    "repr": "1e+22",
+    "format_.15G": "1E+22",
+    "format_.17G": "1E+22"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 10,
+   "y": 23,
+   "double_bits_int64": "4950912855330343671",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1E+23",
+    "invariant": "1E+23",
+    "de_DE": "1E+23",
+    "R": "1.0000000000000001E+23",
+    "G15": "1E+23",
+    "G17": "1.0000000000000001E+23"
+   },
+   "python": {
+    "str": "1.0000000000000001e+23",
+    "repr": "1.0000000000000001e+23",
+    "format_.15G": "1E+23",
+    "format_.17G": "1.0000000000000001E+23"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 2,
+   "y": 100,
+   "double_bits_int64": "5057542381537067008",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.26765060022823E+30",
+    "invariant": "1.26765060022823E+30",
+    "de_DE": "1,26765060022823E+30",
+    "R": "1.2676506002282294E+30",
+    "G15": "1.26765060022823E+30",
+    "G17": "1.2676506002282294E+30"
+   },
+   "python": {
+    "str": "1.2676506002282294e+30",
+    "repr": "1.2676506002282294e+30",
+    "format_.15G": "1.26765060022823E+30",
+    "format_.17G": "1.2676506002282294E+30"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 2,
+   "y": 1023,
+   "double_bits_int64": "9214364837600034816",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "8.98846567431158E+307",
+    "invariant": "8.98846567431158E+307",
+    "de_DE": "8,98846567431158E+307",
+    "R": "8.98846567431158E+307",
+    "G15": "8.98846567431158E+307",
+    "G17": "8.9884656743115795E+307"
+   },
+   "python": {
+    "str": "8.98846567431158e+307",
+    "repr": "8.98846567431158e+307",
+    "format_.15G": "8.98846567431158E+307",
+    "format_.17G": "8.9884656743115795E+307"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 10,
+   "y": 308,
+   "double_bits_int64": "9214871658872686752",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1E+308",
+    "invariant": "1E+308",
+    "de_DE": "1E+308",
+    "R": "1E+308",
+    "G15": "1E+308",
+    "G17": "1E+308"
+   },
+   "python": {
+    "str": "1e+308",
+    "repr": "1e+308",
+    "format_.15G": "1E+308",
+    "format_.17G": "1E+308"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 9,
+   "y": 20,
+   "double_bits_int64": "4892341955784418301",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.21576654590569E+19",
+    "invariant": "1.21576654590569E+19",
+    "de_DE": "1,21576654590569E+19",
+    "R": "1.2157665459056929E+19",
+    "G15": "1.21576654590569E+19",
+    "G17": "1.2157665459056929E+19"
+   },
+   "python": {
+    "str": "1.2157665459056929e+19",
+    "repr": "1.2157665459056929e+19",
+    "format_.15G": "1.21576654590569E+19",
+    "format_.17G": "1.2157665459056929E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 11,
+   "y": 19,
+   "double_bits_int64": "4902878504234982881",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "6.11590904484145E+19",
+    "invariant": "6.11590904484145E+19",
+    "de_DE": "6,11590904484145E+19",
+    "R": "6.1159090448414548E+19",
+    "G15": "6.11590904484145E+19",
+    "G17": "6.1159090448414548E+19"
+   },
+   "python": {
+    "str": "6.115909044841455e+19",
+    "repr": "6.115909044841455e+19",
+    "format_.15G": "6.11590904484145E+19",
+    "format_.17G": "6.1159090448414548E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 13,
+   "y": 18,
+   "double_bits_int64": "4906780127913569704",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.12455406951957E+20",
+    "invariant": "1.12455406951957E+20",
+    "de_DE": "1,12455406951957E+20",
+    "R": "1.124554069519574E+20",
+    "G15": "1.12455406951957E+20",
+    "G17": "1.124554069519574E+20"
+   },
+   "python": {
+    "str": "1.124554069519574e+20",
+    "repr": "1.124554069519574e+20",
+    "format_.15G": "1.12455406951957E+20",
+    "format_.17G": "1.124554069519574E+20"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 15,
+   "y": 17,
+   "double_bits_int64": "4905929952033670776",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "9.85261253356934E+19",
+    "invariant": "9.85261253356934E+19",
+    "de_DE": "9,85261253356934E+19",
+    "R": "9.8526125335693361E+19",
+    "G15": "9.85261253356934E+19",
+    "G17": "9.8526125335693361E+19"
+   },
+   "python": {
+    "str": "9.852612533569336e+19",
+    "repr": "9.852612533569336e+19",
+    "format_.15G": "9.85261253356934E+19",
+    "format_.17G": "9.8526125335693361E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 123456789,
+   "y": 3,
+   "double_bits_int64": "4969976580094957744",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.88167637178915E+24",
+    "invariant": "1.88167637178915E+24",
+    "de_DE": "1,88167637178915E+24",
+    "R": "1.8816763717891548E+24",
+    "G15": "1.88167637178915E+24",
+    "G17": "1.8816763717891548E+24"
+   },
+   "python": {
+    "str": "1.8816763717891548e+24",
+    "repr": "1.8816763717891548e+24",
+    "format_.15G": "1.88167637178915E+24",
+    "format_.17G": "1.8816763717891548E+24"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 99999,
+   "y": 5,
+   "double_bits_int64": "4981133968291488385",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "9.9995000099999E+24",
+    "invariant": "9.9995000099999E+24",
+    "de_DE": "9,9995000099999E+24",
+    "R": "9.9995000099999E+24",
+    "G15": "9.9995000099999E+24",
+    "G17": "9.9995000099999E+24"
+   },
+   "python": {
+    "str": "9.9995000099999e+24",
+    "repr": "9.9995000099999e+24",
+    "format_.15G": "9.9995000099999E+24",
+    "format_.17G": "9.9995000099999E+24"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 3037000500,
+   "y": 2,
+   "double_bits_int64": "4890909195324429688",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "9.22337203700025E+18",
+    "invariant": "9.22337203700025E+18",
+    "de_DE": "9,22337203700025E+18",
+    "R": "9.22337203700025E+18",
+    "G15": "9.22337203700025E+18",
+    "G17": "9.2233720370002493E+18"
+   },
+   "python": {
+    "str": "9.22337203700025e+18",
+    "repr": "9.22337203700025e+18",
+    "format_.15G": "9.22337203700025E+18",
+    "format_.17G": "9.2233720370002493E+18"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 4294967296,
+   "y": 2,
+   "double_bits_int64": "4895412794951729152",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.84467440737096E+19",
+    "invariant": "1.84467440737096E+19",
+    "de_DE": "1,84467440737096E+19",
+    "R": "1.8446744073709552E+19",
+    "G15": "1.84467440737096E+19",
+    "G17": "1.8446744073709552E+19"
+   },
+   "python": {
+    "str": "1.8446744073709552e+19",
+    "repr": "1.8446744073709552e+19",
+    "format_.15G": "1.84467440737096E+19",
+    "format_.17G": "1.8446744073709552E+19"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  },
+  {
+   "x": 1000000007,
+   "y": 3,
+   "double_bits_int64": "5010775143775599593",
+   "out_of_int64_range_on_dotnet": true,
+   "dotnet_framework": {
+    "default": "1.000000021E+27",
+    "invariant": "1.000000021E+27",
+    "de_DE": "1,000000021E+27",
+    "R": "1.0000000210000002E+27",
+    "G15": "1.000000021E+27",
+    "G17": "1.0000000210000002E+27"
+   },
+   "python": {
+    "str": "1.0000000210000002e+27",
+    "repr": "1.0000000210000002e+27",
+    "format_.15G": "1.000000021E+27",
+    "format_.17G": "1.0000000210000002E+27"
+   },
+   "python_math_pow_gives_the_same_double": true,
+   "dotnet_default_equals_python_str": false,
+   "dotnet_default_equals_python_format_15G": true,
+   "dotnet_default_equals_dotnet_G15": true,
+   "dotnet_default_equals_dotnet_invariant": true
+  }
+ ]
+}

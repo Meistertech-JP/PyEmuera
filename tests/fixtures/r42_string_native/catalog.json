@@ -1,0 +1,186 @@
+[
+  {
+    "case_id": "string_equal24",
+    "expected_markers": [
+      "R41_SORT|string_equal24|1",
+      "R41_ROW|0|same|1|10001",
+      "R41_ROW|1|same|22|10022",
+      "R41_ROW|2|same|21|10021",
+      "R41_ROW|3|same|20|10020",
+      "R41_ROW|4|same|19|10019",
+      "R41_ROW|5|same|18|10018",
+      "R41_ROW|6|same|17|10017",
+      "R41_ROW|7|same|16|10016",
+      "R41_ROW|8|same|15|10015",
+      "R41_ROW|9|same|14|10014",
+      "R41_ROW|10|same|13|10013",
+      "R41_ROW|11|same|12|10012",
+      "R41_ROW|12|same|11|10011",
+      "R41_ROW|13|same|10|10010",
+      "R41_ROW|14|same|9|10009",
+      "R41_ROW|15|same|8|10008",
+      "R41_ROW|16|same|7|10007",
+      "R41_ROW|17|same|6|10006",
+      "R41_ROW|18|same|5|10005",
+      "R41_ROW|19|same|4|10004",
+      "R41_ROW|20|same|3|10003",
+      "R41_ROW|21|same|2|10002",
+      "R41_ROW|22|same|23|10023",
+      "R41_ROW|23|same|24|10024"
+    ],
+    "native_log_sha256": "3e28da38f093c5ac93afeaec9c3dc6d104aaa3d289f6257a7727a8e220f0d735",
+    "fixture_hashes": {
+      "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "ERB/Header.ERH": "cd401cffbe84a086fce13fb05cd2ba43efb50c1dbca02fbaffd10c0786bbe18a",
+      "ERB/Main.ERB": "0cac0b2c6ccaac2a1c28477ba140cd3f21a20d9f57c5dc4b763e581a875977cb"
+    },
+    "received_run": "r41win-20261014-022705"
+  },
+  {
+    "case_id": "string_culture16",
+    "expected_markers": [
+      "R41_STRING|16|1",
+      "R41_SROW|0|8|1",
+      "R41_SROW|1|7|１",
+      "R41_SROW|2|1|a",
+      "R41_SROW|3|2|A",
+      "R41_SROW|4|6|Ａ",
+      "R41_SROW|5|15|e",
+      "R41_SROW|6|13|é",
+      "R41_SROW|7|14|é",
+      "R41_SROW|8|5|ｱ",
+      "R41_SROW|9|4|ア",
+      "R41_SROW|10|3|あ",
+      "R41_SROW|11|9|ば",
+      "R41_SROW|12|11|ぱ",
+      "R41_SROW|13|10|ば",
+      "R41_SROW|14|12|ぱ",
+      "R41_SROW|15|16|😀"
+    ],
+    "native_log_sha256": "8447761344cf6000061315464fe8584cc8de50f2354cefe2a75afe177dbe630f",
+    "fixture_hashes": {
+      "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "ERB/Header.ERH": "e24f1dfc6c7762a88c85e72e964bdab77b68569c895724c650bc5fa8e59017d0",
+      "ERB/Main.ERB": "243547a7a2eea6f9afe3b3c5b5280f5bfbd2aaeb380e7b2ae8697d5e51b7a8dd"
+    },
+    "received_run": "r41win-20261014-022705"
+  },
+  {
+    "case_id": "string_culture17",
+    "expected_markers": [
+      "R41_STRING|17|1",
+      "R41_SROW|0|8|1",
+      "R41_SROW|1|7|１",
+      "R41_SROW|2|1|a",
+      "R41_SROW|3|2|A",
+      "R41_SROW|4|6|Ａ",
+      "R41_SROW|5|15|e",
+      "R41_SROW|6|14|é",
+      "R41_SROW|7|13|é",
+      "R41_SROW|8|5|ｱ",
+      "R41_SROW|9|4|ア",
+      "R41_SROW|10|3|あ",
+      "R41_SROW|11|9|ば",
+      "R41_SROW|12|11|ぱ",
+      "R41_SROW|13|10|ば",
+      "R41_SROW|14|12|ぱ",
+      "R41_SROW|15|17|𐐀",
+      "R41_SROW|16|16|😀"
+    ],
+    "native_log_sha256": "5814093d5d0a218bd7866c2b7460814d95791deee5fa0a4f586d1907ebb44eb4",
+    "fixture_hashes": {
+      "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "ERB/Header.ERH": "fc1a5c63992d6d20df79de4a23f9737487db8378f31b8fa48505482c10d15d17",
+      "ERB/Main.ERB": "2af29acdf1c6b147f44ca9274b34df3d968d78dcb8f8b4c26c955d9deb5895de"
+    },
+    "received_run": "r41win-20261014-022705"
+  },
+  {
+    "case_id": "string_culture24",
+    "expected_markers": [
+      "R41_STRING|24|1",
+      "R41_SROW|0|21|!",
+      "R41_SROW|1|20|！",
+      "R41_SROW|2|8|1",
+      "R41_SROW|3|7|１",
+      "R41_SROW|4|1|a",
+      "R41_SROW|5|2|A",
+      "R41_SROW|6|6|Ａ",
+      "R41_SROW|7|15|e",
+      "R41_SROW|8|14|é",
+      "R41_SROW|9|13|é",
+      "R41_SROW|10|22|ß",
+      "R41_SROW|11|23|ss",
+      "R41_SROW|12|24|ü",
+      "R41_SROW|13|19|z",
+      "R41_SROW|14|18|Z",
+      "R41_SROW|15|5|ｱ",
+      "R41_SROW|16|4|ア",
+      "R41_SROW|17|3|あ",
+      "R41_SROW|18|9|ば",
+      "R41_SROW|19|11|ぱ",
+      "R41_SROW|20|10|ば",
+      "R41_SROW|21|12|ぱ",
+      "R41_SROW|22|17|𐐀",
+      "R41_SROW|23|16|😀"
+    ],
+    "native_log_sha256": "3a3b614db8c046d5deea8c12f9488c270c99619ec839d3ae037396898158b551",
+    "fixture_hashes": {
+      "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "ERB/Header.ERH": "b762967cc90df99c7d6906776f01a0459271c0521e546bc958d8339d74221454",
+      "ERB/Main.ERB": "eb94296c1a339aec1fa047eb6f19b562fa25e61a896d5cb8d9965cb5c04b709c"
+    },
+    "received_run": "r41win-20261014-022705"
+  },
+  {
+    "case_id": "string_culture25",
+    "expected_markers": [
+      "R41_STRING|25|1",
+      "R41_SROW|0|21|!",
+      "R41_SROW|1|20|！",
+      "R41_SROW|2|8|1",
+      "R41_SROW|3|7|１",
+      "R41_SROW|4|1|a",
+      "R41_SROW|5|2|A",
+      "R41_SROW|6|6|Ａ",
+      "R41_SROW|7|15|e",
+      "R41_SROW|8|14|é",
+      "R41_SROW|9|13|é",
+      "R41_SROW|10|22|ß",
+      "R41_SROW|11|23|ss",
+      "R41_SROW|12|24|ü",
+      "R41_SROW|13|25|ü",
+      "R41_SROW|14|19|z",
+      "R41_SROW|15|18|Z",
+      "R41_SROW|16|5|ｱ",
+      "R41_SROW|17|4|ア",
+      "R41_SROW|18|3|あ",
+      "R41_SROW|19|9|ば",
+      "R41_SROW|20|11|ぱ",
+      "R41_SROW|21|10|ば",
+      "R41_SROW|22|12|ぱ",
+      "R41_SROW|23|17|𐐀",
+      "R41_SROW|24|16|😀"
+    ],
+    "native_log_sha256": "436578f049a74e8ee312b232615ff9d8f3f610990a72d41be4dfd320f7afa70a",
+    "fixture_hashes": {
+      "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "ERB/Header.ERH": "bf09b0f858d17cebe6c6a6ce1ebbec71907972f49e7d60ce790eca7e0d96f477",
+      "ERB/Main.ERB": "90d20b1088756686fe181fd0de2365658b5c2841156685666253c6b4b732aab4"
+    },
+    "received_run": "r41win-20261014-022705"
+  },
+  {
+    "case_id": "string_empty",
+    "expected_markers": [
+      "R41_EMPTY|0|1|2|3"
+    ],
+    "native_log_sha256": "9991ce920557a611c1b03263929fb6e1565a8094567de7ca377be550398b6725",
+    "fixture_hashes": {
+      "emuera.config": "f08f478f133fa2b1b0887d3a48934138860f3b13be623ecbba453ed85e9a11cc",
+      "ERB/Header.ERH": "d2c0e646bd91409352fbbea8f65fe812d3518d8b832018f84c2efe84cb423751",
+      "ERB/Main.ERB": "299bd44ce6286f45e023b5cdbfbb81ea2c4613802ecd14b85c1878ac8e981f17"
+    },
+    "received_run": "r41win-20261014-022705"
+  }
+]

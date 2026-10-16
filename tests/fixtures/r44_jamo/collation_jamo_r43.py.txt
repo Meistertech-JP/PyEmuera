@@ -1,0 +1,148 @@
+"""Interpret contextual Jamo records without normalizing the input string.
+
+This module owns the L/V/T lookahead and weight emission for the pinned
+Microsoft Windows 10 JAMOSORT data. The portable backend owns level assembly,
+byte arithmetic, caching and the other scripts. Neither module sorts rows.
+
+MS-UCODEREF describes the older transition-table algorithm, but explicitly
+limits it to Windows 7/Server 2008 R2 and earlier. Windows 10 publishes 357
+flat records without those transitions. The modern-profile boundary and old
+cluster rules below are a reconstruction constrained by that public data and
+the received Framework/NLS comparisons, not a verbatim implementation of the
+older pseudocode. See R43_HANGUL_JAMO_COMPATIBILITY_ja.md for its measured scope.
+"""
+
+from dataclasses import dataclass
+from enum import IntEnum
+
+
+class JamoClass(IntEnum):
+    LEADING = 0
+    VOWEL = 1
+    TRAILING = 2
+
+
+LEADING_FILLER = 0x115F
+VOWEL_FILLER = 0x1160
+COMPATIBILITY_FILLER = 0x3164
+FIRST_SYLLABLE = 0xAC00
+SYLLABLES_PER_LEADING = 21 * 28
+
+
+@dataclass(frozen=True)
+class JamoEmission:
+    """One base element and optional primary contextual elements.
+
+    ``context`` begins with the base element's third byte, followed by pairs
+    of (extra-script-member, class weight). ``consumed`` counts original
+    UTF-16 code units; it never counts a normalized or composed string.
+    """
+
+    base: tuple
+    context: bytes = b""
+    consumed: int = 1
+
+    @property
+    def extra_elements(self):
+        return (len(self.context) - 1) // 2 if self.context else 0
+
+
+def jamo_class(code_unit):
+    """Classify the published combining-Jamo ranges, including extensions."""
+    if 0x1100 <= code_unit <= 0x115F or 0xA960 <= code_unit <= 0xA97C:
+        return JamoClass.LEADING
+    if 0x1160 <= code_unit <= 0x11A7 or 0xD7B0 <= code_unit <= 0xD7C6:
+        return JamoClass.VOWEL
+    return JamoClass.TRAILING
+
+
+def _ordered_cluster(units, start, records):
+    """Read at most one L, V and T, stopping at a class reversal/repetition.
+
+    The Windows 10 data has no historical same-class transition records.
+    Repeated leading/vowel/trailing characters therefore retain their own
+    elements, rather than being silently folded into a made-up contraction.
+    Non-Jamo characters, NUL and combining marks also end this lookahead.
+    """
+    cluster = [(units[start], jamo_class(units[start]), records[units[start]])]
+    index = start + 1
+    while index < len(units) and units[index] in records:
+        character = units[index]
+        category = jamo_class(character)
+        if category <= cluster[-1][1]:
+            break
+        cluster.append((character, category, records[character]))
+        index += 1
+    return cluster
+
+
+def _class_weights(cluster):
+    # The first vowel has published XW=3. Missing leading/trailing components
+    # use the minimum legal weight, 2; no key byte is introduced as 0 or 1.
+    weights = [2, 3, 2]
+    for character, category, record in cluster:
+        if character != LEADING_FILLER:
+            weights[category] = record[4]
+    return weights
+
+
+def _context_bytes(weights):
+    # MS-UCODEREF's additional Unicode-weight elements use script 255. The
+    # initial 2 is the base element's third primary byte, not a new element.
+    result = bytearray((2,))
+    for weight in weights:
+        result.extend((255, weight))
+    return bytes(result)
+
+
+def _vowel_boundary(character_weight):
+    script, primary, _, _ = character_weight(COMPATIBILITY_FILLER)
+    return script, primary, 2, 2
+
+
+def _leading_boundary(record, character_weight):
+    # LIndex is the published nearest modern leading index. This is a weight
+    # boundary before its first syllable, not Unicode Hangul composition.
+    first = FIRST_SYLLABLE + record[1] * SYLLABLES_PER_LEADING
+    script, primary, _, _ = character_weight(first)
+    return script, primary - 1, 2, 2
+
+
+def interpret_jamo(units, start, records, character_weight):
+    """Return a table-driven emission for the Jamo starting at ``start``.
+
+    Modern L/V/T characters remain independent: e.g. L+V is not rewritten to
+    a precomposed syllable. An ordered cluster containing a non-filler old
+    record takes the contextual branch. The two filler characters represent
+    absent components and do not, by themselves, trigger that old branch.
+    """
+    cluster = _ordered_cluster(units, start, records)
+    contains_old = any(
+        record[0] and character not in (LEADING_FILLER, VOWEL_FILLER)
+        for character, _, record in cluster
+    )
+    if contains_old and len(cluster) > 1:
+        return JamoEmission(
+            _vowel_boundary(character_weight),
+            _context_bytes(_class_weights(cluster)),
+            len(cluster),
+        )
+
+    character, category, record = cluster[0]
+    if category == JamoClass.LEADING and character != LEADING_FILLER:
+        base = _leading_boundary(record, character_weight)
+        if record[0]:
+            return JamoEmission(base, _context_bytes(_class_weights(cluster[:1])))
+        return JamoEmission(base)
+
+    base = _vowel_boundary(character_weight)
+    if category == JamoClass.TRAILING:
+        base = (*base[:3], 4)
+    weights = _class_weights(cluster[:1])
+    # XW=3 is the first component's neutral position in each Jamo class.
+    # A lone first trailing component distinguishes itself by CW=4 only;
+    # adding a primary context there would reverse its observed ordering
+    # against compatibility filler (CW=7).
+    if character != LEADING_FILLER and record[4] != 3:
+        return JamoEmission(base, _context_bytes(weights))
+    return JamoEmission(base)

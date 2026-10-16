@@ -1,0 +1,26 @@
+{
+  "case_id": "inconsistent31",
+  "profile": {
+    "os": "Windows10 build19045",
+    "current_culture": "ja-JP",
+    "target_framework": ".NETFramework,Version=v4.8",
+    "installed_framework": "4.8.1",
+    "clr": "4.0.30319.42000",
+    "scope": "received Japanese resource text; not all OS/runtime/UI cultures"
+  },
+  "source_run_id": "r41win-20261014-022705",
+  "native_body": "System.ArgumentException:IComparer.Compare() メソッドから矛盾する結果が返されたため、並べ替えできません。値をそれ自体と比較したときに等しい結果にならないか、またはある値を別の値と繰り返し比較したときに異なる結果が生じます。IComparer: 'System.Array+FunctorComparer`1[System.Collections.Generic.KeyValuePair`2[System.Int64,System.Int32]]'。",
+  "native_header": "Main.ERBの96行目で予期しないエラーが発生しました:Emuera",
+  "native_file": "Main.ERB",
+  "native_line": 96,
+  "framework_probe_line": "EXCEPTION|inconsistent31|System.ArgumentException|IComparer.Compare() メソッドから矛盾する結果が返されたため、並べ替えできません。値をそれ自体と比較したときに等しい結果にならないか、またはある値を別の値と繰り返し比較したときに異なる結果が生じます。IComparer: 'System.Array+FunctorComparer`1[System.Collections.Generic.KeyValuePair`2[System.Int64,System.Int32]]'。",
+  "native_hidden_error_variables_rng": "UNOBSERVED",
+  "fixture_hashes": {
+    "ERB/Header.ERH": "31551479191bd5867d8982bedb6e0199af05e971cd065e535fca1174ef8d51f4",
+    "ERB/Main.ERB": "2c8514f8eb8a1786673a4d19fca761ee30b4ef0acee2f22f3d48286af78d0163"
+  },
+  "native_log_sha256": "446a231c8723d7ba6e1894002101e3a9be5d5ae8b334c24a0b80405676561942",
+  "framework_probe_sha256": "9ec9a16d50d802567b677bbfbd09296c9070bd9b3f66bcbf86fb8d958b2c11a0",
+  "framework_probe_partial_line": "PARTIAL|inconsistent31|2:18|1:1|-1:28|-2:3|-1:4|1:5|1:6|2:27|2:20|4611686018427387904:25|-1:10|-2:23|1:12|-2:13|-1:22|-4611686018427387904:8|4611686018427387904:0|4611686018427387904:15|4611686018427387904:2|4611686018427387905:19|4611686018427387905:29|4611686018427387905:21|4611686018427387905:7|4611686018427387905:17|9223372036854775807:16|-9223372036854775808:14|-9223372036854775808:11|-9223372036854775808:9|-9223372036854775808:26|-4611686018427387904:24|-4611686018427387904:30",
+  "framework_probe_size_line": "SIZE|inconsistent31|31|32"
+}
