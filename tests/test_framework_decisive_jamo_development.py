@@ -57,6 +57,29 @@ class FrameworkDecisiveJamoDevelopment(unittest.TestCase):
                 actual = backend.compare(decode(row['left_utf16le_hex']), decode(row['right_utf16le_hex']))
                 self.assertEqual(actual, row['CompareTo_sign'])
 
+    def test_decisive_prefix_custom_string_access_is_not_used(self):
+        class CustomString(str):
+            def __getitem__(self, index):
+                raise AssertionError('custom indexing must not be used by this rule')
+
+        backend = PortableNLSBackend()
+        for left, right in ((CustomString('-\u1100'), '+\u1101'),
+                            ('-\u1100', CustomString('+\u1101'))):
+            with self.subTest(left=type(left), right=type(right)):
+                self.assertIsNone(backend._decisive_prefix_jamo_sign(left, right))
+
+    def test_decisive_prefix_plain_string_subclass_matches_str(self):
+        class PlainString(str):
+            pass
+
+        backend = PortableNLSBackend()
+        for row in self.data['comparisons']:
+            left, right = decode(row['left_utf16le_hex']), decode(row['right_utf16le_hex'])
+            expected = backend._decisive_prefix_jamo_sign(left, right)
+            for a, b in ((PlainString(left), right), (left, PlainString(right)),
+                         (PlainString(left), PlainString(right))):
+                self.assertEqual(backend._decisive_prefix_jamo_sign(a, b), expected)
+
 
 if __name__ == '__main__':
     unittest.main()

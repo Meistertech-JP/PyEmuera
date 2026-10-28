@@ -515,16 +515,17 @@ class PortableNLSBackend:
         comparisons; unsupported states retain the existing comparison path.
         """
         # Keep custom string access/encoding behavior on the existing path.
-        for text in (left, right):
-            kind = type(text)
-            if kind is not str and (
-                kind.__len__ is not str.__len__
-                or kind.__getitem__ is not str.__getitem__
-                or kind.encode is not str.encode
-                or kind.__eq__ is not str.__eq__
-                or kind.__getattribute__ is not str.__getattribute__
-            ):
-                return None
+        if type(left) is not str or type(right) is not str:
+            for text in (left, right):
+                kind = type(text)
+                if kind is not str and (
+                    kind.__len__ is not str.__len__
+                    or kind.__getitem__ is not str.__getitem__
+                    or kind.encode is not str.encode
+                    or kind.__eq__ is not str.__eq__
+                    or kind.__getattribute__ is not str.__getattribute__
+                ):
+                    return None
         if len(left) < 2 or len(right) < 2:
             return None
         la, rb = ord(left[0]), ord(right[0])
