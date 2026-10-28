@@ -1,0 +1,17 @@
+{
+  "structural-development": {
+    "fixture_sha256": "7421774b77e0da3ccdb8f595a2d81febdc80b2e25bf8eb3476ee876f80b55d13",
+    "raw_oracle_sha256": "413b6513d2a7f6fc115ca9093a3d84fbf8ae6226c96af2304bf679455205f610",
+    "directions": 7680
+  },
+  "mixed-nonspace-controls": {
+    "fixture_sha256": "763e6f699decfc4a3d08816d92adb70d768d07e1f15509a4782366a4ed6800d9",
+    "raw_oracle_sha256": "871483926c7163bd92a2a2eaa83f5b58aa934256b7b97e013665d3d57496d4a8",
+    "directions": 124
+  },
+  "kana-context-controls": {
+    "fixture_sha256": "255d5fe2a2a8cf7d9e6f2c6dab1331f403bbb3c73565407c9cd3bbee09770dab",
+    "raw_oracle_sha256": "4e7aa3e1a523baa6b255ae5138b92b054c1465f8d7b01a92e0fb0f366fefa6a1",
+    "directions": 1071
+  }
+}

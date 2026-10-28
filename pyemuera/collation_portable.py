@@ -19,6 +19,7 @@ import struct
 import zlib
 
 from .errors import EraError, Unsupported
+from .collation_direct_jamo import direct_jamo_sign
 from .collation_jamo import (
     JamoClass,
     consume_jamo_cluster,
@@ -413,6 +414,9 @@ class PortableNLSBackend:
         # this fast path, including contextual Jamo strings.
         if left == right:
             return 0
+        stateful = direct_jamo_sign(self, left, right, _utf16_units)
+        if stateful is not None:
+            return stateful
         decisive = self._decisive_prefix_jamo_sign(left, right)
         if decisive is not None:
             return decisive
