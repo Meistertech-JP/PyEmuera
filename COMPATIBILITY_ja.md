@@ -1,6 +1,6 @@
 # 互換性の範囲
 
-対象は PyEmuera 3.0.0 Beta 1（`3.0.0b1`）、参照対象は Emuera1824+v24 です。ベータ版で、すべての Emuera 機能・すべてのバリアントとの完全な互換性は保証しません。
+対象は PyEmuera 3.0.0 Beta 2 候補 B2-RC1（`3.0.0b2.dev1`）、参照対象は Emuera1824+v24 です。ベータ版で、すべての Emuera 機能・すべてのバリアントとの完全な互換性は保証しません。
 
 ## 互換性の根拠の種類
 
@@ -19,22 +19,20 @@ PyEmuera の期待値は、次の種類の根拠から作っています。種�
 ## 文字列の比較と並べ替え
 
 - Windows では OS の照合機能（NLS API、`CompareStringEx`）を使います。
-- それ以外の環境では、Microsoft が公開している Windows 10 の照合データを元にした、`ja-JP`・既定の比較オプションの互換実装（`pyemuera/collation_portable.py`）を使います。二つの文字列を同時に評価し、.NET Framework で観測された比較結果を再現します。Unicode 正規化は行いません。
+- それ以外の環境では、Microsoft が公開している Windows 10 の照合データを元にした、`ja-JP`・既定の比較オプションの互換実装（`pyemuera/collation_portable.py`）を使います。二つの文字列を同時に評価し、測定された .NET Framework の比較結果の再現を目指します。Unicode 正規化は行いません。
 - 文字列の ARRAYSORT は .NET Framework の `Array.Sort` に相当する手順で並べます。FORWARD は比較器をそのまま、BACK は比較の引数を逆にした比較器を使います（昇順の結果を逆順にするのとは異なります）。
 - ARRAYMSORT は .NET Framework の `List.Sort` に相当する手順で並べます。
 - 数値の ARRAYSORT は文字列の照合を使いません。
 
 ### 既知の制限
 
-Windows では OS の文字列照合機能を使用します。それ以外の環境では互換実装を使用します。互換実装では、一部の古ハングル（Old Hangul）・Jamo 文字列を ARRAYSORT または ARRAYMSORT で並べ替えた結果が、本家 Emuera と異なる場合があります。
+固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 対では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。比較の一致は、あらゆる文字列や ARRAYSORT / ARRAYMSORT の並べ替え結果の完全一致を意味しません。Windows では実行環境の NLS を使用するため、環境によって結果が変わる可能性があります。
 
-Known limitation: On non-Windows platforms, rare Old Hangul/Jamo sequences may be ordered differently by the portable ja-JP collation backend. This may affect ARRAYSORT and ARRAYMSORT when sorting strings. Windows uses the native NLS backend.
-
-この制限は、特殊な古ハングル・Jamo の組み合わせ 36,864 対を .NET Framework で比較した測定のうち、1,192 対で互換実装の比較結果が異なったものです。そのほかの照合の測定集合（日本語・英数字・記号・拡張文字などを含む）は、保存した測定結果とすべて一致しています。互換実装の照合規則は、この版で変更していません。
+For 36,864 Jamo comparison pairs on the fixed Windows 10, ja-JP, NLS 0x60305 reference, the portable implementation matched the saved .NET Framework measurements in 36,864/36,864 cases. This does not guarantee complete compatibility outside that set or on other Windows/NLS environments.
 
 ## 確認している範囲
 
-- r51の3,296テストIDを維持し、Beta 1の変更に必要な回帰テストを追加しています。過去版の成績とBeta 1の新規結果は区別します。単体テストの成功は、すべてのバリアントでの互換性を意味しません。
+- r51やBeta 1の試験は過去の記録です。B2-RC1の試験結果とは区別します。単体テストの成功は、すべてのバリアントでの互換性を意味しません。
 - 本家 Emuera で実行した中立的な ERB の結果との比較（言語機能、解析モードの出力、引数、保存、ARRAYSORT の 6 条件と追加 32 条件など）
 - .NET Framework で測定した文字列比較・並べ替えの結果との比較
 - 既存バリアントでの動作確認（下記）

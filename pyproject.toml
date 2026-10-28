@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyemuera-experimental"
-version = "3.0.0b1"
+version = "3.0.0b2.dev1"
 description = "Experimental text-only independent Python Emuera-compatible subset"
 readme = "README_ja.md"
 requires-python = ">=3.10"

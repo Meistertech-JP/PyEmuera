@@ -9,7 +9,7 @@ Emuera専用バリアントが動くeramakerだと思ってください。
 
 フォント描画は本家GUI固有の機能を指し、端末そのもののフォント設定は利用できます。ERHにも対応し、本家 Emuera と同じ評価順序・状態変化・保存・文字出力になることを目標にしています。
 
-この版は **PyEmuera 3.0.0 Beta 1（`3.0.0b1`）** です。ベータ版で、すべての Emuera 機能・すべてのバリアントでの互換性は保証しません。確認できている範囲と、まだ確認していない条件は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) にまとめています。
+この版は **PyEmuera 3.0.0 Beta 2 候補 B2-RC1（`3.0.0b2.dev1`）** です。ベータ版で、すべての Emuera 機能・すべてのバリアントでの互換性は保証しません。確認できている範囲と、まだ確認していない条件は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) にまとめています。
 
 PyEmuera は Emuera の公式版ではなく、Emuera やバリアントの作者による承認を受けたものではありません。
 
@@ -90,13 +90,13 @@ python PyEmuera.pyz "バリアントフォルダー" --save-format emuera-binary
 
 ## 既知の制限
 
-- Windows では OS の文字列照合機能を使います。それ以外の環境では互換実装を使います。互換実装では、一部の古ハングル（Old Hangul）・Jamo 文字列を ARRAYSORT または ARRAYMSORT で並べ替えた結果が、本家 Emuera と異なる場合があります。
+- Windows では OS の文字列照合機能を使います。それ以外の環境では互換実装を使います。固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 対では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。
 - Windows環境で、IMEを使った日本語入力、およびWindows Terminal（ConPTY）上での入力・中断が正常に動作することを確認しています。すべてのIME製品・バージョン・設定の組み合わせを網羅したものではありません。
 - 詳細は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) を参照してください。
 
 ## バリアントを遊ぶだけの場合
 
-公開ZIPの `source` フォルダーは、開発・テスト・ビルド用です。これらを行わない場合は削除して構いません。通常の起動にはZIP直下の `PyEmuera.pyz` と起動用バッチを使用します。ライセンスと第三者の権利表示は残してください。配布物全体のチェックサムは、削除前に照合してください。
+実行用 ZIP とソース用 ZIP は別です。通常の起動には実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使用します。ソース用 ZIP は開発・テスト・ビルドに使います。
 
 ## 関連文書
 

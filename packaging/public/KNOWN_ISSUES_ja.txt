@@ -1,5 +1,5 @@
 ﻿==============================================================
- PyEmuera 3.0.0 Beta 1（3.0.0b1） 既知の制限
+ PyEmuera 3.0.0 Beta 2 候補 B2-RC1（3.0.0b2.dev1） 既知の制限
 ==============================================================
 
 ベータ版のため、次の制限があります。不具合を見つけた場合は、
@@ -49,15 +49,16 @@ HOW_TO_USE_ja.txt の10章の方法で記録を取って報告してください
 
   ・Windows では OS の文字列照合機能を使用します。それ以外の環境では
     互換実装（Windows 10 の日本語の並び順を再現したデータ）を使用します。
-  ・互換実装では、一部の古ハングル（Old Hangul）・Jamo 文字列を ARRAYSORT
-    または ARRAYMSORT で並べ替えた結果が、本家 Emuera と異なる場合があります。
-  ・日本語や英数字の通常の文字列では、確認した範囲で本家と一致しています。
+  ・固定 Windows 10・ja-JP・NLS 0x60305 の Jamo 比較 36,864 対では、
+    互換実装は保存済み .NET Framework 測定と 36,864/36,864 で一致しました。
+    測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。
+    比較の一致は、あらゆる文字列や並べ替え結果の一致を意味しません。
   ・利用者が照合の方式を切り替える設定はありません。
 
-  Known limitation: On non-Windows platforms, rare Old Hangul/Jamo sequences may be
-  ordered differently by the portable ja-JP collation backend. This may affect
-  ARRAYSORT and ARRAYMSORT when sorting strings. Windows uses the native NLS backend.
-
+  The portable implementation matched 36,864/36,864 saved .NET Framework Jamo
+  comparison results for the fixed Windows 10, ja-JP, NLS 0x60305 reference.
+  Complete compatibility outside this set or on other Windows/NLS environments
+  is not guaranteed.
 
 6. 時刻
 
@@ -71,8 +72,8 @@ HOW_TO_USE_ja.txt の10章の方法で記録を取って報告してください
 
   ・Python 3.10 以上が必要です。
   ・r51の過去の記録では、Windows 10のPython 3.12・3.14、LinuxのPython
-    3.10〜3.14で動作を確認しています。Beta 1の新規結果は別のリリース検証記録に
-    保存します。Windows 11、macOS、Python 3.15以降は確認していません。
+    3.10〜3.14で動作を確認しています。これはB2-RC1の全環境再試験ではありません。
+    Windows 11は十分な実機検証が未完了で、macOS、Python 3.15以降は未確認です。
   ・処理速度は本家 Emuera より遅い場合があります。
 
 

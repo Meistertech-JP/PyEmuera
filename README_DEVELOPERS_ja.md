@@ -1,10 +1,10 @@
-# PyEmuera 3.0.0 Beta 1 開発者向けガイド
+# PyEmuera 3.0.0 Beta 2 候補 B2-RC1 開発者向けガイド
 
-このフォルダー（`source/`）には、PyEmuera `3.0.0b1` のソースコード、単体テスト、テスト用データ、ビルド用スクリプト、公開ZIPの生成スクリプトが入っています。一つ上のフォルダーにある `PyEmuera.pyz` は、このソースからビルドしたもので、このフォルダーの `PyEmuera.pyz` と同じファイルです。
+このソース用 ZIP には PyEmuera `3.0.0b2.dev1` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
 
-バリアントを遊ぶだけなら、このフォルダーは削除して構いません。通常の起動には一つ上の `PyEmuera.pyz` と起動用バッチを使います。ライセンスと第三者の権利表示は残してください。一つ上の `README_ja.txt` と `HOW_TO_USE_ja.txt` を見てください。配布物全体の `SHA256SUMS.txt` の照合はsource削除前に行います。削除後はsource内のファイルが欠落として検出されますが、元のマニフェストを書き換える必要はありません。
+バリアントを遊ぶ場合は、実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使います。使い方は実行用 ZIP の `README_ja.txt` と `HOW_TO_USE_ja.txt` を参照してください。
 
-以下のコマンドは、特に断りがなければ、このフォルダー（`source`）で実行します。Windows では `python` の代わりに `py -3` も使えます。
+以下のコマンドは、特に断りがなければ、`pyproject.toml` のあるソースのフォルダーで実行します。Windows では `python` の代わりに `py -3` も使えます。
 
 ## 必要な Python
 
@@ -31,10 +31,10 @@ source/
 │  ├─ r50/native-arraysort/  本家 Emuera で ARRAYSORT を実行したときの原ログ
 │  └─ b1/r51_test_ids.json   r51の3,296テストID（削除・改名の検出用）
 ├─ tools/                 ビルド・テスト・検証用スクリプト（下記）
-├─ examples/smoke/        サンプルバリアント（一つ上の sample と同じ内容。テストでも使用）
+├─ examples/smoke/        サンプルバリアント（テストでも使用）
 ├─ packaging/public/      公開ZIPの利用者向け文書・起動用バッチの原稿と、収録ファイルの選定規則
 ├─ licenses/              第三者のライセンス文書
-├─ PyEmuera.pyz           配布している pyz（一部のテストが実行します）
+├─ PyEmuera.pyz           テスト用 pyz（一部のテストが直接実行します）
 ├─ run_pyemuera.py        ソースから直接起動するためのスクリプト
 ├─ build_zipapp.py        pyz ビルドの互換スクリプト（tools/build_pyz.py と同じ処理）
 ├─ pyproject.toml         パッケージ設定（wheel / sdist / pip 用）
@@ -67,7 +67,7 @@ python run_pyemuera.py examples/smoke --inputs examples/smoke/replay.txt --no-wa
 python tools/run_final_tests_r47.py --pyz PyEmuera.pyz --baseline-ids verification/b1/r51_test_ids.json --out ../test-result/result.json
 ```
 
-- `--pyz` で指定した pyz からエンジンを読み込んでテストします（ソースの `pyemuera/` は使いません）。ソースを変更した場合は、先に pyz をビルドし（次の章）、そのファイルを `--pyz` に指定してください。なお `test_r35_diagnostics` は、このフォルダーの `PyEmuera.pyz` を直接実行します。ソースを変更したときは、ビルドした pyz をこのフォルダーの `PyEmuera.pyz` に上書きしてからテストしてください。
+- `--pyz` で指定した pyz からエンジンを読み込んでテストします（ソースの `pyemuera/` は使いません）。ソースを変更した場合は、先に pyz をビルドし（次の章）、そのファイルを `--pyz` に指定してください。なお `test_r35_diagnostics` は、このフォルダーの `PyEmuera.pyz` を直接実行します。ソースを変更したときは、原本を保管した別の開発用コピーで、直下の `PyEmuera.pyz` と `--pyz` の両方を変更後の pyz に揃えてテストしてください。
 - `--baseline-ids` の一覧にあるテストIDが一つでも見つからない場合は、実行前に停止します（テストの削除や改名を検出するためです）。
 - 結果は `--out` の JSON（全テストID・成否・スキップ理由・失敗の詳細）と、同名の `.log`（詳細なログ）に保存されます。`--out` はこのフォルダーの外を指定することをおすすめします。
 - 画面の最後に要約が表示され、`"successful": true` で終了コード 0 なら全件成功です。失敗・エラーが1件でもあれば終了コードは 1 です。
@@ -88,7 +88,7 @@ Windows のコマンド プロンプトで実行すると、入力処理を検�
 
 ### r51の試験結果（履歴）
 
-以下はr51の3,296件の記録です。Beta 1で新たに実行した結果ではありません。Beta 1はこの3,296テストIDを維持し、56件を追加した3,352件を対象とします。Beta 1の最終実行結果、OS・Python別の集計、全IDの成否は配布物とは別のリリース検証記録に保存します。以下の履歴をBeta 1の再実行結果として扱いません。
+以下はr51の3,296件の履歴です。Beta 1はこの3,296テストIDに56件を追加した3,352件を対象としていました。これらをB2-RC1の再実行結果として扱いません。候補の実行結果、OS・Python別の集計、全IDの成否は候補の検証記録で確認してください。
 
 | 環境 | 対象 | 結果 |
 | --- | --- | --- |
@@ -119,7 +119,7 @@ python tools/build_pyz.py --out ../build/PyEmuera.pyz
 
 - 生成した pyz の SHA-256 が表示されます。
 - ファイルの順序・日時・属性・圧縮条件を固定しているため、同じソースと同一のPython・圧縮実装・ビルド設定では同じバイト列の pyz ができます。pyz に自分自身の SHA-256 や生成日時は書き込みません。
-- このリリースの配布 pyz の SHA-256 は、一つ上のフォルダーの `SHA256SUMS.txt` に記載しています。固定した同一のビルド環境では、このフォルダーから同じ値を再現できます。
+- 配布 pyz の SHA-256 は、実行用 ZIP に付属するチェックサムで確認してください。
 - 圧縮には Python に組み込まれた zlib を使うため、zlib の実装によって圧縮結果（SHA-256）が変わることがあります。r51の履歴では、Linux（Python 3.10〜3.14、zlib 1.3 / 1.3.2）とWindows（Python 3.12、zlib 1.3.1）で同じSHA-256を確認し、Windows Python 3.14（zlib-ng）ではアーカイブのSHA-256が異なる一方、全メンバー内容は同一でした。Beta 1の固定ビルド条件と2つのクリーンディレクトリからの原バイト比較は、別のリリース検証記録に保存します。異なる圧縮環境での原バイト一致は保証しません。
 
 ### pyz に同梱される文書
@@ -162,7 +162,7 @@ python -m build --outdir ../dist
 `../dist` に `.whl`（wheel）と `.tar.gz`（sdist）ができます。
 
 ```console
-python -m pip install ../dist/pyemuera_experimental-3.0.0b1-py3-none-any.whl
+python -m pip install ../dist/pyemuera_experimental-3.0.0b2.dev1-py3-none-any.whl
 ```
 
 インストールした PyEmuera で、文字列の並べ替えが本家の記録と一致するかを確認できます（インストールした仮想環境の Python で実行します。ソースの `pyemuera/` ではなく、インストールされたものを使って確認します）。
@@ -171,19 +171,9 @@ python -m pip install ../dist/pyemuera_experimental-3.0.0b1-py3-none-any.whl
 python tools/verify_arraysort_native.py --installed --out ../arraysort-installed
 ```
 
-## 公開ZIPを作り直す
+## 配布物について
 
-このフォルダーだけで、一般公開用ZIPと同じ構成のZIPを作れます。
-
-```console
-python tools/build_pyz.py --out ../build/PyEmuera.pyz
-python tools/assemble_public.py --pyz ../build/PyEmuera.pyz --out ../public-build
-```
-
-- 収録するファイルの選定規則は `packaging/public/selection.json`、利用者向け文書と起動用バッチの原稿は `packaging/public/` にあります。
-- `--pyz` には、このフォルダーからビルドした pyz を指定します。中身がこのフォルダーのソースと一致しない場合は停止します。
-- テストで作られたファイル（`__pycache__`、`.pyemuera` など）は収録しません。
-- 同じソースと同じ zlib であれば、配布しているZIPと同じバイト列になります（pyz と同じく、zlib の実装が異なると SHA-256 は変わります）。
+実行用 ZIP とソース用 ZIP は別の配布物です。`tools/assemble_public.py` と `packaging/public/selection.json` は従来の単一 ZIP 用であり、分離された候補 ZIP の生成手順ではありません。候補の配布物は、それぞれの内容とチェックサムを確認してください。
 
 ## 補助スクリプト（tools/）
 
@@ -203,7 +193,7 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 ```
 
 - `verify_arraysort_native.py` は、既定の照合（Windows では OS、それ以外では互換実装）と、互換実装を強制した場合の両方を実行し、`summary.json` に実行した OS を記録します。Windows で互換実装を強制した結果は、Linux での実行結果の代わりにはなりません。
-- `replay_new_framework_r49.py` は互換実装を使います。`prefix_alignment` の 1,192 件の不一致は既知の制限（下記）で、そのため終了コードは 1 になります。ほかの測定集合の不一致は 0 件です。
+- `replay_new_framework_r49.py` は互換実装を使います。結果と終了コードは実行した版の記録で確認してください。過去の `prefix_alignment` 1,192 件の不一致を候補の結果として流用しません。
 - `.cs` の測定プログラムは、ビルドやテストには必要ありません。各ファイル冒頭のコメントにコンパイル方法があります。生成した実行ファイルは配布していません。
 
 ## 互換性の検証方針
@@ -215,8 +205,8 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 
 ## 既知の制限
 
-- 文字列の照合は、Windows では OS の NLS API（`CompareStringEx`）を、それ以外では互換実装（`pyemuera/collation_portable.py`、`collation_jamo.py`）を使います。互換実装では、一部の古ハングル・Jamo 文字列を ARRAYSORT または ARRAYMSORT で並べ替えた結果が本家と異なる場合があります（36,864 対の測定のうち 1,192 対）。
-- 互換実装の照合規則は、この版では変更していません。利用者が照合方式を切り替える設定はありません。
+- 文字列の照合は、Windows では OS の NLS API（`CompareStringEx`）を、それ以外では互換実装（`pyemuera/collation_portable.py`、`collation_jamo.py`）を使います。固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 対では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。比較の一致は全ての並べ替え結果の一致を意味しません。
+- 利用者が照合方式を切り替える設定はありません。
 - Windows環境で、IMEを使った日本語入力、およびWindows Terminal（ConPTY）上での入力・中断が正常に動作することを確認しています。すべてのIME製品・バージョン・設定の組み合わせを網羅したものではありません。
 - macOSでの動作は確認していません。
 - 時刻取得処理は固定時計、日付・秒境界、結果書き込み順序を試験しています。`test_r40_flow_commands.R40FlowCommands.test_gettime_component_boundary_and_write_order` と `test_gettime_result_write_failure_prevents_eighth_sample` が対応する試験です。`GETTIMES()`の書式は `test_source_functions_a7.SourceFunctionsA7.test_gettimes_shape` で確認します。本家とPyEmueraの実時計を同期させたすべての境界での厳密な値比較を確認したものではありません（`COMPATIBILITY_ja.md`）。
@@ -232,7 +222,7 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 ## 出典とライセンス
 
 - PyEmuera 本体は MIT License（`LICENSE`）です。
-- 第三者の権利表示は `THIRD_PARTY_NOTICES.md`（このフォルダー）と、一つ上の `THIRD_PARTY_NOTICES.txt` にあります。
+- 第三者の権利表示はソースの `THIRD_PARTY_NOTICES.md` と実行用 ZIP の `THIRD_PARTY_NOTICES.txt` にあります。
 - `tests/fixtures/r44_native_diagnostics/` には、テストで原文と照合するため、Emuera のソースファイル 5 点を改変せずに収録しています。これらは PyEmuera の MIT License ではなく、Emuera のライセンス（`licenses/Emuera1824.txt`）に従います。
 - 照合データ（`pyemuera/resources/`）は Microsoft の公開データを元にしています（`THIRD_PARTY_MS_NLS_NOTICE_ja.md`）。生成に使ったスクリプトはこの配布物に含まれていないため、配布物だけから照合データを作り直すことはできません。
 - 参照した資料は `SOURCES.md` にあります。テストデータにバリアント本体やバリアントの文章は含まれていません。

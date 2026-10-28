@@ -25,17 +25,17 @@ The Emuera license notice is reproduced unchanged in licenses/Emuera1824.txt.
 It permits use, modification and redistribution, provided that the origin is
 not misrepresented, altered source is marked as such, and the notice is kept.
 
-Emuera source files in the "source" folder (test data only):
-  The following five files from the Emuera1824+v24 archive are included,
+Emuera source files in the separately distributed source ZIP (test data only):
+  The following five files from the Emuera1824+v24 archive are in the source ZIP,
   unmodified, because tests compare diagnostic texts with the original.
   They are not part of PyEmuera.pyz and are covered by the Emuera license
   above, not by PyEmuera's MIT License. A copy of that license is kept next to
-  them as source\tests\fixtures\r44_native_diagnostics\sources\Emuera1824_LICENSE.txt.
-    source\tests\fixtures\r44_native_diagnostics\sources\ArgumentBuilder.cs
-    source\tests\fixtures\r44_native_diagnostics\sources\Creator.Method.cs
-    source\tests\fixtures\r44_native_diagnostics\sources\Resources.resx
-    source\tests\fixtures\r44_native_diagnostics\numeric_sources\Instraction.Child.cs
-    source\tests\fixtures\r44_native_diagnostics\numeric_sources\Process.cs
+  them as tests\fixtures\r44_native_diagnostics\sources\Emuera1824_LICENSE.txt.
+    tests\fixtures\r44_native_diagnostics\sources\ArgumentBuilder.cs
+    tests\fixtures\r44_native_diagnostics\sources\Creator.Method.cs
+    tests\fixtures\r44_native_diagnostics\sources\Resources.resx
+    tests\fixtures\r44_native_diagnostics\numeric_sources\Instraction.Child.cs
+    tests\fixtures\r44_native_diagnostics\numeric_sources\Process.cs
   No Emuera executable and no other Emuera source file is included.
 
 Emuera's random number generator (SFMT.cs) credits:
@@ -77,17 +77,17 @@ The license text is in licenses/UNICODE_LICENSE_V3.txt.
 
 5. Test and measurement data / テスト用データ
 --------------------------------------------------------------
-The test data in the "source" folder was created for PyEmuera: neutral test
+The test data in the separately distributed source ZIP was created for PyEmuera: neutral test
 scripts, their output logs from the original Emuera program, and .NET Framework /
 Windows measurement results. It contains no game text. Sources and references
-are listed in source\SOURCES.md and source\THIRD_PARTY_NOTICES.md.
+are listed in the source ZIP in SOURCES.md and THIRD_PARTY_NOTICES.md.
 
 
 6. Not included / 同梱していないもの
 --------------------------------------------------------------
 This package does not include Emuera.exe, any game, game text, or save data.
-Apart from the five test files listed in section 1, it contains no Emuera
-source code. The sample game in the "sample" folder was written for PyEmuera.
+The runtime ZIP contains no Emuera source code. The separate source ZIP
+contains only the five test files listed in section 1. The sample game in the "sample" folder was written for PyEmuera.
 本パッケージには、Emuera 本体・バリアント・バリアントの文章・セーブデータは含まれていません。
-Emuera のソースコードは、1章に記載したテスト用の5ファイル（無改変）だけを含みます。
+実行用ZIPにEmueraのソースコードは含まれません。ソース用ZIPには1章の5ファイルを含みます。
 sample フォルダーのサンプルは PyEmuera 用に作成したものです。

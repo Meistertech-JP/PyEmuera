@@ -287,6 +287,18 @@ class EvidenceTests(Harness):
         allowed=self.command(vm,'--inputs',record,'--allow-replay-mismatch')
         self.assertEqual(allowed.returncode,0,allowed.stderr)
 
+    def test_replay_from_beta1_reports_engine_version_mismatch(self):
+        vm=self.make('@MAIN\nINPUT\nQUIT');inputs=vm.root/'inputs.txt';inputs.write_text('1\n');record=vm.root/'r.json'
+        result=self.command(vm,'--entry','MAIN','--inputs',inputs,'--record-inputs',record)
+        self.assertEqual(result.returncode,0,result.stderr)
+        metadata=json.loads(record.read_text(encoding='utf-8'))
+        metadata['engine_version']='3.0.0b1'
+        record.write_text(json.dumps(metadata,ensure_ascii=False),encoding='utf-8')
+        failed=self.command(vm,'--inputs',record)
+        self.assertNotEqual(failed.returncode,0);self.assertIn('engine version',failed.stderr)
+        allowed=self.command(vm,'--inputs',record,'--allow-replay-mismatch')
+        self.assertEqual(allowed.returncode,0,allowed.stderr)
+
     def test_typed_input_kind_mismatch(self):
         console=Console([{'kind':'wait','text':''}],io.StringIO())
         with self.assertRaises(EraError) as caught:console.input()

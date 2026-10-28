@@ -1,6 +1,6 @@
 # PyEmuera (ぱみゅーら / Pamyura)
 
-**PyEmuera 3.0.0 Beta 1 (`3.0.0b1`)**
+**PyEmuera 3.0.0 Beta 2 candidate B2-RC1 (`3.0.0b2.dev1`)**
 
 [日本語](README.md)
 
@@ -12,9 +12,7 @@ The reference target is **Emuera1824+v24**. ERH files are also supported. PyEmue
 
 ## Download and run
 
-For normal use, visit the [PyEmuera 3.0.0 Beta 1 release](https://github.com/Meistertech-JP/PyEmuera/releases/tag/v3.0.0b1) and **[download PyEmuera-3.0.0b1.zip](https://github.com/Meistertech-JP/PyEmuera/releases/download/v3.0.0b1/PyEmuera-3.0.0b1.zip)**. Extract the entire archive.
-
-The `PyEmuera-3.0.0b1.zip` asset contains the engine, Windows launchers, user guides, a sample, source code, and tests. GitHub's automatically generated `Source code (zip)` / `Source code (tar.gz)` archives are source snapshots for developers.
+B2-RC1 is a Beta 2 candidate. Use the runtime ZIP to play games; source code is provided separately in a source ZIP. Extract the entire runtime ZIP before use. GitHub's automatically generated `Source code (zip)` / `Source code (tar.gz)` archives are source snapshots for developers.
 
 Install Python 3.10 or later separately, then run these commands from the extracted distribution directory:
 
@@ -39,13 +37,12 @@ See `HOW_TO_USE_ja.txt` in the ZIP, or its [repository copy](packaging/public/HO
 | --- | --- |
 | Running games from a pyz, source, or installed package | Python 3.10 or later and a terminal capable of text display and input |
 | Development, the full unit suite, and verification work | Python 3.11 or later |
-| Reproducing the exact Beta 1 archive bytes | Windows, Python 3.12.10, zlib 1.3.1, DEFLATE level 9 |
 
 The engine and unit tests use only the Python standard library. No additional runtime libraries, .NET installation, or runtime downloads are needed. Building a wheel or sdist separately requires `build` and setuptools 77 or later.
 
 However, having Python and a terminal does not guarantee operation in every environment or with every variant. Platform-specific input handling and terminal control may have limitations; unverified environments remain unverified.
 
-Measurements have been made on Windows 10 and Linux. The r51 development history includes game execution on Windows 10 with Python 3.12 and 3.14, and Linux with Python 3.10–3.14. This history does not represent a full Beta 1 rerun on every environment. Python 3.15 and later have not been verified.
+Measurements have been made on Windows 10 and Linux. The r51 development history includes game execution on Windows 10 with Python 3.12 and 3.14, and Linux with Python 3.10–3.14. This history does not represent a full B2-RC1 rerun on every environment. Python 3.15 and later have not been verified.
 
 ### Other platforms
 
@@ -58,7 +55,7 @@ Termux is an example of a runtime environment on Android. This does not mean tha
 
 ## Run from source
 
-The repository root contains the files located under `source/` in the distribution ZIP. Run these commands from the root of your clone:
+The repository contains the source code. Run these commands from the root of your clone:
 
 ```console
 python run_pyemuera.py --version
@@ -69,12 +66,12 @@ python run_pyemuera.py examples/smoke --check
 
 `--check` performs static loading, registration, and declaration checks. Passing it does not prove that a game can be played to completion. Running the sample may create `examples/smoke/.pyemuera/`.
 
-For tests, pyz builds, distribution ZIP reproduction, and Python package builds, use the [GitHub development supplement (Japanese)](DEVELOPING_ON_GITHUB_ja.md). The included `PyEmuera.pyz` is ready to use for testing. The [original developer guide (Japanese)](README_DEVELOPERS_ja.md) assumes the ZIP's `source/` layout; use the supplement's paths when working from a clone.
+For tests, pyz builds, and Python package builds, see the [GitHub development supplement (Japanese)](DEVELOPING_ON_GITHUB_ja.md) and [developer guide (Japanese)](README_DEVELOPERS_ja.md). If you change the source, build the pyz being tested from that same source.
 
 ## Scope and known limitations
 
 - PyEmuera handles logical text output and terminal display. The original GUI's images, backgrounds, audio, mouse interaction, font rendering, and pixel positioning are outside its scope. You can still configure your terminal's own font. Features exclusive to extensions such as EE or EM are also outside the target.
-- Windows uses the OS's native NLS collation APIs. Other platforms use the bundled portable `ja-JP` implementation. Some Old Hangul / Jamo sequences may sort differently from the original in string `ARRAYSORT` and `ARRAYMSORT` operations on the portable backend.
+- Windows uses the OS's native NLS collation APIs. Other platforms use the bundled portable `ja-JP` implementation. For 36,864 Jamo comparison pairs on the fixed Windows 10, ja-JP, NLS 0x60305 reference, the portable implementation matched the saved .NET Framework measurements in 36,864/36,864 cases. This does not guarantee complete compatibility outside that set or on other Windows/NLS environments.
 - Japanese IME input and input/interruption in Windows Terminal (ConPTY) have been checked on Windows, without covering every IME product, version, and configuration.
 - Saves are written under the variant's `.pyemuera/` directory, without overwriting the original Emuera saves. Reading and writing native-format saves does not guarantee complete interoperability for every variable or variant.
 - Time functions have fixed-clock and boundary tests. Exact comparison against synchronized live clocks in both engines at every boundary remains incomplete. Interruption tests have a documented intermittent failure.
@@ -84,7 +81,7 @@ See [Compatibility](COMPATIBILITY_ja.md), [Known Limitations](packaging/public/K
 
 ## Variant verification history
 
-These are **bounded observations from different development revisions**. They are not a rerun of every route on Beta 1 and do not guarantee every branch or complete operation of each variant.
+These are **bounded observations from different development revisions**. They are not a rerun of every route on B2-RC1 and do not guarantee every branch or complete operation of each variant.
 
 | Variant | Observed scope |
 | --- | --- |
@@ -110,7 +107,7 @@ PyEmuera itself uses the [MIT License](LICENSE). Third-party material retains it
 
 For the HOBARA-origin material referenced by `pyemuera/random1824.py`, PyEmuera selects the MIT option offered on [Rei HOBARA's official distribution page](https://www.rei.to/random.html). Copyright (C) Rei HOBARA 2007. The permission, conditions, and disclaimer in the [official MIT notice](https://www.rei.to/MITL.txt) correspond to the identical text reproduced in the accompanying [LICENSE](LICENSE). This relies on HOBARA's own permission and does not replace any third-party terms with PyEmuera's license.
 
-This clarification applies to these exact release artifacts. The copyright notice and permission text are already included in the ZIP's `THIRD_PARTY_NOTICES.txt` and `LICENSE.txt`, their counterparts under `source/`, and the standalone pyz's `THIRD_PARTY_NOTICES.md` and `LICENSE`.
+This clarification applies to these exact Beta 1 release artifacts, not to B2-RC1 hashes. The copyright notice and permission text are already included in the ZIP's `THIRD_PARTY_NOTICES.txt` and `LICENSE.txt`, their counterparts under `source/`, and the standalone pyz's `THIRD_PARTY_NOTICES.md` and `LICENSE`.
 
 | Release artifact | SHA-256 |
 | --- | --- |

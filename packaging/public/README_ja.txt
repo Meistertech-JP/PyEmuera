@@ -1,6 +1,6 @@
 ﻿==============================================================
- PyEmuera 3.0.0 Beta 1（ぱみゅーら）
- 技術バージョン 3.0.0b1
+ PyEmuera 3.0.0 Beta 2 候補 B2-RC1（ぱみゅーら）
+ 技術バージョン 3.0.0b2.dev1
 ==============================================================
 
 PyEmuera は、Emuera 用のバリアント（ERB・CSV で作られたゲーム）を
@@ -11,12 +11,16 @@ PyEmuera は、Emuera 用のバリアント（ERB・CSV で作られたゲーム
 Emuera専用バリアントが動くeramakerだと思ってください。
 
 対象は本家Emuera1824+v24です。対応範囲と既知の制限は、
-同梱の KNOWN_ISSUES_ja.txt と source/COMPATIBILITY_ja.md をご覧ください。
+KNOWN_ISSUES_ja.txt とソース用 ZIP の COMPATIBILITY_ja.md をご覧ください。
 フォント描画は本家GUI固有の描画機能を指し、端末のフォント設定は利用できます。
 
 PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアントの作者とは
 関係ありません。ベータ版です。すべてのバリアントが正しく動くことは
 保証しません。
+
+固定 Windows 10・ja-JP・NLS 0x60305 の Jamo 比較 36,864 対では、
+互換実装は保存済み .NET Framework 測定と 36,864/36,864 で一致しました。
+測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。
 
 
 ■ はじめての方へ
@@ -93,8 +97,6 @@ PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアン�
   THIRD_PARTY_NOTICES.txt 第三者の権利表示
   licenses\               第三者のライセンス文書
   SHA256SUMS.txt          同梱ファイルのチェックサム（SHA-256）
-  source\                 開発者向け：ソースコード・テスト・ビルド用の一式
-                          （遊ぶだけなら不要です。source\README_DEVELOPERS_ja.md）
 
 
 ■ バリアントのファイルとセーブデータ
@@ -105,29 +107,18 @@ PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアン�
   PyEmuera が作るファイルの一覧は HOW_TO_USE_ja.txt の7章にあります。
 
 
-■ バリアントを遊ぶだけの場合
-
-  source フォルダーは、PyEmuera本体の開発・テスト・ビルド用です。
-  これらを行わない場合は、削除して構いません。
-  通常の起動には、ZIP直下の PyEmuera.pyz と起動用バッチを使用します。
-  ライセンスと第三者の権利表示（LICENSE.txt、THIRD_PARTY_NOTICES.txt、
-  licenses フォルダー）は残してください。
-  配布物全体のチェックサムの照合は、source フォルダーを削除する前に行ってください。
-
-
 ■ 開発者の方へ
 
-  source フォルダーに、ソースコード、単体テスト、テスト用データ、
-  PyEmuera.pyz を作り直すためのスクリプトが入っています。
-  テストとビルドの方法は source\README_DEVELOPERS_ja.md を見てください。
+  ソースコード、単体テスト、テスト用データ、ビルド用スクリプトは
+  別のソース用 ZIP にあります。テストとビルドの方法は、その中の
+  README_DEVELOPERS_ja.md を見てください。
   コマンドラインの全オプションは「python PyEmuera.pyz --help」で確認できます。
-
 
 ■ ライセンス
 
   PyEmuera 本体は MIT License です（LICENSE.txt）。
   一部に第三者のデータや、第三者のソースを参考にした実装を含みます。
-  また、source フォルダーのテスト用データには、Emuera のソースファイルが
+  また、ソース用 ZIP のテスト用データには、Emuera のソースファイルが
   5点（無改変）含まれ、それらは Emuera のライセンスに従います。
   詳しくは THIRD_PARTY_NOTICES.txt と licenses フォルダーを見てください。
 
