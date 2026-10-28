@@ -1,6 +1,6 @@
 # 互換性の範囲
 
-対象は PyEmuera 3.0.0 Beta 2 候補 B2-RC1（`3.0.0b2.dev1`）、参照対象は Emuera1824+v24 です。ベータ版で、すべての Emuera 機能・すべてのバリアントとの完全な互換性は保証しません。
+対象は PyEmuera 3.0.0 Beta 2（`3.0.0b2`）、参照対象は Emuera1824+v24 です。ベータ版で、すべての Emuera 機能・すべてのバリアントとの完全な互換性は保証しません。
 
 ## 互換性の根拠の種類
 
@@ -26,13 +26,13 @@ PyEmuera の期待値は、次の種類の根拠から作っています。種�
 
 ### 既知の制限
 
-固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 対では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。比較の一致は、あらゆる文字列や ARRAYSORT / ARRAYMSORT の並べ替え結果の完全一致を意味しません。Windows では実行環境の NLS を使用するため、環境によって結果が変わる可能性があります。
+固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 方向では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。比較の一致は、あらゆる文字列や ARRAYSORT / ARRAYMSORT の並べ替え結果の完全一致を意味しません。Windows では実行環境の NLS を使用するため、環境によって結果が変わる可能性があります。
 
-For 36,864 Jamo comparison pairs on the fixed Windows 10, ja-JP, NLS 0x60305 reference, the portable implementation matched the saved .NET Framework measurements in 36,864/36,864 cases. This does not guarantee complete compatibility outside that set or on other Windows/NLS environments.
+For 36,864 directional Jamo comparisons on the fixed Windows 10, ja-JP, NLS 0x60305 reference, the portable implementation matched the saved .NET Framework measurements in 36,864/36,864 cases. This does not guarantee complete compatibility outside that set or on other Windows/NLS environments.
 
 ## 確認している範囲
 
-- r51やBeta 1の試験は過去の記録です。B2-RC1の試験結果とは区別します。単体テストの成功は、すべてのバリアントでの互換性を意味しません。
+- WindowsとLinuxで比較・テストの検証を行っています。単体テストの成功は、すべてのバリアントでの互換性を意味しません。
 - 本家 Emuera で実行した中立的な ERB の結果との比較（言語機能、解析モードの出力、引数、保存、ARRAYSORT の 6 条件と追加 32 条件など）
 - .NET Framework で測定した文字列比較・並べ替えの結果との比較
 - 既存バリアントでの動作確認（下記）
@@ -57,8 +57,6 @@ Windows環境で、IMEを使った日本語入力、およびWindows Terminal（
 ## 時刻取得処理
 
 `GETTIME`・`GETTIMES`等について、固定時計を使った単体試験、日付・秒の境界条件、時計取得と結果書き込みの順序を検証しています。ただし、本家とPyEmueraの実時計を同期させた、すべての時刻境界での一致を確認したものではありません。
-
-ソース中の対応する試験は、`test_r40_flow_commands.R40FlowCommands.test_gettime_component_boundary_and_write_order`（年・日・秒の境界と書き込み順序）、`test_r40_flow_commands.R40FlowCommands.test_gettime_result_write_failure_prevents_eighth_sample`（結果書き込み失敗時の時計取得回数）、`test_execution_adapter_contracts.ExecutionAdapterContracts.test_gettime_retains_caller_clock_module_and_single_sample`、同クラスの `test_gettime_keeps_numeric_write_when_string_write_fails`（固定時計と副作用の順序）、`test_source_functions_a7.SourceFunctionsA7.test_gettimes_shape`（`GETTIMES()`の書式）です。過去の `flow-gettime-live` の `UNOBSERVED_CLOCK` は、未同期の実時計の厳密な値比較の制約を示す記録であり、時刻取得機能全体が未試験であることを意味しません。
 
 ## まだ確認していないこと
 

@@ -1,6 +1,6 @@
 # Portable direct Jamo comparison
 
-This research implementation targets the pinned Windows 10 Japanese NLS
+The portable implementation targets the pinned Windows 10 Japanese NLS
 profile already shipped with PyEmuera. It does not establish compatibility
 with every Unicode string or with other versions of NLS. The Windows native
 backend, Framework sorting algorithm, and unary sort-key API remain separate.
@@ -11,8 +11,7 @@ backend, Framework sorting algorithm, and unary sort-key API remain separate.
 category-1 unit from the fixed NLS table. The 500-unit category-1 entry set is
 generated from that table and tested exhaustively over the BMP.
 Other strings and string subclasses keep the existing path. Non-Jamo
-nonspacing/separator boundaries use the same state rules, rather than leaving
-the 48 newly measured pre-existing differences on the old path. It uses the
+nonspacing/separator boundaries use the same state rules. The implementation uses the
 existing fixed weight and Jamo tables and Python's standard library only.
 There are no native calls, expected-answer dictionaries, or normalization.
 
@@ -78,14 +77,12 @@ They are evidence references, not addresses used by the implementation.
 
 ## Regression evidence in the source tree
 
-`tests/test_direct_jamo_state.py` keeps the original 36,864-direction fixture
+`tests/test_direct_jamo_state.py` checks the 36,864-direction fixture
 and its hash, checks intermediate mapper/sample observations, and replays
 independent structural, kana, and nonspacing controls. The compact fixtures
 under `tests/fixtures/post_b1_direct` retain all three saved comparison signs
 and their raw Oracle hashes. They are test data, never runtime input.
 
-Use a newly built pyz for acceptance tests; the previously published Beta 1
-pyz cannot test changes to source. The external research ledger records trial
-failures, source/pyz freezes, held-out evaluation, full-suite results, and
-performance measurements separately. A passing development replay alone is
-not a completed release or research acceptance gate.
+Build a pyz from the current source before testing changes. Validation results are scoped to the archived Windows/NLS profile and the
+recorded test populations; passing them does not imply complete equivalence
+for all Windows versions or Unicode strings.

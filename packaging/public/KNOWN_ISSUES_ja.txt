@@ -1,5 +1,5 @@
-﻿==============================================================
- PyEmuera 3.0.0 Beta 2 候補 B2-RC1（3.0.0b2.dev1） 既知の制限
+==============================================================
+ PyEmuera 3.0.0 Beta 2（3.0.0b2） 既知の制限
 ==============================================================
 
 ベータ版のため、次の制限があります。不具合を見つけた場合は、
@@ -36,29 +36,26 @@ HOW_TO_USE_ja.txt の10章の方法で記録を取って報告してください
 
 4. セーブデータ
 
-  ・PyEmuera のセーブは「.pyemuera\saves」に、PyEmuera 専用の形式で保存します。
+  ・既定では「.pyemuera\saves」に PyEmuera 専用の形式で保存します。
+    Emuera 形式を選択した場合の保存先は「.pyemuera\native-saves」です。
   ・Emuera のセーブデータは読み込めますが、すべての変数・すべてのバリアントで
     完全に同じ状態になることは確認されていません。
   ・Emuera 形式での書き出し（--save-format emuera-text / emuera-binary）は、
     Emuera で読み込めることがすべての場合に確認されているわけではありません。
-  ・乱数の状態は、バリアントが乱数を保存・復元する命令を使っている場合にのみ
-    セーブデータと同期します。
+  ・既定の --native-rng source では、乱数の状態はバリアントが乱数を保存・復元する
+    命令を使っている場合に同期します。--native-rng restore は別の動作を選択します。
 
 
 5. 文字列の並べ替え（Linux など Windows 以外）
 
   ・Windows では OS の文字列照合機能を使用します。それ以外の環境では
     互換実装（Windows 10 の日本語の並び順を再現したデータ）を使用します。
-  ・固定 Windows 10・ja-JP・NLS 0x60305 の Jamo 比較 36,864 対では、
+  ・固定 Windows 10・ja-JP・NLS 0x60305 の Jamo 比較 36,864 方向では、
     互換実装は保存済み .NET Framework 測定と 36,864/36,864 で一致しました。
     測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。
     比較の一致は、あらゆる文字列や並べ替え結果の一致を意味しません。
   ・利用者が照合の方式を切り替える設定はありません。
 
-  The portable implementation matched 36,864/36,864 saved .NET Framework Jamo
-  comparison results for the fixed Windows 10, ja-JP, NLS 0x60305 reference.
-  Complete compatibility outside this set or on other Windows/NLS environments
-  is not guaranteed.
 
 6. 時刻
 
@@ -71,8 +68,7 @@ HOW_TO_USE_ja.txt の10章の方法で記録を取って報告してください
 7. 実行環境
 
   ・Python 3.10 以上が必要です。
-  ・r51の過去の記録では、Windows 10のPython 3.12・3.14、LinuxのPython
-    3.10〜3.14で動作を確認しています。これはB2-RC1の全環境再試験ではありません。
+  ・Windows 10とLinux（x86_64）で動作確認しています。
     Windows 11は十分な実機検証が未完了で、macOS、Python 3.15以降は未確認です。
   ・処理速度は本家 Emuera より遅い場合があります。
 

@@ -2,7 +2,7 @@
 
 PyEmuera is a new Python implementation. This file lists the references that were consulted and what each one was used for. It distinguishes public documentation, inspected Emuera source code, and measurements of the original program. A reference listed here does not certify that PyEmuera is correct for every variant. Licensing and attribution are described in `THIRD_PARTY_NOTICES.md`.
 
-No variant, variant text, save file, Emuera executable or complete Emuera source tree is distributed with PyEmuera. The only Emuera source files in the source distribution are five unmodified test fixtures; see `THIRD_PARTY_NOTICES.md`.
+No third-party variant, variant text, save file, Emuera executable or complete Emuera source tree is distributed with PyEmuera. An independently created sample variant is included. The only Emuera source files in the source distribution are five unmodified test fixtures; see `THIRD_PARTY_NOTICES.md`.
 
 ## 1. Primary reference: Emuera1824+v24
 

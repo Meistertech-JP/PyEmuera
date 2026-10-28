@@ -1,18 +1,18 @@
-# PyEmuera 3.0.0 Beta 2 候補 B2-RC1 開発者向けガイド
+# PyEmuera 3.0.0 Beta 2 開発者向けガイド
 
-このソース用 ZIP には PyEmuera `3.0.0b2.dev1` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
+このソース用 ZIP には PyEmuera `3.0.0b2` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
 
 バリアントを遊ぶ場合は、実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使います。使い方は実行用 ZIP の `README_ja.txt` と `HOW_TO_USE_ja.txt` を参照してください。
 
-以下のコマンドは、特に断りがなければ、`pyproject.toml` のあるソースのフォルダーで実行します。Windows では `python` の代わりに `py -3` も使えます。
+以下のコマンドは、特に断りがなければ、`pyproject.toml` のあるソースのフォルダー（GitHubでcloneした場合も同じ）で実行します。Windows では `python` の代わりに `py -3` も使えます。
 
 ## 必要な Python
 
-| 用途 | 必要なバージョン | r51で確認したバージョン（履歴） |
+| 用途 | 必要なバージョン | 確認実績のある環境（例） |
 | --- | --- | --- |
-| バリアントの実行（`PyEmuera.pyz`、ソースからの実行、インストール版） | 3.10 以上 | Linux：3.10〜3.14、Windows 10：3.12・3.14 |
-| 単体テスト、ビルド・検証用スクリプト | 3.11 以上 | Linux：3.11〜3.14、Windows 10：3.12・3.14 |
-| wheel / sdist の作成、`pip install` | 3.10 以上と、ビルド用ツール（下記） | Linux：3.14（setuptools 84.0.0、build 1.6.1） |
+| バリアントの実行（`PyEmuera.pyz`、ソースからの実行、インストール版） | 3.10 以上 | Windows 10、Linux x86_64で動作確認 |
+| 単体テスト、ビルド・検証用スクリプト | 3.11 以上 | Windows 10のPython 3.12、LinuxのPython 3.13で実行 |
+| wheel / sdist の作成、`pip install` | 3.10 以上と、ビルド用ツール（下記） | Pythonのパッケージング環境が必要 |
 
 - バリアントの実行と単体テストには、Python 標準ライブラリ以外のパッケージは使いません。
 - 単体テストと一部のスクリプトは `hashlib.file_digest`（3.11 以上）を使います。Python 3.10 で全テストを実行すると、配布用スクリプトのテストがエラーになり、`tomllib` を使うテストはスキップされます。これはテスト用の要件で、バリアントの実行には 3.10 で問題ありません。
@@ -21,7 +21,7 @@
 ## ディレクトリ構成
 
 ```
-source/
+./
 ├─ pyemuera/              エンジン本体（Python パッケージ）
 │  ├─ specs/              命令・関数・構文・変数の定義（JSON。実行時に読み込む）
 │  └─ resources/          Windows 以外で使う日本語照合データと、その権利表示
@@ -86,18 +86,9 @@ python -m unittest discover -s tests -t tests -p "test_r50_*.py" -v
 
 Windows のコマンド プロンプトで実行すると、入力処理を検査する一部のテストがキーボード入力を待って止まることがあります。標準入力を空にして実行してください（コマンド プロンプト：末尾に `< nul`、Linux：`< /dev/null`）。全テストの runner は、この処理を自動で行います。
 
-### r51の試験結果（履歴）
+### 単体テスト結果の確認
 
-以下はr51の3,296件の履歴です。Beta 1はこの3,296テストIDに56件を追加した3,352件を対象としていました。これらをB2-RC1の再実行結果として扱いません。候補の実行結果、OS・Python別の集計、全IDの成否は候補の検証記録で確認してください。
-
-| 環境 | 対象 | 結果 |
-| --- | --- | --- |
-| Linux / Python 3.11・3.12・3.13・3.14 | 配布 pyz | 全件成功 |
-| Windows 10 / Python 3.12・3.14 | 配布 pyz | 成功、スキップ 7 件 |
-| Linux / Python 3.10 | 配布 pyz | 参考：上記の 3.11 以上の要件により一部エラー |
-
-- Windows でのスキップ 7 件は、POSIX の疑似端末を使うテスト 3 件と、シンボリックリンクを作成できない環境で省略されるテスト 4 件です。
-- 正確な件数と全テストIDの結果は、リリースごとの記録に残しています。
+Beta 2ではWindows・Linuxで全単体テストを実行しています。実行環境によってSKIP数が異なるため、結果のJSONにあるIDごとの結果・理由を確認してください。過去の開発リビジョンの集計を現在の実行結果として扱わないでください。
 
 ### 既知の不安定なテスト
 
@@ -120,7 +111,7 @@ python tools/build_pyz.py --out ../build/PyEmuera.pyz
 - 生成した pyz の SHA-256 が表示されます。
 - ファイルの順序・日時・属性・圧縮条件を固定しているため、同じソースと同一のPython・圧縮実装・ビルド設定では同じバイト列の pyz ができます。pyz に自分自身の SHA-256 や生成日時は書き込みません。
 - 配布 pyz の SHA-256 は、実行用 ZIP に付属するチェックサムで確認してください。
-- 圧縮には Python に組み込まれた zlib を使うため、zlib の実装によって圧縮結果（SHA-256）が変わることがあります。r51の履歴では、Linux（Python 3.10〜3.14、zlib 1.3 / 1.3.2）とWindows（Python 3.12、zlib 1.3.1）で同じSHA-256を確認し、Windows Python 3.14（zlib-ng）ではアーカイブのSHA-256が異なる一方、全メンバー内容は同一でした。Beta 1の固定ビルド条件と2つのクリーンディレクトリからの原バイト比較は、別のリリース検証記録に保存します。異なる圧縮環境での原バイト一致は保証しません。
+- 圧縮には Python に組み込まれた zlib を使用します。Python・zlibの実装が違うとZIP全体のSHA-256が変わる場合があります。内容の同一性を調べる場合は、pyzのメンバーごとのハッシュも確認してください。
 
 ### pyz に同梱される文書
 
@@ -162,7 +153,7 @@ python -m build --outdir ../dist
 `../dist` に `.whl`（wheel）と `.tar.gz`（sdist）ができます。
 
 ```console
-python -m pip install ../dist/pyemuera_experimental-3.0.0b2.dev1-py3-none-any.whl
+python -m pip install ../dist/pyemuera_experimental-3.0.0b2-py3-none-any.whl
 ```
 
 インストールした PyEmuera で、文字列の並べ替えが本家の記録と一致するかを確認できます（インストールした仮想環境の Python で実行します。ソースの `pyemuera/` ではなく、インストールされたものを使って確認します）。
@@ -173,13 +164,22 @@ python tools/verify_arraysort_native.py --installed --out ../arraysort-installed
 
 ## 配布物について
 
-実行用 ZIP とソース用 ZIP は別の配布物です。`tools/assemble_public.py` と `packaging/public/selection.json` は従来の単一 ZIP 用であり、分離された候補 ZIP の生成手順ではありません。候補の配布物は、それぞれの内容とチェックサムを確認してください。
+実行用 ZIP とソース用 ZIP は別の配布物です。公開用の `PyEmuera.pyz` をソースから生成した後、次のコマンドで2種類のZIPとSHA-256一覧を生成できます。出力先はソースの外側に指定してください。
+
+```console
+python tools/build_release_archives.py --out ../beta2-dist
+```
+
+公開用の分割ZIPは `packaging/public/source-files.txt` に列挙されたソースだけを含み、作業ディレクトリの未登録ファイルは取り込みません。
+
+`tools/assemble_public.py` と `packaging/public/selection.json` は、旧来の一体型ZIPを作る互換ツールです。現在の正式な分割配布物には使用しません。
 
 ## 補助スクリプト（tools/）
 
 | ファイル | 内容 | 必要な環境 |
 | --- | --- | --- |
 | `build_pyz.py` | pyz のビルド | Python 3.10 以上 |
+| `build_release_archives.py` | 実行用・ソース用ZIPとSHA-256一覧の生成 | Python 3.10 以上 |
 | `run_final_tests_r47.py` | 全テストの実行と記録 | Python 3.11 以上 |
 | `assemble_public.py` | 公開ZIPの生成 | Python 3.10 以上 |
 | `verify_arraysort_native.py` | 文字列 ARRAYSORT を、本家 Emuera の保存済み原ログ（6 条件と 32 条件）と比較 | Python 3.10 以上 |
@@ -193,7 +193,7 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 ```
 
 - `verify_arraysort_native.py` は、既定の照合（Windows では OS、それ以外では互換実装）と、互換実装を強制した場合の両方を実行し、`summary.json` に実行した OS を記録します。Windows で互換実装を強制した結果は、Linux での実行結果の代わりにはなりません。
-- `replay_new_framework_r49.py` は互換実装を使います。結果と終了コードは実行した版の記録で確認してください。過去の `prefix_alignment` 1,192 件の不一致を候補の結果として流用しません。
+- `replay_new_framework_r49.py` は互換実装を使います。結果と終了コードは実行した版の記録で確認してください。比較結果の記録では、実行した版とfixtureを必ず明示してください。
 - `.cs` の測定プログラムは、ビルドやテストには必要ありません。各ファイル冒頭のコメントにコンパイル方法があります。生成した実行ファイルは配布していません。
 
 ## 互換性の検証方針
@@ -205,13 +205,13 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 
 ## 既知の制限
 
-- 文字列の照合は、Windows では OS の NLS API（`CompareStringEx`）を、それ以外では互換実装（`pyemuera/collation_portable.py`、`collation_jamo.py`）を使います。固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 対では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。比較の一致は全ての並べ替え結果の一致を意味しません。
+- 文字列の照合は、Windows では OS の NLS API（`CompareStringEx`）を、それ以外では互換実装（`pyemuera/collation_portable.py`、`collation_jamo.py`）を使います。固定した Windows 10、ja-JP、NLS 0x60305 の Jamo 比較 36,864 方向では、互換実装と保存された .NET Framework の測定結果が 36,864/36,864 で一致しました。この測定範囲外や他の Windows・NLS 環境での完全互換は保証しません。比較の一致は全ての並べ替え結果の一致を意味しません。
 - 利用者が照合方式を切り替える設定はありません。
 - Windows環境で、IMEを使った日本語入力、およびWindows Terminal（ConPTY）上での入力・中断が正常に動作することを確認しています。すべてのIME製品・バージョン・設定の組み合わせを網羅したものではありません。
 - macOSでの動作は確認していません。
 - 時刻取得処理は固定時計、日付・秒境界、結果書き込み順序を試験しています。`test_r40_flow_commands.R40FlowCommands.test_gettime_component_boundary_and_write_order` と `test_gettime_result_write_failure_prevents_eighth_sample` が対応する試験です。`GETTIMES()`の書式は `test_source_functions_a7.SourceFunctionsA7.test_gettimes_shape` で確認します。本家とPyEmueraの実時計を同期させたすべての境界での厳密な値比較を確認したものではありません（`COMPATIBILITY_ja.md`）。
 
-## 現行メタデータを生成する
+## 検証用メタデータを生成する
 
 `tools/build_release_status.py --tests 結果.json --out ../CAPABILITIES.json` で現行ソースと実行結果からメタデータを生成します。複数環境の結果には `--tests` を繰り返します。受入後に `--beta-accepted` を指定できます。これはリリースの検証メタデータで、過去版の `CAPABILITIES.json` や歴史的な監査・ゲート記録を現行結果として流用しません。β受入の判定は公開操作が済んだことを意味しません。
 
