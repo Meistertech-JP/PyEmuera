@@ -1,0 +1,246 @@
+{
+  "description": "Hand-selected nonrepresentative development regression controls, not a statistical sample or holdout. Fresh direct Framework measurements; no expected sign from candidate implementation.",
+  "source_sha256": {
+    "r49_prefix_alignment": "4d6b753a4c511480931862550e2e86f9e4d1476f3f7bf7424974f574dee18672",
+    "r49_independent_review": "313acd8206051218b232f3bf064bfff14d7abdff21766b701f43bd7b0760d7af",
+    "independent_stress_results": "fd01faa03d2cec29168c137632b61e823460d91cd7fba401316b9595b0399931",
+    "independent_stress_oracle": "5247caf8d73f7e00b98294331c52dc3f7397130ffae98e2a5e483e77d068e702",
+    "fresh_oracle": "15a464365e86f3a4e40c5fa6b6d8cf4be0055ac2c4ed6fcfe9e28ef5d8fe64fe",
+    "probe_source": "5c32d6325892b0003ac33ff24c0301d56c1bac2d5d8e0f1dc5a697fee26708b9"
+  },
+  "profile": {
+    "schema": "r49-framework-oracle-1",
+    "culture": "ja-JP",
+    "compare_options": "None",
+    "target_framework": ".NETFramework,Version=v4.8",
+    "os_build": "19045",
+    "os_ubr": 7807,
+    "framework_release": 533509,
+    "nls_version": 393989,
+    "nls_sort_id": "00000046-57ee-1e5c-00b4-d0000bb1e11e",
+    "mscorlib_sha256": "11ac114c43ecf6996bef58ba3c99fba3693a4560a84eeadde54d193060dc626c",
+    "probe_sha256": "38f8a0ef79c7cc38a0c2b6435b8f18b84b26ae972adbfe17b05799008393a185"
+  },
+  "comparisons": [
+    {
+      "category": "r49_prefix_improvement",
+      "source": "r49_prefix_alignment",
+      "source_row": 22193,
+      "left_utf16le_hex": "01001311b511",
+      "right_utf16le_hex": "7f0013110000b511",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "r49_prefix_improvement",
+      "source": "r49_prefix_alignment",
+      "source_row": 22244,
+      "left_utf16le_hex": "7f0013110000b511",
+      "right_utf16le_hex": "01001311b511",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "r49_prefix_improvement",
+      "source": "r49_prefix_alignment",
+      "source_row": 27828,
+      "left_utf16le_hex": "01005f1100006211",
+      "right_utf16le_hex": "7f005f116211",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "r49_prefix_improvement",
+      "source": "r49_prefix_alignment",
+      "source_row": 27873,
+      "left_utf16le_hex": "7f005f116211",
+      "right_utf16le_hex": "01005f1100006211",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "r49_prefix_improvement",
+      "source": "r49_prefix_alignment",
+      "source_row": 35000,
+      "left_utf16le_hex": "01005f117f006e11b911",
+      "right_utf16le_hex": "7f005f116e11b911",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "r49_prefix_improvement",
+      "source": "r49_prefix_alignment",
+      "source_row": 35042,
+      "left_utf16le_hex": "7f005f116e11b911",
+      "right_utf16le_hex": "01005f117f006e11b911",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_improvement_family_2",
+      "source": "independent_stress",
+      "source_row": 2406,
+      "left_utf16le_hex": "05005f110000e71164a928115c117a11f71110116fa9ced775a9de11d811d811a611dcd70130001171a96ca9b3d78b110511b8d77f0041111b11a10085110d11da1139116211",
+      "right_utf16le_hex": "13005f11e71164a928115c117a11f71110116fa9ced775a9de11d811d811a611dcd70130001171a96ca9b3d78b110511b8d77f0041111b11a10085110d11da1139116211ffdb",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_improvement_family_2",
+      "source": "independent_stress",
+      "source_row": 2407,
+      "left_utf16le_hex": "13005f11e71164a928115c117a11f71110116fa9ced775a9de11d811d811a611dcd70130001171a96ca9b3d78b110511b8d77f0041111b11a10085110d11da1139116211ffdb",
+      "right_utf16le_hex": "05005f110000e71164a928115c117a11f71110116fa9ced775a9de11d811d811a611dcd70130001171a96ca9b3d78b110511b8d77f0041111b11a10085110d11da1139116211",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_improvement_family_3",
+      "source": "independent_stress",
+      "source_row": 3022,
+      "left_utf16le_hex": "2d0060110000efd7",
+      "right_utf16le_hex": "10206011efd79f00",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_improvement_family_3",
+      "source": "independent_stress",
+      "source_row": 3023,
+      "left_utf16le_hex": "10206011efd79f00",
+      "right_utf16le_hex": "2d0060110000efd7",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_improvement_family_4",
+      "source": "independent_stress",
+      "source_row": 4210,
+      "left_utf16le_hex": "30306ca9dfd73dd8",
+      "right_utf16le_hex": "7f006ca9fffedfd700d8",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_improvement_family_4",
+      "source": "independent_stress",
+      "source_row": 4211,
+      "left_utf16le_hex": "7f006ca9fffedfd700d8",
+      "right_utf16le_hex": "30306ca9dfd73dd8",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_improvement_family_7",
+      "source": "independent_stress",
+      "source_row": 7804,
+      "left_utf16le_hex": "02005f11c711",
+      "right_utf16le_hex": "14005f112d00c711",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_improvement_family_7",
+      "source": "independent_stress",
+      "source_row": 7805,
+      "left_utf16le_hex": "14005f112d00c711",
+      "right_utf16le_hex": "02005f11c711",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_known_match_family_0",
+      "source": "independent_stress",
+      "source_row": 0,
+      "left_utf16le_hex": "14205f11f311",
+      "right_utf16le_hex": "17005f11f911f311",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_known_match_family_0",
+      "source": "independent_stress",
+      "source_row": 1,
+      "left_utf16le_hex": "17005f11f911f311",
+      "right_utf16le_hex": "14205f11f311",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_known_match_family_4",
+      "source": "independent_stress",
+      "source_row": 4206,
+      "left_utf16le_hex": "f40765a9c71100de",
+      "right_utf16le_hex": "112065a90b20c71100dc",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_known_match_family_4",
+      "source": "independent_stress",
+      "source_row": 4207,
+      "left_utf16le_hex": "112065a90b20c71100dc",
+      "right_utf16le_hex": "f40765a9c71100de",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_known_match_family_6",
+      "source": "independent_stress",
+      "source_row": 6678,
+      "left_utf16le_hex": "30119f11b211a211",
+      "right_utf16le_hex": "2e11c5d7f2d72711",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    },
+    {
+      "category": "stress_known_match_family_6",
+      "source": "independent_stress",
+      "source_row": 6679,
+      "left_utf16le_hex": "2e11c5d7f2d72711",
+      "right_utf16le_hex": "30119f11b211a211",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_known_match_family_8",
+      "source": "independent_stress",
+      "source_row": 9044,
+      "left_utf16le_hex": "1b0001118711b3116811",
+      "right_utf16le_hex": "130001118711f3d7b4d72811",
+      "CompareTo_sign": -1,
+      "CompareInfo_None_sign": -1,
+      "NLS_sign": -1
+    },
+    {
+      "category": "stress_known_match_family_8",
+      "source": "independent_stress",
+      "source_row": 9045,
+      "left_utf16le_hex": "130001118711f3d7b4d72811",
+      "right_utf16le_hex": "1b0001118711b3116811",
+      "CompareTo_sign": 1,
+      "CompareInfo_None_sign": 1,
+      "NLS_sign": 1
+    }
+  ]
+}

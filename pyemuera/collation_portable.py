@@ -413,6 +413,9 @@ class PortableNLSBackend:
         # this fast path, including contextual Jamo strings.
         if left == right:
             return 0
+        decisive = self._decisive_prefix_jamo_sign(left, right)
+        if decisive is not None:
+            return decisive
         contextual = self._separator_jamo_sign(left, right)
         if contextual is not None:
             return contextual
@@ -503,6 +506,55 @@ class PortableNLSBackend:
         # separator as a boundary distinguishes strings Framework compares
         # as equal. Different cluster shapes are already different keys.
         return 0
+
+    def _decisive_prefix_jamo_sign(self, left, right):
+        """Compare decisive Jamo weights after unequal class-6 prefixes.
+
+        Windows can defer the prefix difference and return a later Jamo
+        difference first. The supported shape follows observed direct NLS
+        comparisons; unsupported states retain the existing comparison path.
+        """
+        # Keep custom string access/encoding behavior on the existing path.
+        for text in (left, right):
+            kind = type(text)
+            if kind is not str and (
+                kind.__len__ is not str.__len__
+                or kind.__getitem__ is not str.__getitem__
+                or kind.encode is not str.encode
+                or kind.__eq__ is not str.__eq__
+                or kind.__getattribute__ is not str.__getattribute__
+            ):
+                return None
+        if len(left) < 2 or len(right) < 2:
+            return None
+        la, rb = ord(left[0]), ord(right[0])
+        if la == rb or la > 0xffff or rb > 0xffff:
+            return None
+        if ord(left[1]) not in self._jamo or ord(right[1]) not in self._jamo:
+            return None
+        lw, rw = self._weight(la), self._weight(rb)
+        if lw[0] != 6 or rw[0] != 6 or lw[1] == rw[1]:
+            return None
+        if lw[2:] != (2, 2) or rw[2:] != (2, 2):
+            return None
+        lu, ru = _utf16_units(left), _utf16_units(right)
+        mapped = []
+        for units in (lu, ru):
+            if self._weight(units[1])[0] != 4:
+                return None
+            elements, consumed = consume_jamo_cluster(
+                units, 1, self._jamo, self._weight
+            )
+            if (len(elements) != 1 or len(elements[0]) != 8
+                or elements[0][2::2] != b'\xff\xff\xff'
+                or consumed <= 0 or consumed + 1 > len(units)):
+                return None
+            e = elements[0]
+            mapped.append(((e[0] << 8) | e[1],
+                           (e[3] << 16) | (e[5] << 8) | e[7]))
+        if mapped[0][0] != mapped[1][0] or mapped[0][1] == mapped[1][1]:
+            return None
+        return (mapped[0][1] > mapped[1][1]) - (mapped[0][1] < mapped[1][1])
 
     def _separator_jamo_sign(self, left, right):
         """Compare aligned Jamo after unequal ignorable/punctuation prefixes.

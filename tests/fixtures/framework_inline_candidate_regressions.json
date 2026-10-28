@@ -1,0 +1,135 @@
+{
+  "description": "Selected regressions from a rejected inline-filler candidate, with reverse directions; targeted development controls, nonrepresentative, not holdout.",
+  "correlated_results_sha256": "9dc2c50026474b6595a0b9f8b7d6da3dd01074419f75046ab0dcbd7140768699",
+  "oracle_sha256": "f0424631056a69163e35dd52a7ba5af196dab1cc6941c62c54bfaa97b901e87d",
+  "correlated_inputs_sha256": "2aaa18f08af09d8f563140438a95f3e25eb60aeac40482a9dd771e66fa60d6de",
+  "correlated_pairs_sha256": "c2bb82a37ef656a104b926e0fc5e3ed1e4f9e1660b37e17c8d58171f466c7049",
+  "culture": "ja-JP",
+  "compare_options": "None",
+  "windows_build": "19045.7807",
+  "framework_release": 533509,
+  "nls_version": 393989,
+  "nls_sort_id": "00000046-57ee-1e5c-00b4-d0000bb1e11e",
+  "comparisons": [
+    {
+      "oracle_row": 7504,
+      "correlated_change_indices": [
+        1670
+      ],
+      "left_utf16le_hex": "2d005f11a811",
+      "right_utf16le_hex": "01007f005f112d00a811",
+      "expected": -1,
+      "rejected_candidate_sign": 1
+    },
+    {
+      "oracle_row": 7505,
+      "correlated_change_indices": [
+        1671
+      ],
+      "left_utf16le_hex": "01007f005f112d00a811",
+      "right_utf16le_hex": "2d005f11a811",
+      "expected": 1,
+      "rejected_candidate_sign": -1
+    },
+    {
+      "oracle_row": 13348,
+      "correlated_change_indices": [
+        3032
+      ],
+      "left_utf16le_hex": "01007f0060112d00eb11",
+      "right_utf16le_hex": "7f006011eb11",
+      "expected": 1,
+      "rejected_candidate_sign": -1
+    },
+    {
+      "oracle_row": 13349,
+      "correlated_change_indices": [
+        3033
+      ],
+      "left_utf16le_hex": "7f006011eb11",
+      "right_utf16le_hex": "01007f0060112d00eb11",
+      "expected": -1,
+      "rejected_candidate_sign": 1
+    },
+    {
+      "oracle_row": 14460,
+      "correlated_change_indices": [
+        3226
+      ],
+      "left_utf16le_hex": "01007f005f11ad009e11",
+      "right_utf16le_hex": "2d005f119e11",
+      "expected": 1,
+      "rejected_candidate_sign": -1
+    },
+    {
+      "oracle_row": 14461,
+      "correlated_change_indices": [
+        3227
+      ],
+      "left_utf16le_hex": "2d005f119e11",
+      "right_utf16le_hex": "01007f005f11ad009e11",
+      "expected": -1,
+      "rejected_candidate_sign": 1
+    },
+    {
+      "oracle_row": 15174,
+      "correlated_change_indices": [
+        3384
+      ],
+      "left_utf16le_hex": "2d005f1101006211",
+      "right_utf16le_hex": "01007f005f116211",
+      "expected": 1,
+      "rejected_candidate_sign": -1
+    },
+    {
+      "oracle_row": 15175,
+      "correlated_change_indices": [
+        3385
+      ],
+      "left_utf16le_hex": "01007f005f116211",
+      "right_utf16le_hex": "2d005f1101006211",
+      "expected": -1,
+      "rejected_candidate_sign": 1
+    },
+    {
+      "oracle_row": 10340,
+      "correlated_change_indices": [
+        2324
+      ],
+      "left_utf16le_hex": "2d005f1100009e110000",
+      "right_utf16le_hex": "01007f005f119e11",
+      "expected": 1,
+      "rejected_candidate_sign": -1
+    },
+    {
+      "oracle_row": 10341,
+      "correlated_change_indices": [
+        2325
+      ],
+      "left_utf16le_hex": "01007f005f119e11",
+      "right_utf16le_hex": "2d005f1100009e110000",
+      "expected": -1,
+      "rejected_candidate_sign": 1
+    },
+    {
+      "oracle_row": 1408,
+      "correlated_change_indices": [
+        274
+      ],
+      "left_utf16le_hex": "01007f006011b511",
+      "right_utf16le_hex": "7f006011ad00b5117f00",
+      "expected": -1,
+      "rejected_candidate_sign": 1
+    },
+    {
+      "oracle_row": 1409,
+      "correlated_change_indices": [
+        275
+      ],
+      "left_utf16le_hex": "7f006011ad00b5117f00",
+      "right_utf16le_hex": "01007f006011b511",
+      "expected": 1,
+      "rejected_candidate_sign": -1
+    }
+  ]
+}

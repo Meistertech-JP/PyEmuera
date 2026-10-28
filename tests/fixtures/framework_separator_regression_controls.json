@@ -1,0 +1,108 @@
+{
+  "description": "Selected Framework stress observations where an experimental separator gate regressed; reverse directions are included. These cases are development controls, not a representative sample or holdout.",
+  "oracle_sha256": "caa7cb5b767eec02dee3c3124d9d995c41f6a38f125f99ec3b002d1d2179ed13",
+  "culture": "ja-JP",
+  "compare_options": "None",
+  "windows_build": "19045.7807",
+  "framework_release": 533509,
+  "nls_version": 393989,
+  "nls_sort_id": "00000046-57ee-1e5c-00b4-d0000bb1e11e",
+  "comparisons": [
+    {
+      "oracle_row": 3086,
+      "left_utf16le_hex": "5f11ad00eb11ad007511",
+      "right_utf16le_hex": "ad005f11010001009e11601100116111",
+      "expected": -1
+    },
+    {
+      "oracle_row": 3087,
+      "left_utf16le_hex": "ad005f11010001009e11601100116111",
+      "right_utf16le_hex": "5f11ad00eb11ad007511",
+      "expected": 1
+    },
+    {
+      "oracle_row": 4944,
+      "left_utf16le_hex": "5f110100ad00a811ad00b511e565",
+      "right_utf16le_hex": "ad005f110000621161116211",
+      "expected": -1
+    },
+    {
+      "oracle_row": 4945,
+      "left_utf16le_hex": "ad005f110000621161116211",
+      "right_utf16le_hex": "5f110100ad00a811ad00b511e565",
+      "expected": 1
+    },
+    {
+      "oracle_row": 7386,
+      "left_utf16le_hex": "5f11ad006711ad00eb11b511",
+      "right_utf16le_hex": "ad005f1101009e1161117511",
+      "expected": -1
+    },
+    {
+      "oracle_row": 7387,
+      "left_utf16le_hex": "ad005f1101009e1161117511",
+      "right_utf16le_hex": "5f11ad006711ad00eb11b511",
+      "expected": 1
+    },
+    {
+      "oracle_row": 7676,
+      "left_utf16le_hex": "5f1101006011b511ad00ad006711",
+      "right_utf16le_hex": "00005f110000eb11a811001141002d00",
+      "expected": -1
+    },
+    {
+      "oracle_row": 7677,
+      "left_utf16le_hex": "00005f110000eb11a811001141002d00",
+      "right_utf16le_hex": "5f1101006011b511ad00ad006711",
+      "expected": 1
+    },
+    {
+      "oracle_row": 7688,
+      "left_utf16le_hex": "5f1100006111ad009e112d00",
+      "right_utf16le_hex": "ad005f110100a8117511ad002311",
+      "expected": -1
+    },
+    {
+      "oracle_row": 7689,
+      "left_utf16le_hex": "ad005f110100a8117511ad002311",
+      "right_utf16le_hex": "5f1100006111ad009e112d00",
+      "expected": 1
+    },
+    {
+      "oracle_row": 8020,
+      "left_utf16le_hex": "5f11ad005f112d00a811b5117511",
+      "right_utf16le_hex": "00005f11ad000000a811611175111311",
+      "expected": -1
+    },
+    {
+      "oracle_row": 8021,
+      "left_utf16le_hex": "00005f11ad000000a811611175111311",
+      "right_utf16le_hex": "5f11ad005f112d00a811b5117511",
+      "expected": 1
+    },
+    {
+      "oracle_row": 8302,
+      "left_utf16le_hex": "5f11ad00000061116211",
+      "right_utf16le_hex": "ad005f11ad006211000060114100",
+      "expected": -1
+    },
+    {
+      "oracle_row": 8303,
+      "left_utf16le_hex": "ad005f11ad006211000060114100",
+      "right_utf16le_hex": "5f11ad00000061116211",
+      "expected": 1
+    },
+    {
+      "oracle_row": 9614,
+      "left_utf16le_hex": "5f1101000000601162112311",
+      "right_utf16le_hex": "ad005f11ad006211ad00a8116211",
+      "expected": -1
+    },
+    {
+      "oracle_row": 9615,
+      "left_utf16le_hex": "ad005f11ad006211ad00a8116211",
+      "right_utf16le_hex": "5f1101000000601162112311",
+      "expected": 1
+    }
+  ]
+}
