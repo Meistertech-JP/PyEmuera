@@ -105,11 +105,15 @@ class CollationArchivedOraclesR43(unittest.TestCase):
         self.assertLess(self.backend.compare("k\udc00", "k\udc01"), 0)
 
     def test_local_long_combining_byte_wrap_contract(self):
-        # Published BYTE addition/trim, not Unicode normalization or a new
-        # native observation. U+3099 contributes DW3; 256 steps wrap exactly.
+        # Unary BYTE addition/trim wraps after 256 steps. Saved Framework
+        # direct-sortkey-wrap controls prove direct comparison is different;
+        # do not use unary key equality as its expected result.
         for prefix in ("x", "Ω", "qwerty"):
-            self.assertEqual(self.backend.compare(prefix + "\u3099" * 256, prefix), 0)
-        self.assertEqual(self.backend.compare("x\u0301", "x\u0301" + "\u3099" * 256), 0)
+            self.assertEqual(self.backend.sort_key(prefix + "\u3099" * 256), self.backend.sort_key(prefix))
+            self.assertEqual(self.backend.compare(prefix + "\u3099" * 256, prefix), 1)
+            self.assertEqual(self.backend.compare(prefix, prefix + "\u3099" * 256), -1)
+        self.assertEqual(self.backend.sort_key("x\u0301"), self.backend.sort_key("x\u0301" + "\u3099" * 256))
+        self.assertEqual(self.backend.compare("x\u0301", "x\u0301" + "\u3099" * 256), -1)
 
     def test_cache_reuses_unseen_context_and_has_bounded_eviction(self):
         backend = PortableNLSBackend(cache_size=2)

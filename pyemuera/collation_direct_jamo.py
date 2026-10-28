@@ -1,4 +1,4 @@
-"""Input-driven direct Jamo comparison for the pinned Windows 10 NLS profile.
+"""Input-driven direct Jamo/nonspacing comparison for the pinned NLS profile.
 
 Separate from unary sort keys: sampled categories survive mapping and a
 one-sided skip can retain the other cursor's synthesized cache. Secondary
@@ -13,6 +13,10 @@ from dataclasses import dataclass
 import re
 
 _JAMO = re.compile('[\u1100-\u11ff\ua960-\ua97c\ud7b0-\ud7c6\ud7cb-\ud7fb]')
+# Entry-only set of all 500 BMP category-1 weights in the pinned NLS profile.
+# Generated from the same weight table; not Python's evolving Unicode classes.
+# Tests check the complete BMP set. No comparison answers are encoded here.
+_NONSPACE = re.compile('[\\u02b9-\\u02c5\\u02c8\\u02cc-\\u02cf\\u02d1-\\u02d7\\u02de-\\u02df\\u02e4-\\u034e\\u0350-\\u0362\\u0374\\u0483-\\u0487\\u0559-\\u055a\\u0591-\\u05bd\\u05bf-\\u05c2\\u05c4-\\u05c5\\u05c7\\u0602\\u0610-\\u061a\\u064b-\\u065f\\u0670\\u06d8-\\u06dc\\u06e1-\\u06e8\\u06ea-\\u06ed\\u0711\\u0730-\\u074a\\u07a6-\\u07b0\\u07eb-\\u07f3\\u0818-\\u0819\\u081c-\\u082d\\u0859-\\u085b\\u093c\\u0951-\\u0954\\u0971\\u09bc\\u0a01-\\u0a02\\u0a3c\\u0a70-\\u0a71\\u0abc\\u0b3c\\u0b70\\u0c55-\\u0c56\\u0cbc\\u0cd5-\\u0cd6\\u0e47-\\u0e4d\\u0f39\\u0f71\\u0f7f\\u0f84-\\u0f85\\u0f88-\\u0f8f\\u10fc\\u135d-\\u135f\\u1361-\\u1368\\u16eb-\\u16ed\\u1a74-\\u1a7c\\u1a7f\\u1b6b-\\u1b73\\u1c37\\u1dc0-\\u1dd1\\u1dfc-\\u1dff\\u20d0-\\u20f0\\u2cef-\\u2cf1\\u2d7f\\u302a-\\u302f\\u303c-\\u303e\\u3099-\\u309c\\ua66f\\ua67c-\\ua67d\\ua6f0-\\ua6f1\\ua92b-\\ua92d\\ufb1e\\ufe20-\\ufe26\\uff9e-\\uff9f]')
 
 
 def sign(a, b):
@@ -275,6 +279,7 @@ def direct_jamo_sign(backend, left, right, utf16_units):
     # Preserve str-subclass hooks and avoid allocating state on ordinary input.
     if type(left) is not str or type(right) is not str:
         return None
-    if _JAMO.search(left) is None and _JAMO.search(right) is None:
+    if (_JAMO.search(left) is None and _JAMO.search(right) is None
+            and _NONSPACE.search(left) is None and _NONSPACE.search(right) is None):
         return None
     return DirectJamoComparison(backend).compare(utf16_units(left), utf16_units(right))

@@ -7,8 +7,12 @@ backend, Framework sorting algorithm, and unary sort-key API remain separate.
 
 ## Entry and fallback
 
-`direct_jamo_sign` runs only for exact `str` inputs containing a Jamo code unit.
-Other strings and string subclasses keep the existing path. It uses the
+`direct_jamo_sign` runs only for exact `str` inputs containing a Jamo code unit or a BMP
+category-1 unit from the fixed NLS table. The 500-unit category-1 entry set is
+generated from that table and tested exhaustively over the BMP.
+Other strings and string subclasses keep the existing path. Non-Jamo
+nonspacing/separator boundaries use the same state rules, rather than leaving
+the 48 newly measured pre-existing differences on the old path. It uses the
 existing fixed weight and Jamo tables and Python's standard library only.
 There are no native calls, expected-answer dictionaries, or normalization.
 

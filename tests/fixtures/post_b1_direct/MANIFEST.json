@@ -13,5 +13,15 @@
     "fixture_sha256": "255d5fe2a2a8cf7d9e6f2c6dab1331f403bbb3c73565407c9cd3bbee09770dab",
     "raw_oracle_sha256": "4e7aa3e1a523baa6b255ae5138b92b054c1465f8d7b01a92e0fb0f366fefa6a1",
     "directions": 1071
+  },
+  "all-nonspace-boundaries": {
+    "fixture_sha256": "75abd8ae63d9b6a2119295c0b895e80a1b5b90da18d4f1b8988829a6d6b48698",
+    "raw_oracle_sha256": "490aff27b8fc7ca721e8ae7c3e0d545d950439c154f7abcda66a4ff58e844437",
+    "directions": 2280
+  },
+  "direct-sortkey-wrap": {
+    "fixture_sha256": "cc4ea3f02fb1c02822d41b8d34d5dbc278d0f569bf0e93a9d7202f5ec6342f85",
+    "raw_oracle_sha256": "545b25cb96270c43a6fb557a43b15d00bf23fbc8f4ea4d0d3ca1ab00643ae331",
+    "directions": 36
   }
 }

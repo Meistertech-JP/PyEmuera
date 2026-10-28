@@ -62,10 +62,13 @@ class PortableCollationR42(unittest.TestCase):
     def test_source_wrapped_secondary_minimums_are_trimmed(self):
         # a DW2 + U+3099 DW3 *85/*170 wraps to BYTE1/BYTE0.
         # GetWindowsSortKey removes trailing DW <= MIN_DW, not only DW2.
-        # These are independent source-model boundaries, not Windows probes.
+        # Keep this unary source-model boundary distinct from direct comparison.
+        # post_b1_direct/direct-sortkey-wrap.json.gz records all three Framework
+        # APIs: the trailing marks remain significant in direct comparison.
         for count in (85, 170):
             with self.subTest(count=count):
-                self.assertEqual(self.backend.compare('a'+'\u3099'*count, 'a'), 0)
+                self.assertEqual(self.backend.compare('a'+'\u3099'*count, 'a'), 1)
+                self.assertEqual(self.backend.compare('a', 'a'+'\u3099'*count), -1)
                 self.assertEqual(self.backend.sort_key('a'+'\u3099'*count),
                                  bytes.fromhex('0e0202010101010100'))
 

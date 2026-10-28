@@ -80,7 +80,7 @@ class DirectJamoState(unittest.TestCase):
     def test_independent_structural_and_mixed_framework_controls(self):
         folder = Path(__file__).parent / 'fixtures/post_b1_direct'
         manifest = json.loads((folder / 'MANIFEST.json').read_text(encoding='utf8'))
-        self.assertEqual(sum(row['directions'] for row in manifest.values()), 8875)
+        self.assertEqual(sum(row['directions'] for row in manifest.values()), 11191)
         for name, item in manifest.items():
             raw = (folder / (name + '.json.gz')).read_bytes()
             self.assertEqual(hashlib.sha256(raw).hexdigest(), item['fixture_sha256'])
@@ -109,6 +109,20 @@ class DirectJamoState(unittest.TestCase):
         side.advance()
         self.assertFalse(side.invalid_kana_cache)
         self.assertIsNone(side.cache)
+
+    def test_nonspace_entry_matches_entire_fixed_bmp_category(self):
+        from pyemuera.collation_direct_jamo import _NONSPACE
+        matched = {cp for cp in range(65536) if _NONSPACE.fullmatch(chr(cp))}
+        expected = {cp for cp in range(65536) if self.backend._weight(cp)[0] == 1}
+        self.assertEqual(len(expected), 500)
+        self.assertEqual(matched, expected)
+
+    def test_non_jamo_separator_and_nonspace_boundaries(self):
+        for separator, expected in (('\0', 1), ('\xad', 1), ('\x7f', 1), ('\x01', 1)):
+            left, right = '\u00e9', 'e' + separator + '\u0301'
+            self.assertEqual(self.backend.compare(left, right), expected)
+            self.assertEqual(self.backend.compare(right, left), -expected)
+        self.assertEqual(self.backend.compare('\u00e9', 'e\u0301'), 0)
 
     def test_custom_string_hooks_keep_existing_path(self):
         class Special(str):
