@@ -10,7 +10,7 @@ if not defined PYEXE goto nopython
 set "OUT=%~dp0reports"
 if not exist "%OUT%" mkdir "%OUT%"
 set "RUN=%RANDOM%-%RANDOM%"
-%PYEXE% "%PYZ%" %* --check --report "%OUT%\check-%RUN%.json"
+"%PYEXE%" "%PYZ%" %* --check --report "%OUT%\check-%RUN%.json"
 set "RESULT=%ERRORLEVEL%"
 echo.
 if exist "%OUT%\check-%RUN%.json" echo Report: %OUT%\check-%RUN%.json
@@ -38,19 +38,19 @@ if not defined PYEMUERA_NO_PAUSE pause
 exit /b 0
 
 :findpython
-rem Probe only; never start an automatic Python download or wait for input here.
+rem Resolve the selected Python executable via the launcher, including .cmd shims.
+rem Call the executable directly to avoid re-expanding user arguments.
 set "PYEXE="
 set "PYTHON_MANAGER_AUTOMATIC_INSTALL=false"
 where py >nul 2>nul
 if errorlevel 1 goto trypython
-py -3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)" <nul >nul 2>nul
-if errorlevel 1 goto trypython
-set "PYEXE=py -3"
-exit /b 0
+for /f "delims=" %%P in ('call py -3 -X utf8 -c "import sys; print(sys.executable if sys.version_info.__ge__((3, 10)) else None)" ^<nul 2^>nul') do set "PYEXE=%%P"
+if defined PYEXE if exist "%PYEXE%" exit /b 0
+set "PYEXE="
 :trypython
 where python >nul 2>nul
 if errorlevel 1 exit /b 0
-python -c "import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)" <nul >nul 2>nul
-if errorlevel 1 exit /b 0
-set "PYEXE=python"
+for /f "delims=" %%P in ('call python -X utf8 -c "import sys; print(sys.executable if sys.version_info.__ge__((3, 10)) else None)" ^<nul 2^>nul') do set "PYEXE=%%P"
+if defined PYEXE if exist "%PYEXE%" exit /b 0
+set "PYEXE="
 exit /b 0
