@@ -23,7 +23,7 @@ python PyEmuera.pyz sample --inputs sample/replay.txt --no-wait
 
 Linuxなどで `python` コマンドがない場合は `python3` を使用してください。バリアントフォルダーには通常 `ERB` と `CSV` が入っています。
 
-実行用 ZIP には「ぱみゅーら散歩帳」（`sample/`）と [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29)（`ZORKERB/`）を同梱しています。ZORKERB は1970年代の大型計算機で生まれたテキストアドベンチャー Zork を起源とする、Zork I の非公式 ERB 移植です。独立した [ZORKERB プロジェクト](https://github.com/Meistertech-JP/ZORKERB)は I・II・III の移植を目指しており、r29 が対応するのは I です。入力は英語で、Z-machine や Frotz は必要ありません。Windows では `ZORKERB` フォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップできます。権利とライセンスは同梱の `ZORKERB/LICENSE`、`ZORKERB/THIRD_PARTY_NOTICES.md` および `ZORKERB/licenses/` を参照してください。
+実行用 ZIP には「ぱみゅーら散歩帳」（`sample/`）と [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29)（`ZORKERB/`）を同梱しています。ZORKERB は1970年代の大型計算機で生まれたテキストアドベンチャー Zork を起源とする、Zork の非公式 ERB 移植です。ZORKERB r29 が対応するのは ZORK I です。入力は英語で、Z-machine や Frotz は必要ありません。Windows では `ZORKERB` フォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップできます。権利とライセンスは同梱の `ZORKERB/LICENSE`、`ZORKERB/THIRD_PARTY_NOTICES.md` および `ZORKERB/licenses/` を参照してください。
 
 使い方の詳細は実行用ZIP内の **`HOW_TO_USE_ja.txt`**、起動オプション・保存先・解析機能の仕様は[詳細ガイド](README_ja.md)を参照してください。
 
