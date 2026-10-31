@@ -1,0 +1,225 @@
+﻿; r10: Z-machine INSERT_OBJ/REMOVE_OBJ semantics for the port's object subset.
+; A raw move changes only links. TOUCHBIT, light, IT and scoring belong to callers.
+; 0 means detached, -1 is the player, rooms keep their existing IDs.
+@Z_NODE(Z_PARENT_ID)
+#FUNCTION
+#DIM DYNAMIC Z_PARENT_ID
+SIF Z_PARENT_ID == Z_PLAYER
+    RETURNF Z_PLAYER_NODE
+RETURNF Z_PARENT_ID
+
+@Z_FIRST_CHILD(Z_OWNER)
+#FUNCTION
+#DIM DYNAMIC Z_OWNER
+SIF Z_OWNER == 0
+    RETURNF 0
+RETURNF Z_FIRST:Z_NODE(Z_OWNER)
+
+@Z_TREE_INIT
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_OBJ
+VARSET Z_PARENT
+VARSET Z_FIRST
+VARSET Z_NEXT
+; Insert in reverse to preserve the statically decoded source sibling order.
+Z_INDEX = Z_OBJECT_COUNT - 1
+WHILE Z_INDEX >= 0
+    Z_OBJ = Z_INITIAL_ORDER:Z_INDEX
+    CALL Z_MOVE_OBJECT, Z_OBJ, Z_INITIAL_PARENT:Z_OBJ
+    Z_INDEX -= 1
+WEND
+RETURN
+
+@Z_REMOVE_OBJECT(Z_OBJ)
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_OWNER
+#DIM DYNAMIC Z_PREV
+#DIM DYNAMIC Z_CURSOR
+#DIM DYNAMIC Z_GUARD
+IF Z_OBJ <= 0 || Z_OBJ > Z_OBJECT_COUNT
+    THROW Invalid object number in Zork REMOVE.
+ENDIF
+Z_OWNER = Z_PARENT:Z_OBJ
+IF Z_OWNER
+    Z_OWNER = Z_NODE(Z_OWNER)
+    Z_CURSOR = Z_FIRST:Z_OWNER
+    WHILE Z_CURSOR && Z_CURSOR != Z_OBJ
+        Z_GUARD += 1
+        IF Z_GUARD > Z_OBJECT_COUNT
+            THROW Cyclic Zork sibling chain in REMOVE.
+        ENDIF
+        Z_PREV = Z_CURSOR
+        Z_CURSOR = Z_NEXT:Z_CURSOR
+    WEND
+    IF !Z_CURSOR
+        THROW Orphaned Zork object in REMOVE.
+    ENDIF
+    IF Z_PREV
+        Z_NEXT:Z_PREV = Z_NEXT:Z_OBJ
+    ELSE
+        Z_FIRST:Z_OWNER = Z_NEXT:Z_OBJ
+    ENDIF
+ENDIF
+Z_PARENT:Z_OBJ = 0
+Z_NEXT:Z_OBJ = 0
+; Children of a detached container remain attached to that container.
+RETURN
+
+@Z_MOVE_OBJECT(Z_OBJ, Z_TO)
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_TO
+#DIM DYNAMIC Z_NODE_ID
+IF Z_OBJ <= 0 || Z_OBJ > Z_OBJECT_COUNT
+    THROW Invalid object number in Zork MOVE.
+ENDIF
+IF Z_TO != 0 && Z_TO != Z_PLAYER
+    IF Z_TO < 1 || Z_TO >= Z_PLAYER_NODE
+        THROW Invalid parent number in Zork MOVE.
+    ENDIF
+    IF Z_TO > Z_OBJECT_COUNT && Z_ROOM_NAME:Z_TO == ""
+        THROW Unknown parent in Zork MOVE.
+    ENDIF
+    IF Z_TO == Z_OBJ || (Z_TO <= Z_OBJECT_COUNT && Z_WITHIN(Z_TO, Z_OBJ))
+        THROW Containment cycle rejected in Zork MOVE.
+    ENDIF
+ENDIF
+CALL Z_REMOVE_OBJECT, Z_OBJ
+IF Z_TO
+    Z_NODE_ID = Z_NODE(Z_TO)
+    Z_NEXT:Z_OBJ = Z_FIRST:Z_NODE_ID
+    Z_FIRST:Z_NODE_ID = Z_OBJ
+    Z_PARENT:Z_OBJ = Z_TO
+ENDIF
+RETURN
+
+@Z_TREE_VALIDATE
+#DIM DYNAMIC Z_OWNER
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_EXPECT
+#DIM DYNAMIC Z_GUARD
+#DIM DYNAMIC Z_SEEN, 256
+; Read-only validation. Never repair corrupt links silently on load.
+FOR Z_OWNER, 0, 513
+    Z_OBJ = Z_FIRST:Z_OWNER
+    SIF Z_OBJ < 0 || Z_OBJ > Z_OBJECT_COUNT
+        RETURN 0
+    IF Z_OBJ
+        SIF Z_OWNER == 0
+            RETURN 0
+        SIF Z_OWNER > Z_OBJECT_COUNT && Z_OWNER != Z_PLAYER_NODE && Z_ROOM_NAME:Z_OWNER == ""
+            RETURN 0
+    ENDIF
+    Z_EXPECT = Z_OWNER
+    SIF Z_OWNER == Z_PLAYER_NODE
+        Z_EXPECT = Z_PLAYER
+    WHILE Z_OBJ
+        SIF Z_SEEN:Z_OBJ || Z_PARENT:Z_OBJ != Z_EXPECT
+            RETURN 0
+        Z_SEEN:Z_OBJ = 1
+        Z_OBJ = Z_NEXT:Z_OBJ
+        SIF Z_OBJ < 0 || Z_OBJ > Z_OBJECT_COUNT
+            RETURN 0
+    WEND
+NEXT
+FOR Z_OBJ, 0, 256
+    IF Z_OBJ == 0 || Z_OBJ > Z_OBJECT_COUNT
+        SIF Z_PARENT:Z_OBJ || Z_NEXT:Z_OBJ
+            RETURN 0
+        CONTINUE
+    ENDIF
+    Z_P = Z_PARENT:Z_OBJ
+    IF !Z_P
+        SIF Z_SEEN:Z_OBJ || Z_NEXT:Z_OBJ
+            RETURN 0
+    ELSE
+        SIF !Z_SEEN:Z_OBJ
+            RETURN 0
+    ENDIF
+    ; Membership alone does not rule out cycles through container parents.
+    Z_GUARD = 0
+    WHILE Z_P > 0 && Z_P <= Z_OBJECT_COUNT
+        Z_GUARD += 1
+        SIF Z_P == Z_OBJ || Z_GUARD > Z_OBJECT_COUNT
+            RETURN 0
+        Z_P = Z_PARENT:Z_P
+    WEND
+NEXT
+RETURN 1
+
+ ; Source SEARCH-LIST traversal. Level 0=TOP, 1=ALL, 2=BOTTOM.
+; The root's level is selected from the ZIL syntax location bits. A normal
+; noun lookup uses ALL for room and player on its fallback pass; ALL-only
+; commands can instead request the narrower syntax scope.
+; SEARCHBIT/SURFACEBIT determine whether we recurse beyond the immediate
+; children. A closed opaque container never exposes its contents.
+@Z_ORDER_SCAN(Z_ROOT, Z_LEVEL)
+#DIM DYNAMIC Z_ROOT
+#DIM DYNAMIC Z_LEVEL
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_NEXT_OBJ
+#DIM DYNAMIC Z_CHILD_LEVEL
+Z_OBJ = Z_FIRST_CHILD(Z_ROOT)
+WHILE Z_OBJ
+    ; Snapshot next before callbacks; order walks never change the world.
+    Z_NEXT_OBJ = Z_NEXT:Z_OBJ
+    IF Z_LEVEL != 2
+        IF Z_SCAN_COUNT >= Z_OBJECT_COUNT
+            THROW Cyclic or duplicated Zork tree during search.
+        ENDIF
+        Z_SCAN:Z_SCAN_COUNT = Z_OBJ
+        Z_SCAN_COUNT += 1
+    ENDIF
+    IF (Z_LEVEL != 0 || Z_SEARCHABLE:Z_OBJ || Z_HAS(Z_OBJ, ZF_SURFACE)) && (Z_HAS(Z_OBJ, ZF_OPEN) || Z_HAS(Z_OBJ, ZF_TRANSPARENT))
+        Z_CHILD_LEVEL = 0
+        SIF Z_SEARCHABLE:Z_OBJ || Z_HAS(Z_OBJ, ZF_SURFACE)
+            Z_CHILD_LEVEL = 1
+        CALL Z_ORDER_SCAN, Z_OBJ, Z_CHILD_LEVEL
+    ENDIF
+    Z_OBJ = Z_NEXT_OBJ
+WEND
+RETURN
+
+@Z_SEARCH_ORDER
+; Original r11 broad fallback. It is intentionally kept separate from the
+; selected-SYNTAX scan, which must not append GLOBAL objects to physical hits.
+CALL Z_SEARCH_WITH_SCOPES, 1, 1
+RETURN
+
+@Z_SEARCH_WITH_SCOPES(Z_ROOM_MODE, Z_PLAYER_MODE)
+#DIM DYNAMIC Z_ROOM_MODE
+#DIM DYNAMIC Z_PLAYER_MODE
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_J
+#DIM DYNAMIC Z_FOUND
+#DIM DYNAMIC Z_K
+CALL Z_SEARCH_DEPTH, Z_ROOM_MODE, Z_PLAYER_MODE
+; Room-local/global proxies are ordered by metadata, not claimed as a complete
+; Z-machine GLOBAL-CHECK implementation. Hidden items are filtered by resolver.
+FOR Z_J, 0, Z_OBJECT_COUNT
+    Z_I = Z_INITIAL_ORDER:Z_J
+    SIF !Z_SCOPE:Z_I:Z_HERE && Z_SCOPE_CLASS:Z_I != 3
+        CONTINUE
+    Z_FOUND = 0
+    FOR Z_K, 0, Z_SCAN_COUNT
+        SIF Z_SCAN:Z_K == Z_I
+            Z_FOUND = 1
+    NEXT
+    IF !Z_FOUND
+        Z_SCAN:Z_SCAN_COUNT = Z_I
+        Z_SCAN_COUNT += 1
+    ENDIF
+NEXT
+RETURN
+
+; Scope probe for a named source location level, usable in isolated native ERB tests.
+@Z_SEARCH_DEPTH(Z_ROOM_MODE, Z_PLAYER_MODE)
+#DIM DYNAMIC Z_ROOM_MODE
+#DIM DYNAMIC Z_PLAYER_MODE
+Z_SCAN_COUNT = 0
+VARSET Z_SCAN
+SIF Z_ROOM_MODE >= 0
+    CALL Z_ORDER_SCAN, Z_HERE, Z_ROOM_MODE
+SIF Z_PLAYER_MODE >= 0
+    CALL Z_ORDER_SCAN, Z_PLAYER, Z_PLAYER_MODE
+RETURN

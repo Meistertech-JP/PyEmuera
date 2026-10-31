@@ -1,0 +1,145 @@
+﻿; Native adaptation of EGG-OBJECT, BAD-EGG, CANARY-OBJECT, SCORE-UPD,
+; TREE-ROOM and STONE-BARROW-FCN at pinned historicalsource/zork1.
+@Z_EGG_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_O == O_CANARY || Z_O == O_BROKEN_CANARY
+    IF Z_VERB == "wind"
+        IF Z_O == O_BROKEN_CANARY
+            PRINTL There is an unpleasant grinding noise from inside the canary.
+        ELSEIF !Z_SING_SONG && Z_FOREST_ROOM()
+            PRINTL The canary chirps, slightly off-key, an aria from a forgotten opera.
+            PRINTL From out of the greenery flies a lovely songbird. It perches on a
+            PRINTL limb just over your head and opens its beak to sing. As it does so
+            PRINTL a beautiful brass bauble drops from its mouth, bounces off the top of
+            PRINTL your head, and lands glimmering in the grass. As the canary winds
+            PRINTL down, the songbird flies away.
+            Z_SING_SONG = 1
+            IF Z_HERE == R_UP_A_TREE
+                CALL Z_MOVE_OBJECT, O_BAUBLE, R_PATH
+            ELSE
+                CALL Z_MOVE_OBJECT, O_BAUBLE, Z_HERE
+            ENDIF
+        ELSE
+            PRINTL The canary chirps blithely, if somewhat tinnily, for a short time.
+        ENDIF
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_EGG
+    IF Z_VERB == "open" || Z_VERB == "break"
+        IF Z_HAS(O_EGG, ZF_OPEN)
+            PRINTL The egg is already open.
+        ELSEIF !Z_TARGET
+            PRINTL You have neither the tools nor the expertise.
+        ELSEIF Z_TARGET == O_HANDS
+            PRINTL I doubt you could do that without damaging it.
+        ELSEIF Z_HAS(Z_TARGET, ZF_WEAPON) || Z_HAS(Z_TARGET, ZF_TOOL) || Z_VERB == "break"
+            PRINTL The egg is now open, but the clumsiness of your attempt has seriously
+            PRINTL compromised its esthetic appeal.
+            CALL Z_BAD_EGG
+        ELSEIF Z_EGG_ATTEMPT
+            PRINTFORML Not to say that using the %Z_OBJ_NAME:Z_TARGET% isn't original too...
+        ELSE
+            PRINTFORML The concept of using a %Z_OBJ_NAME:Z_TARGET% is certainly original.
+            Z_EGG_ATTEMPT = 1
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "climb_on" || Z_VERB == "hatch"
+        PRINTL There is a noticeable crunch from beneath you, and inspection reveals
+        PRINTL that the egg is lying open, badly damaged.
+        CALL Z_BAD_EGG
+        RETURN 1
+    ELSEIF Z_VERB == "throw" && !Z_TARGET
+        IF Z_PARENT:O_EGG != Z_PLAYER
+            PRINTL You aren't holding that.
+            RETURN 1
+        ENDIF
+        CALL Z_MOVE_OBJECT, O_EGG, Z_HERE
+        PRINTL Your rather indelicate handling of the egg has caused it some damage,
+        PRINTL although you have succeeded in opening it.
+        CALL Z_BAD_EGG
+        RETURN 1
+    ENDIF
+ENDIF
+RETURN 0
+
+@Z_BAD_EGG
+IF Z_PARENT:O_CANARY == O_EGG
+    PRINTVL Z_FDESC:O_BROKEN_CANARY
+ELSE
+    CALL Z_MOVE_OBJECT, O_BROKEN_CANARY, 0
+ENDIF
+CALL Z_MOVE_OBJECT, O_BROKEN_EGG, Z_PARENT:O_EGG
+CALL Z_MOVE_OBJECT, O_EGG, 0
+RETURN
+
+@Z_FOREST_ROOM()
+#FUNCTION
+RETURNF Z_HERE == R_FOREST_1 || Z_HERE == R_FOREST_2 || Z_HERE == R_FOREST_3 || Z_HERE == R_PATH || Z_HERE == R_UP_A_TREE
+
+@Z_TREE_DROP(Z_O)
+#DIM DYNAMIC Z_O
+; IDROP precedes TREE-ROOM's special cases in the source.
+CALL Z_MOVE_OBJECT, Z_O, R_UP_A_TREE
+IF Z_O == O_NEST && Z_PARENT:O_EGG == O_NEST
+    PRINTL The nest falls to the ground, and the egg spills out of it, seriously
+    PRINTL damaged.
+    ; Preserve the source's peculiar nest location: only the broken egg moves.
+    CALL Z_MOVE_OBJECT, O_EGG, 0
+    CALL Z_MOVE_OBJECT, O_BROKEN_EGG, R_PATH
+ELSEIF Z_O == O_EGG
+    PRINTL The egg falls to the ground and springs open, seriously damaged.
+    CALL Z_MOVE_OBJECT, O_EGG, R_PATH
+    CALL Z_BAD_EGG
+ELSE
+    CALL Z_MOVE_OBJECT, Z_O, R_PATH
+    PRINTFORML The %Z_OBJ_NAME:Z_O% falls to the ground.
+ENDIF
+RETURN
+
+@Z_SCORE_UPDATED
+; WON is latched. Dropping below 350 later must not hide the map/path again.
+IF !Z_WON && Z_TOTAL_SCORE() == 350
+    Z_WON = 1
+    Z_FLAGS:O_MAP &= ~ZF_HIDDEN
+    Z_VISITED:R_WEST_OF_HOUSE = 0
+    PRINTL An almost inaudible voice whispers in your ear, "Look to your treasures
+    PRINTL for the final secret."
+ENDIF
+RETURN
+
+@Z_END_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_O == O_BARROW_DOOR && (Z_VERB == "open" || Z_VERB == "close")
+    PRINTL The door is too heavy.
+    RETURN 1
+ENDIF
+IF (Z_O == O_BARROW || Z_O == O_BARROW_DOOR) && (Z_VERB == "enter" || Z_VERB == "climb")
+    CALL Z_FINISH_ADVENTURE
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_FINISH_ADVENTURE
+PRINTL Inside the Barrow
+PRINTL As you enter the barrow, the door closes inexorably behind you. Around
+PRINTL you it is dark, but ahead is an enormous cavern, brightly lit. Through
+PRINTL its center runs a wide stream. Spanning the stream is a small wooden
+PRINTL footbridge, and beyond a path leads into a dark tunnel. Above the
+PRINTL bridge, floating in the air, is a large sign. It reads:  All ye who
+PRINTL stand before this bridge have completed a great and perilous adventure
+PRINTL which has tested your wit and courage. You have mastered
+PRINTL the first part of the ZORK trilogy. Those who pass over this bridge must be
+PRINTL prepared to undertake an even greater adventure that will severely test your
+PRINTL skill and bravery!
+PRINTL
+PRINTL The ZORK trilogy continues with "ZORK II: The Wizard of Frobozz" and
+PRINTL is completed in "ZORK III: The Dungeon Master."
+Z_FINISHED = 1
+Z_GAME_OVER = 1
+Z_TIME = 0
+CALL Z_V_SCORE
+CALL Z_FINISH_PROMPT
+RETURN

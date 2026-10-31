@@ -1,0 +1,498 @@
+﻿; Native thief daemon and special actions. Ordered branches follow 1actions.zil.
+; Child scans follow the saved linked object tree, not numeric IDs.
+@Z_RECOVER_STILETTO
+IF Z_PARENT:O_STILETTO == Z_PARENT:O_THIEF && Z_PARENT:O_THIEF != 0
+    Z_FLAGS:O_STILETTO |= ZF_NDESC
+    CALL Z_MOVE_OBJECT, O_STILETTO, O_THIEF
+ENDIF
+RETURN
+
+@Z_ROB(Z_FROM, Z_TO, Z_CHANCE = 0)
+#DIM DYNAMIC Z_FROM
+#DIM DYNAMIC Z_TO
+#DIM DYNAMIC Z_CHANCE
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_ROBBED
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_FROM)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != Z_FROM || Z_HAS(Z_O, ZF_HIDDEN) || Z_HAS(Z_O, ZF_SACRED) || Z_CURRENT_TVALUE:Z_O <= 0
+        CONTINUE
+    IF !Z_CHANCE || Z_PROB(Z_CHANCE)
+        CALL Z_MOVE_OBJECT, Z_O, Z_TO
+        Z_TOUCHED:Z_O = 1
+        SIF Z_TO == O_THIEF
+            Z_FLAGS:Z_O |= ZF_HIDDEN
+        Z_ROBBED = 1
+    ENDIF
+WEND
+RETURN Z_ROBBED
+
+@Z_DEPOSIT_BOOTY(Z_ROOM)
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_MOVED
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(O_THIEF)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != O_THIEF || Z_O == O_STILETTO || Z_O == O_LARGE_BAG || Z_CURRENT_TVALUE:Z_O <= 0
+        CONTINUE
+    CALL Z_MOVE_OBJECT, Z_O, Z_ROOM
+    Z_MOVED = 1
+    IF Z_O == O_EGG
+        Z_EGG_SOLVED = 1
+        Z_FLAGS:O_EGG |= ZF_OPEN
+    ENDIF
+WEND
+RETURN Z_MOVED
+
+@Z_STEAL_JUNK(Z_ROOM)
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_ROOM)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != Z_ROOM || Z_CURRENT_TVALUE:Z_O != 0 || !Z_HAS(Z_O, ZF_TAKE) || Z_HAS(Z_O, ZF_SACRED) || Z_HAS(Z_O, ZF_HIDDEN)
+        CONTINUE
+    IF Z_O == O_STILETTO || Z_PROB(10, 1)
+        CALL Z_MOVE_OBJECT, Z_O, O_THIEF
+        Z_TOUCHED:Z_O = 1
+        Z_FLAGS:Z_O |= ZF_HIDDEN
+        SIF Z_O == O_ROPE
+            Z_DOME_TIED = 0
+        IF Z_ROOM == Z_HERE
+            PRINTFORML You suddenly notice that the %Z_OBJ_NAME:Z_O% vanished.
+            RETURN 1
+        ENDIF
+        RETURN 0
+    ENDIF
+WEND
+RETURN 0
+
+@Z_ROB_MAZE(Z_ROOM)
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_ROOM)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != Z_ROOM || !Z_HAS(Z_O, ZF_TAKE) || Z_HAS(Z_O, ZF_HIDDEN)
+        CONTINUE
+    IF Z_PROB(40)
+        PRINTFORML You hear, off in the distance, someone saying "My, I wonder what
+        PRINTFORML this fine %Z_OBJ_NAME:Z_O% is doing here."
+        IF Z_PROB(60, 1)
+            CALL Z_MOVE_OBJECT, Z_O, O_THIEF
+            Z_TOUCHED:Z_O = 1
+            Z_FLAGS:Z_O |= ZF_HIDDEN
+        ENDIF
+        RETURN 1
+    ENDIF
+WEND
+RETURN 0
+
+@Z_DROP_JUNK(Z_ROOM)
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_SAID
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(O_THIEF)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != O_THIEF || Z_O == O_STILETTO || Z_O == O_LARGE_BAG || Z_CURRENT_TVALUE:Z_O != 0
+        CONTINUE
+    IF Z_PROB(30, 1)
+        Z_FLAGS:Z_O &= ~ZF_HIDDEN
+        CALL Z_MOVE_OBJECT, Z_O, Z_ROOM
+        IF !Z_SAID && Z_ROOM == Z_HERE
+            PRINTL The robber, rummaging through his bag, dropped a few items he found
+            PRINTL valueless.
+            Z_SAID = 1
+        ENDIF
+    ENDIF
+WEND
+RETURN Z_SAID
+
+@Z_HACK_TREASURES
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_LINK_CURSOR1
+CALL Z_RECOVER_STILETTO
+Z_FLAGS:O_THIEF |= ZF_HIDDEN
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(R_TREASURE_ROOM)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O == R_TREASURE_ROOM
+        Z_FLAGS:Z_O &= ~ZF_HIDDEN
+WEND
+RETURN
+
+@Z_THIEF_IN_TREASURE
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_COUNT
+#DIM DYNAMIC Z_LINK_CURSOR1
+; <AND .F <NEXT? .F>> counts the player, who is a child of HERE in the story.
+SIF Z_HERE == R_TREASURE_ROOM
+    Z_COUNT = 1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(R_TREASURE_ROOM)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != R_TREASURE_ROOM
+        CONTINUE
+    Z_COUNT += 1
+    SIF Z_O != O_CHALICE && Z_O != O_THIEF
+        Z_FLAGS:Z_O |= ZF_HIDDEN
+WEND
+IF Z_COUNT > 1
+    PRINTL The thief gestures mysteriously, and the treasures in the room
+    PRINTL suddenly vanish.
+    PRINTL
+ENDIF
+RETURN
+
+@Z_TREASURE_ENTER
+IF Z_HERE == R_TREASURE_ROOM && Z_THIEF_ACTIVE && !Z_DEAD
+    IF Z_PARENT:O_THIEF != Z_HERE
+        PRINTL You hear a scream of anguish as you violate the robber's hideaway.
+        PRINTL Using passages unknown to you, he rushes to its defense.
+        CALL Z_MOVE_OBJECT, O_THIEF, Z_HERE
+    ENDIF
+    Z_THIEF_FIGHT = 1
+    Z_FLAGS:O_THIEF &= ~ZF_HIDDEN
+    CALL Z_THIEF_IN_TREASURE
+ENDIF
+RETURN
+
+@Z_STOLE_LIGHT(Z_WAS_LIT)
+#DIM DYNAMIC Z_WAS_LIT
+IF Z_WAS_LIT && !Z_IS_LIT()
+    PRINTL The thief seems to have left you in the dark.
+ENDIF
+RETURN
+
+@Z_THIEF_ROB_PLAYER_ROOM
+#DIM DYNAMIC Z_FROM
+CALL Z_ROB, Z_HERE, O_THIEF, 100
+IF RESULT
+    RETURN Z_HERE
+ENDIF
+CALL Z_ROB, Z_PLAYER, O_THIEF
+IF RESULT
+    RETURN Z_PLAYER
+ENDIF
+RETURN 0
+
+@Z_THIEF_LEAVE_TEXT(Z_FROM)
+#DIM DYNAMIC Z_FROM
+IF Z_FROM
+    PRINTL The thief just left, still carrying his large bag. You may
+    PRINT not have noticed that he 
+    IF Z_FROM == Z_PLAYER
+        PRINTL robbed you blind first.
+    ELSE
+        PRINTL appropriated the valuables in the room.
+    ENDIF
+ELSE
+    PRINTL The thief, finding nothing of value, left disgusted.
+ENDIF
+RETURN
+
+@Z_THIEF_WINNING()
+#FUNCTION
+#DIM DYNAMIC Z_DIFF
+Z_DIFF = Z_THIEF_STRENGTH - Z_HERO_STRENGTH(1)
+SIF Z_DIFF > 3
+    RETURNF Z_PROB(90)
+SIF Z_DIFF > 0
+    RETURNF Z_PROB(75)
+SIF Z_DIFF == 0
+    RETURNF Z_PROB(50)
+SIF Z_THIEF_STRENGTH > 1
+    RETURNF Z_PROB(25)
+RETURNF Z_PROB(10)
+
+@Z_THIEF_VS_PLAYER(Z_VISIBLE)
+#DIM DYNAMIC Z_VISIBLE
+#DIM DYNAMIC Z_ROBBED
+#DIM DYNAMIC Z_WAS_LIT
+Z_WAS_LIT = Z_IS_LIT()
+IF !Z_DEAD && Z_HERE == R_TREASURE_ROOM
+    RETURN 0
+ENDIF
+IF !Z_THIEF_HERE
+    IF !Z_DEAD && !Z_VISIBLE && Z_PROB(30)
+        IF Z_PARENT:O_STILETTO == O_THIEF
+            Z_FLAGS:O_THIEF &= ~ZF_HIDDEN
+            PRINTL Someone carrying a large bag is casually leaning against one of the
+            PRINTL walls here. He does not speak, but it is clear from his aspect that
+            PRINTL the bag will be taken only over his dead body.
+            Z_THIEF_HERE = 1
+            RETURN 1
+        ENDIF
+    ELSEIF Z_VISIBLE && Z_THIEF_FIGHT && !Z_THIEF_WINNING()
+        PRINTL Your opponent, determining discretion to be the better part of
+        PRINTL valor, decides to terminate this little contretemps. With a rueful
+        PRINTL nod of his head, he steps backward into the gloom and disappears.
+        Z_FLAGS:O_THIEF |= ZF_HIDDEN
+        Z_THIEF_FIGHT = 0
+        CALL Z_RECOVER_STILETTO
+        RETURN 1
+    ELSEIF Z_VISIBLE && Z_THIEF_FIGHT && Z_PROB(90)
+        RETURN 0
+    ELSEIF Z_VISIBLE && Z_PROB(30)
+        PRINTL The holder of the large bag just left, looking disgusted.
+        PRINTL Fortunately, he took nothing.
+        Z_FLAGS:O_THIEF |= ZF_HIDDEN
+        CALL Z_RECOVER_STILETTO
+        RETURN 1
+    ELSEIF Z_PROB(70)
+        RETURN 0
+    ELSEIF !Z_DEAD
+        CALL Z_THIEF_ROB_PLAYER_ROOM
+        Z_ROBBED = RESULT
+        Z_THIEF_HERE = 1
+        IF Z_ROBBED && !Z_VISIBLE
+            PRINTL A seedy-looking individual with a large bag just wandered through
+            PRINT the room. On the way through, he quietly abstracted some valuables from 
+            IF Z_ROBBED == Z_HERE
+                PRINT the room
+            ELSE
+                PRINT your possession
+            ENDIF
+            PRINTL , mumbling something about
+            PRINTL "Doing unto others before..."
+            CALL Z_STOLE_LIGHT, Z_WAS_LIT
+        ELSEIF Z_VISIBLE
+            CALL Z_RECOVER_STILETTO
+            CALL Z_THIEF_LEAVE_TEXT, Z_ROBBED
+            CALL Z_STOLE_LIGHT, Z_WAS_LIT
+            Z_FLAGS:O_THIEF |= ZF_HIDDEN
+            RETURN 1
+        ELSE
+            PRINTL A "lean and hungry" gentleman just wandered through, carrying a
+            PRINTL large bag. Finding nothing of value, he left disgruntled.
+            RETURN 1
+        ENDIF
+    ENDIF
+ELSE
+    IF Z_VISIBLE && Z_PROB(30)
+        CALL Z_THIEF_ROB_PLAYER_ROOM
+        Z_ROBBED = RESULT
+        CALL Z_THIEF_LEAVE_TEXT, Z_ROBBED
+        CALL Z_STOLE_LIGHT, Z_WAS_LIT
+        Z_FLAGS:O_THIEF |= ZF_HIDDEN
+        CALL Z_RECOVER_STILETTO
+    ENDIF
+ENDIF
+RETURN 0
+
+@Z_THIEF_CLOCK
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_VISIBLE
+#DIM DYNAMIC Z_PASS
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_EVENT
+SIF !Z_THIEF_ACTIVE || !Z_PARENT:O_THIEF || Z_GAME_OVER
+    RETURN 0
+Z_ROOM = Z_PARENT:O_THIEF
+FOR Z_PASS, 0, 2
+    Z_VISIBLE = !Z_HAS(O_THIEF, ZF_HIDDEN)
+    SIF Z_VISIBLE
+        Z_ROOM = Z_PARENT:O_THIEF
+    IF Z_ROOM == R_TREASURE_ROOM && Z_ROOM != Z_HERE
+        IF Z_VISIBLE
+            CALL Z_HACK_TREASURES
+            Z_VISIBLE = 0
+        ENDIF
+        CALL Z_DEPOSIT_BOOTY, R_TREASURE_ROOM
+    ELSEIF Z_ROOM == Z_HERE && !Z_ROOM_NATURAL_LIGHT(Z_ROOM) && Z_PARENT:O_TROLL != Z_HERE
+        CALL Z_THIEF_VS_PLAYER, Z_VISIBLE
+        SIF RESULT
+            RETURN 1
+        SIF Z_HAS(O_THIEF, ZF_HIDDEN)
+            Z_VISIBLE = 0
+    ELSE
+        IF Z_PARENT:O_THIEF == Z_ROOM && !Z_HAS(O_THIEF, ZF_HIDDEN)
+            Z_FLAGS:O_THIEF |= ZF_HIDDEN
+            Z_VISIBLE = 0
+        ENDIF
+        IF Z_VISITED:Z_ROOM
+            CALL Z_ROB, Z_ROOM, O_THIEF, 75
+            IF Z_ROOM_MAZE:Z_ROOM && Z_ROOM_MAZE:Z_HERE
+                CALL Z_ROB_MAZE, Z_ROOM
+            ELSE
+                CALL Z_STEAL_JUNK, Z_ROOM
+            ENDIF
+            Z_EVENT = RESULT
+        ENDIF
+    ENDIF
+    IF Z_PASS == 0 && !Z_VISIBLE
+        CALL Z_RECOVER_STILETTO
+        FOR Z_I, 0, Z_ROOM_COUNT
+            Z_ROOM = Z_ROOM_NEXT:Z_ROOM
+            IF Z_ROOM_IS_LAND(Z_ROOM) && !Z_ROOM_SACRED:Z_ROOM
+                CALL Z_MOVE_OBJECT, O_THIEF, Z_ROOM
+                Z_THIEF_FIGHT = 0
+                Z_FLAGS:O_THIEF |= ZF_HIDDEN
+                Z_THIEF_HERE = 0
+                BREAK
+            ENDIF
+        NEXT
+    ELSE
+        BREAK
+    ENDIF
+NEXT
+SIF Z_ROOM != R_TREASURE_ROOM
+    CALL Z_DROP_JUNK, Z_ROOM
+RETURN Z_EVENT
+
+@Z_THIEF_DESCRIPTION
+IF Z_THIEF_STRENGTH < 0
+    PRINTL There is a suspicious-looking individual lying unconscious on the
+    PRINTL ground.
+ELSE
+    PRINTVL Z_LDESC:O_THIEF
+ENDIF
+RETURN
+
+@Z_THIEF_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_LINK_CURSOR1
+IF Z_O == O_STILETTO && Z_VERB == "take" && Z_PARENT:O_THIEF == Z_HERE
+    IF Z_PARENT:O_STILETTO == O_THIEF
+        PRINTL The thief swings it out of your reach.
+    ELSE
+        PRINTL The stiletto seems white-hot. You can't hold on to it.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_CHALICE
+    IF Z_VERB == "take" && Z_PARENT:O_CHALICE == R_TREASURE_ROOM && Z_PARENT:O_THIEF == R_TREASURE_ROOM && Z_THIEF_FIGHT && !Z_HAS(O_THIEF, ZF_HIDDEN) && Z_THIEF_STRENGTH >= 0
+        PRINTL You'd be stabbed in the back first.
+        RETURN 1
+    ELSEIF Z_VERB == "open" || Z_VERB == "close" || Z_VERB == "inside"
+        PRINTL You can't do that.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_TARGET == O_CHALICE && Z_VERB == "put"
+    PRINTL You can't. It's not a very good chalice, is it?
+    RETURN 1
+ENDIF
+IF Z_O == O_LARGE_BAG
+    IF Z_VERB == "take"
+        IF Z_THIEF_STRENGTH < 0
+            PRINTL Sadly for you, the robber collapsed on top of the bag. Trying to take
+            PRINTL it would wake him.
+        ELSE
+            PRINTL The bag will be taken over his dead body.
+        ENDIF
+    ELSEIF Z_VERB == "open" || Z_VERB == "close"
+        PRINTL Getting close enough would be a good trick.
+    ELSEIF Z_VERB == "examine" || Z_VERB == "inside"
+        PRINTL The bag is underneath the thief, so one can't say what, if anything, is
+        PRINTL inside.
+    ELSE
+        RETURN 0
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_LARGE_BAG && Z_VERB == "put"
+    PRINTL It would be a good trick.
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_THIEF && (Z_VERB == "give" || Z_VERB == "throw") && Z_O != O_THIEF
+    IF !Z_WITHIN(Z_O, Z_PLAYER)
+        PRINTL You aren't holding that.
+        RETURN 1
+    ENDIF
+    IF Z_O == O_KNIFE && Z_VERB == "throw" && !Z_THIEF_FIGHT
+        CALL Z_MOVE_OBJECT, O_KNIFE, Z_HERE
+        IF Z_PROB(10, 1)
+            PRINTL You evidently frightened the robber, though you didn't hit him. He
+            PRINT flees
+            ; FIRST? THIEF once the bag and the stiletto are taken out.
+            Z_O = 0
+            Z_LINK_CURSOR1 = Z_FIRST_CHILD(O_THIEF)
+            WHILE Z_LINK_CURSOR1
+                SIF Z_LINK_CURSOR1 != O_LARGE_BAG && Z_LINK_CURSOR1 != O_STILETTO
+                    Z_O = Z_LINK_CURSOR1
+                Z_LINK_CURSOR1 = Z_NEXT:Z_LINK_CURSOR1
+            WEND
+            IF Z_O
+                PRINTL , but the contents of his bag fall on the floor.
+            ELSE
+                PRINTL .
+            ENDIF
+            Z_LINK_CURSOR1 = Z_FIRST_CHILD(O_THIEF)
+            WHILE Z_LINK_CURSOR1
+                Z_I = Z_LINK_CURSOR1
+                Z_LINK_CURSOR1 = Z_NEXT:Z_I
+                IF Z_PARENT:Z_I == O_THIEF && Z_I != O_LARGE_BAG && Z_I != O_STILETTO
+                    Z_FLAGS:Z_I &= ~ZF_HIDDEN
+                    CALL Z_MOVE_OBJECT, Z_I, Z_HERE
+                ENDIF
+            WEND
+            Z_FLAGS:O_THIEF |= ZF_HIDDEN
+        ELSE
+            PRINTL You missed. The thief makes no attempt to take the knife, though it
+            PRINTL would be a fine addition to the collection in his bag. He does seem
+            PRINTL angered by your attempt.
+            Z_THIEF_FIGHT = 1
+        ENDIF
+        RETURN 1
+    ENDIF
+    IF Z_THIEF_STRENGTH < 0
+        Z_THIEF_STRENGTH = -Z_THIEF_STRENGTH
+        CALL Z_ENABLE, ZE_THIEF, 1
+        CALL Z_RECOVER_STILETTO
+        PRINTL Your proposed victim suddenly recovers consciousness.
+    ENDIF
+    CALL Z_MOVE_OBJECT, Z_O, O_THIEF
+    IF Z_CURRENT_TVALUE:Z_O > 0
+        Z_THIEF_ENGROSSED = 1
+        PRINTL The thief is taken aback by your unexpected generosity, but accepts
+        PRINTFORML the %Z_OBJ_NAME:Z_O% and stops to admire its beauty.
+    ELSE
+        PRINTFORML The thief places the %Z_OBJ_NAME:Z_O% in his bag and thanks
+        PRINTL you politely.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_THIEF
+    SELECTCASE Z_VERB
+    CASE "attack"
+        CALL Z_ATTACK_THIEF, Z_TARGET
+    CASE "take"
+        PRINTL Once you got him, what would you do with him?
+    CASE "examine", "inside"
+        PRINTL The thief is a slippery character with beady eyes that flit back
+        PRINTL and forth. He carries, along with an unmistakable arrogance, a large bag
+        PRINTL over his shoulder and a vicious stiletto, whose blade is aimed
+        PRINTL menacingly in your direction. I'd watch out if I were you.
+    CASE "listen"
+        PRINTL The thief says nothing, as you have not been formally introduced.
+    CASE "wake"
+        IF Z_THIEF_STRENGTH < 0
+            PRINTL The thief is rudely awakened.
+            CALL Z_AWAKEN_THIEF
+        ELSE
+            PRINTL He's wide awake, or haven't you noticed...
+        ENDIF
+    CASEELSE
+        RETURN 0
+    ENDSELECT
+    RETURN 1
+ENDIF
+RETURN 0

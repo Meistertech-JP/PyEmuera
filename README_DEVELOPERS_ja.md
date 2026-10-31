@@ -1,6 +1,6 @@
-# PyEmuera 3.0.0 Beta 2 開発者向けガイド
+# PyEmuera 3.0.0 Beta 3 開発者向けガイド
 
-このソース用 ZIP には PyEmuera `3.0.0b2` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
+このソース用 ZIP には PyEmuera `3.0.0b3` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
 
 バリアントを遊ぶ場合は、実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使います。使い方は実行用 ZIP の `README_ja.txt` と `HOW_TO_USE_ja.txt` を参照してください。
 
@@ -32,6 +32,7 @@
 │  └─ b1/r51_test_ids.json   r51の3,296テストID（削除・改名の検出用）
 ├─ tools/                 ビルド・テスト・検証用スクリプト（下記）
 ├─ examples/smoke/        サンプルバリアント（テストでも使用）
+├─ examples/zorkerb/      ZORKERB r29（Zork I の ERB 移植、同梱ライセンスあり）
 ├─ packaging/public/      公開ZIPの利用者向け文書・起動用バッチの原稿と、収録ファイルの選定規則
 ├─ licenses/              第三者のライセンス文書
 ├─ PyEmuera.pyz           テスト用 pyz（一部のテストが直接実行します）
@@ -153,7 +154,7 @@ python -m build --outdir ../dist
 `../dist` に `.whl`（wheel）と `.tar.gz`（sdist）ができます。
 
 ```console
-python -m pip install ../dist/pyemuera_experimental-3.0.0b2-py3-none-any.whl
+python -m pip install ../dist/pyemuera_experimental-3.0.0b3-py3-none-any.whl
 ```
 
 インストールした PyEmuera で、文字列の並べ替えが本家の記録と一致するかを確認できます（インストールした仮想環境の Python で実行します。ソースの `pyemuera/` ではなく、インストールされたものを使って確認します）。

@@ -1,0 +1,210 @@
+﻿; JIGS-UP / RANDOMIZE-OBJECTS / DEAD-FUNCTION. No host-side state mutation.
+@Z_FATAL_BOUNDARY
+; The historical name is retained for all existing lethal call sites.
+; It now performs death continuation rather than a partial-port boundary.
+Z_DEATH_THIS_TURN = 1
+IF Z_DEAD
+    PRINTL It takes a talented person to be killed while already dead. YOU are such
+    PRINTL a talent. Unfortunately, it takes a talented person to deal with it.
+    PRINTL I am not such a talent. Sorry.
+    Z_GAME_OVER = 1
+    CALL Z_V_SCORE
+    CALL Z_FINISH_PROMPT
+    RETURN
+ENDIF
+SIF !Z_LUCKY
+    PRINTL Bad luck, huh?
+Z_BASE_SCORE -= 10
+PRINTL
+PRINTL     ****  You have died  ****
+PRINTL
+Z_IN_BOAT = 0
+CALL Z_QUEUE, ZE_RIVER, 0
+IF Z_DEATHS >= 2
+    PRINTL You clearly are a suicidal maniac. We don't allow psychotics in the
+    PRINTL cave, since they may harm other adventurers. Your remains will be
+    PRINTL installed in the Land of the Living Dead, where your fellow
+    PRINTL adventurers may gloat over them.
+    Z_GAME_OVER = 1
+    CALL Z_V_SCORE
+    CALL Z_FINISH_PROMPT
+    RETURN
+ENDIF
+Z_DEATHS += 1
+IF Z_VISITED:R_SOUTH_TEMPLE
+    PRINTL As you take your last breath, you feel relieved of your burdens. The
+    PRINTL feeling passes as you find yourself before the gates of Hell, where
+    PRINTL the spirits jeer at you and deny you entry. Your senses are
+    PRINTL disturbed. The objects in the dungeon appear indistinct, bleached of
+    PRINTL color, even unreal.
+    PRINTL
+    Z_DEAD = 1
+    Z_TROLL_PASS = 1
+    Z_HERE = R_ENTRANCE_TO_HADES
+ELSE
+    PRINTL Now, let's take a look here...
+    PRINTL Well, you probably deserve another chance. I can't quite fix you
+    PRINTL up completely, but you can't have everything.
+    PRINTL
+    Z_HERE = R_FOREST_1
+ENDIF
+CALL Z_FOREST_ENTER
+CALL Z_LOOK, 1
+Z_TOUCHED:O_TRAP_DOOR = 0
+CALL Z_SCATTER_POSSESSIONS
+CALL Z_KILL_INTERRUPTS
+RETURN
+
+@Z_SCATTER_POSSESSIONS
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_ABOVE, 11
+#DIM DYNAMIC Z_PICK
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_ABOVE:0 = R_WEST_OF_HOUSE
+Z_ABOVE:1 = R_NORTH_OF_HOUSE
+Z_ABOVE:2 = R_EAST_OF_HOUSE
+Z_ABOVE:3 = R_SOUTH_OF_HOUSE
+Z_ABOVE:4 = R_FOREST_1
+Z_ABOVE:5 = R_FOREST_2
+Z_ABOVE:6 = R_FOREST_3
+Z_ABOVE:7 = R_PATH
+Z_ABOVE:8 = R_CLEARING
+Z_ABOVE:9 = R_GRATING_CLEARING
+Z_ABOVE:10 = R_CANYON_VIEW
+SIF Z_PARENT:O_LAMP == Z_PLAYER
+    CALL Z_MOVE_OBJECT, O_LAMP, R_LIVING_ROOM
+SIF Z_PARENT:O_COFFIN == Z_PLAYER
+    CALL Z_MOVE_OBJECT, O_COFFIN, R_EGYPT_ROOM
+Z_SWORD_GLOW = 0
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_PLAYER)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    SIF Z_PARENT:Z_O != Z_PLAYER
+        CONTINUE
+    IF Z_CURRENT_TVALUE:Z_O > 0
+        SIF !Z_ROOM
+            Z_ROOM = Z_ROOM_ORDER:0
+        WHILE 1
+            IF Z_ROOM_IS_LAND(Z_ROOM) && !Z_ROOM_NATURAL_LIGHT(Z_ROOM) && Z_PROB(50)
+                CALL Z_MOVE_OBJECT, Z_O, Z_ROOM
+                BREAK
+            ENDIF
+            Z_ROOM = Z_ROOM_NEXT:Z_ROOM
+        WEND
+    ELSE
+        Z_PICK = (Z_RANDOM(11) - 1)
+        CALL Z_MOVE_OBJECT, Z_O, Z_ABOVE:Z_PICK
+    ENDIF
+WEND
+RETURN
+
+@Z_KILL_INTERRUPTS
+; Clock enablement is distinct from ONBIT, and is saved across process restarts.
+CALL Z_ENABLE, ZE_XB, 0
+CALL Z_ENABLE, ZE_XC, 0
+CALL Z_ENABLE, ZE_CYCLOPS, 0
+CALL Z_ENABLE, ZE_LANTERN, 0
+CALL Z_ENABLE, ZE_CANDLES, 0
+CALL Z_ENABLE, ZE_SWORD, 0
+CALL Z_ENABLE, ZE_FOREST, 0
+CALL Z_ENABLE, ZE_MATCH, 0
+Z_FLAGS:O_MATCH &= ~ZF_ON
+RETURN
+
+@Z_GHOST_ACTION
+SIF !Z_DEAD
+    RETURN 0
+SELECTCASE Z_VERB
+CASE "walk"
+    IF Z_HERE == R_TIMBER_ROOM && Z_DIRECTION == 3
+        PRINTL You cannot enter in your condition.
+        RETURN 1
+    ENDIF
+    RETURN 0
+CASE "land"
+    ; LAND is the direction word P?LAND (WALK LAND).
+    RETURN 0
+CASE "look", "look_room"
+    ; DEAD-FUNCTION LOOK tests <FIRST? ,HERE>. The story's player object (or
+    ; its vehicle) is itself a child of HERE, so the "." ending never occurs;
+    ; the port keeps the player outside the room's child list.
+    PRINTL The room looks strange and unearthly and objects appear indistinct.
+    SIF !Z_ROOM_LIGHT:Z_HERE
+        PRINTL Although there is no light, the room seems dimly illuminated.
+    PRINTL
+    RETURN 0
+CASE "pray"
+    IF Z_HERE == R_SOUTH_TEMPLE
+        Z_FLAGS:O_LAMP &= ~ZF_HIDDEN
+        Z_DEAD = 0
+        SIF Z_PARENT:O_TROLL == R_TROLL_ROOM
+            Z_TROLL_PASS = 0
+        PRINTL From the distance the sound of a lone trumpet is heard. The room
+        PRINTL becomes very bright and you feel disembodied. In a moment, the
+        PRINTL brightness fades and you find yourself rising as if from a long
+        PRINTL sleep, deep in the woods. In the distance you can faintly hear a
+        PRINTL songbird and the sounds of the forest.
+        PRINTL
+        Z_HERE = R_FOREST_1
+        CALL Z_FOREST_ENTER
+        CALL Z_LOOK, 1
+    ELSE
+        PRINTL Your prayers are not heard.
+    ENDIF
+CASE "attack", "break", "wake", "swing"
+    PRINTL All such attacks are vain in your condition.
+CASE "open", "close", "eat", "drink", "inflate", "deflate", "turn", "burn", "tie", "untie", "rub"
+    PRINTL Even such an action is beyond your capabilities.
+CASE "wait"
+    PRINTL Might as well. You've got an eternity.
+CASE "on"
+    PRINTL You need no light to guide you.
+CASE "take"
+    PRINTL Your hand passes through its object.
+CASE "drop", "throw", "inventory"
+    PRINTL You have no possessions.
+CASEELSE
+    PRINTL You can't even do that.
+ENDSELECT
+RETURN 1
+
+; FINISH (gverbs.zil): V-SCORE has been printed by the caller. The prompt ends
+; with ">" and the next READ takes only its first word.
+@Z_FINISH_PROMPT
+Z_PENDING =
+Z_ACTOR_PENDING =
+PRINTL
+PRINTL Would you like to restart the game from the beginning, restore a saved
+PRINTL game position, or end this session of the game?
+PRINTL (Type RESTART, RESTORE, or QUIT):
+PRINT >
+RETURN
+
+@Z_FINISH_INPUT
+#DIMS DYNAMIC Z_LINE
+#DIMS DYNAMIC Z_W
+INPUTS
+Z_LINE '= Z_NORMALIZE(RESULTS)
+Z_W '= Z_DICTIONARY_KEY(Z_FIRST_WORD(Z_LINE))
+IF Z_W == "restar"
+    ; RESTART without confirmation.
+    Z_CONTROL = ZC_RESTART
+ELSEIF Z_W == "restor"
+    ; The story asks for a file; the port's host save uses slot 0-9.
+    Z_SLOT = 0
+    Z_W '= Z_TRIM(SUBSTRING(Z_LINE, STRLENS(Z_FIRST_WORD(Z_LINE))))
+    SIF STRLENS(Z_W) == 1 && STRFIND("0123456789", Z_W) >= 0
+        Z_SLOT = TOINT(Z_W)
+    Z_CONTROL = ZC_LOAD
+ELSEIF Z_W == "quit" || Z_W == "q"
+    Z_CONTROL = ZC_QUIT
+ELSEIF Z_W == "portst"
+    ; Port verification hook (read-only); FINISH then asks again.
+    CALL Z_PORT_STATE
+    CALL Z_FINISH_PROMPT
+ELSE
+    CALL Z_FINISH_PROMPT
+ENDIF
+RETURN

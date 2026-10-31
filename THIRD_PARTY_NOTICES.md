@@ -22,7 +22,7 @@ The source distribution contains five unmodified files from the Emuera1824+v24 a
 | `tests/fixtures/r44_native_diagnostics/numeric_sources/Instraction.Child.cs` | `c5f2284eb16409e4b6319b14eb009ceaa6520367e9f5aa5cba533828a732fce4` |
 | `tests/fixtures/r44_native_diagnostics/numeric_sources/Process.cs` | `ef8ecc12e0321091127f600e581932986a50d2bd94b22fc4acae82921507e362` |
 
-No Emuera executable, no other Emuera source file, no game and no save data is included.
+No Emuera executable, no other Emuera source file and no save data is included.
 
 ### SFMT
 
@@ -44,4 +44,10 @@ Copyright (c) Microsoft Corporation. Licensed under the MIT License; the notice 
 
 ## 5. Test and measurement data
 
-Test fixtures and verification data were created for PyEmuera: neutral ERB probes, their output logs from the original Emuera executable, and .NET Framework / Windows measurement results. They contain no game text. Measurement programs written for PyEmuera call public .NET Framework and Windows APIs; they are not Emuera source code.
+Test fixtures and verification data were created for PyEmuera: neutral ERB probes, their output logs from the original Emuera executable, and .NET Framework / Windows measurement results. These test and measurement fixtures contain no game text. Measurement programs written for PyEmuera call public .NET Framework and Windows APIs; they are not Emuera source code.
+
+## 6. ZORKERB r29 / Zork I
+
+The distributions include ZORKERB r29, an unofficial ERB port of Zork I: https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29 . The adaptation is Copyright (c) 2026 Meistertech-JP, MIT License. Zork I text and source-derived material are Copyright (c) 2025 Microsoft, MIT License, from https://github.com/historicalsource/zork1 . The full notices and permissions are preserved with the game in its `LICENSE`, `THIRD_PARTY_NOTICES.md`, and `licenses/ZORK1-MIT.txt` (runtime: `ZORKERB/`; source: `examples/zorkerb/`). These terms are separate from PyEmuera’s license.
+
+Zork and Infocom may be trademarks of their respective owners; these names identify the work and their use does not imply endorsement. The retained upstream notice describes the original r29 package, including its PyEmuera 3.0.0b2 pyz; this distribution instead uses the single PyEmuera engine at its root.

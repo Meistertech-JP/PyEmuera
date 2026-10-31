@@ -1,0 +1,95 @@
+﻿; Source: gglobals.zil CRETIN-FCN, gverbs.zil PRE-GIVE/PRE-PUT/PRE-MUNG/PRE-TAKE,
+; and gmain.zil PERFORM. ME is a GLOBAL object, not the inventory owner.
+@Z_SELF_PREACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+; The parser's HANDS/ME possession exception does not imply actual HELD?.
+IF (Z_VERB == "give" || Z_VERB == "put") && !Z_WITHIN(Z_O, Z_PLAYER)
+    PRINTFORML That's easy for you to say since you don't even have the %Z_OBJ_NAME:Z_O%.
+    RETURN 1
+ENDIF
+; PRE-MUNG precedes every object's ACTION, including CRETIN-FCN.
+IF Z_VERB == "break" && !Z_HAS(Z_TARGET, ZF_WEAPON)
+    IF Z_TARGET
+        PRINTFORML Trying to destroy the %Z_OBJ_NAME:Z_O% with a %Z_OBJ_NAME:Z_TARGET% is futile.
+    ELSE
+        PRINTFORML Trying to destroy the %Z_OBJ_NAME:Z_O% with your bare hands is futile.
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_ME_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+SELECTCASE Z_VERB
+CASE "give"
+    IF Z_TARGET == O_ME
+        CALL Z_TAKE_GIVEN_TO_SELF, Z_O
+        RETURN 1
+    ENDIF
+CASE "make"
+    PRINTL Only you can do that.
+    RETURN 1
+CASE "disembark"
+    PRINTL You'll have to do that on your own.
+    RETURN 1
+CASE "eat"
+    PRINTL Auto-cannibalism is not the answer.
+    RETURN 1
+CASE "attack", "break"
+    IF Z_HAS(Z_TARGET, ZF_WEAPON)
+        PRINTL If you insist.... Poof, you're dead!
+        CALL Z_FATAL_BOUNDARY
+    ELSE
+        PRINTL Suicide is not the answer.
+    ENDIF
+    RETURN 1
+CASE "throw"
+    IF Z_O == O_ME
+        PRINTL Why don't you just walk like normal people?
+        RETURN 1
+    ENDIF
+CASE "take"
+    PRINTL How romantic!
+    RETURN 1
+CASE "examine"
+    IF Z_HERE == Z_PARENT:O_MIRROR_1 || Z_HERE == Z_PARENT:O_MIRROR_2
+        PRINTL Your image in the mirror looks tired.
+    ELSE
+        PRINTL That's difficult unless your eyes are prehensile.
+    ENDIF
+    RETURN 1
+ENDSELECT
+RETURN 0
+
+@Z_TAKE_GIVEN_TO_SELF(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_PARENT_ID
+#DIM DYNAMIC Z_OLD_DOBJ
+#DIM DYNAMIC Z_OLD_IOBJ
+#DIMS DYNAMIC Z_OLD_VERB
+; CRETIN-FCN performs TAKE without an indirect object. Its PRE-TAKE runs
+; before an object's ACTION, even when the item is already directly held.
+; HELD? in PRE-GIVE permits nested inventory regardless of container OPEN.
+Z_OLD_VERB '= Z_VERB
+Z_OLD_DOBJ = Z_DOBJ
+Z_OLD_IOBJ = Z_IOBJ
+Z_VERB = take
+Z_DOBJ = Z_O
+Z_IOBJ = 0
+Z_IT = Z_O
+Z_PARENT_ID = Z_PARENT:Z_O
+IF Z_PARENT_ID == Z_PLAYER
+    PRINTL You already have that!
+ELSEIF Z_HAS(Z_PARENT_ID, ZF_CONTAINER) && !Z_HAS(Z_PARENT_ID, ZF_OPEN)
+    PRINTL You can't reach something that's inside a closed container.
+ELSEIF Z_IN_BOAT && Z_O == O_INFLATED_BOAT
+    PRINTL You're inside of it!
+ELSE
+    CALL Z_OBJECT_ACTION, Z_O, 0
+ENDIF
+Z_VERB '= Z_OLD_VERB
+Z_DOBJ = Z_OLD_DOBJ
+Z_IOBJ = Z_OLD_IOBJ
+RETURN

@@ -1,0 +1,224 @@
+﻿; Coal mine: basket, per-object narrow-passage weight, bat, gas, machine.
+@Z_MINE_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_WAS_LIT
+IF Z_O == O_RAISED_BASKET || Z_O == O_LOWERED_BASKET || Z_O == O_CHAIN || Z_TARGET == O_LOWERED_BASKET
+    IF Z_VERB == "raise" || Z_VERB == "lower"
+        IF (Z_VERB == "raise" && Z_CAGE_TOP) || (Z_VERB == "lower" && !Z_CAGE_TOP)
+            CALL Z_DUMMY_RESPONSE
+        ELSE
+            Z_WAS_LIT = Z_IS_LIT()
+            IF Z_VERB == "raise"
+                CALL Z_MOVE_OBJECT, O_RAISED_BASKET, R_SHAFT_ROOM
+                CALL Z_MOVE_OBJECT, O_LOWERED_BASKET, R_LOWER_SHAFT
+                Z_CAGE_TOP = 1
+                Z_IT = O_RAISED_BASKET
+                PRINTL The basket is raised to the top of the shaft.
+            ELSE
+                CALL Z_MOVE_OBJECT, O_RAISED_BASKET, R_LOWER_SHAFT
+                CALL Z_MOVE_OBJECT, O_LOWERED_BASKET, R_SHAFT_ROOM
+                Z_CAGE_TOP = 0
+                Z_IT = O_LOWERED_BASKET
+                PRINTL The basket is lowered to the bottom of the shaft.
+            ENDIF
+            SIF Z_WAS_LIT && !Z_IS_LIT()
+                PRINTL It is now pitch black.
+        ENDIF
+        RETURN 1
+    ELSEIF Z_O == O_LOWERED_BASKET || Z_TARGET == O_LOWERED_BASKET
+        PRINTL The basket is at the other end of the chain.
+        RETURN 1
+    ELSEIF Z_VERB == "take"
+        PRINTL The cage is securely fastened to the iron chain.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_BAT && (Z_VERB == "take" || Z_VERB == "attack" || Z_VERB == "break")
+    IF Z_PARENT:O_GARLIC == Z_PLAYER || Z_PARENT:O_GARLIC == Z_HERE
+        PRINTL You can't reach him; he's on the ceiling.
+    ELSE
+        CALL Z_BAT_FLY
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_MACHINE
+    IF Z_VERB == "take"
+        PRINTL It is far too large to carry.
+        RETURN 1
+    ELSEIF Z_VERB == "open"
+        ; MACHINE-F OPEN
+        IF Z_HAS(O_MACHINE, ZF_OPEN)
+            CALL Z_DUMMY_RESPONSE
+        ELSEIF Z_FIRST_CHILD(O_MACHINE)
+            PRINTFORM The lid opens, revealing 
+            CALL Z_PRINT_CONTENTS, O_MACHINE
+            PRINTL .
+            Z_FLAGS:O_MACHINE |= ZF_OPEN
+        ELSE
+            PRINTL The lid opens.
+            Z_FLAGS:O_MACHINE |= ZF_OPEN
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "close"
+        ; MACHINE-F CLOSE
+        IF Z_HAS(O_MACHINE, ZF_OPEN)
+            PRINTL The lid closes.
+            Z_FLAGS:O_MACHINE &= ~ZF_OPEN
+        ELSE
+            CALL Z_DUMMY_RESPONSE
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "on"
+        IF !Z_TARGET
+            PRINTL It's not clear how to turn it on with your bare hands.
+        ELSE
+            CALL Z_RUN_MACHINE, Z_TARGET
+        ENDIF
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_MACHINE_SWITCH && Z_VERB == "turn"
+    CALL Z_RUN_MACHINE, Z_TARGET
+    RETURN 1
+ENDIF
+IF Z_O == O_GUNK
+    CALL Z_REMOVE_CAREFULLY, O_GUNK
+    PRINTL The slag was rather insubstantial, and crumbles into dust at your touch.
+    RETURN 1
+ENDIF
+IF Z_O == O_LADDER && Z_VERB == "climb"
+    IF Z_DIRECTION >= 0
+        CALL Z_WALK, Z_DIRECTION
+    ELSEIF Z_HERE == R_LADDER_TOP
+        CALL Z_WALK, 9
+    ELSE
+        CALL Z_WALK, 8
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_SLIDE && Z_VERB == "climb" && Z_HERE == R_SLIDE_ROOM
+    PRINTL You tumble down the slide....
+    CALL Z_RELOCATE, R_CELLAR
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_SLIDE && (Z_VERB == "put" || Z_VERB == "throw")
+    IF Z_PARENT:Z_O != Z_PLAYER
+        PRINTL You aren't holding that.
+    ELSE
+        CALL Z_MOVE_OBJECT, Z_O, R_CELLAR
+        PRINTFORML The %Z_OBJ_NAME:Z_O% falls into the slide and is gone.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_GAS && (Z_VERB == "smell" || Z_VERB == "examine")
+    PRINTL It smells like coal gas.
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_RUN_MACHINE(Z_TOOL)
+#DIM DYNAMIC Z_TOOL
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_LINK_CURSOR1
+IF Z_TOOL != O_SCREWDRIVER
+    PRINTFORML It seems that a %Z_OBJ_NAME:Z_TOOL% won't do.
+ELSEIF Z_HAS(O_MACHINE, ZF_OPEN)
+    PRINTL The machine doesn't seem to want to do anything.
+ELSE
+    PRINTL The machine comes to life (figuratively) with a dazzling display of
+    PRINTL colored lights and bizarre noises. After a few moments, the
+    PRINTL excitement abates.
+    IF Z_PARENT:O_COAL == O_MACHINE
+        CALL Z_MOVE_OBJECT, O_COAL, 0
+        CALL Z_MOVE_OBJECT, O_DIAMOND, O_MACHINE
+    ELSE
+        Z_LINK_CURSOR1 = Z_FIRST_CHILD(O_MACHINE)
+        WHILE Z_LINK_CURSOR1
+            Z_I = Z_LINK_CURSOR1
+            Z_LINK_CURSOR1 = Z_NEXT:Z_I
+            SIF Z_PARENT:Z_I == O_MACHINE
+                CALL Z_MOVE_OBJECT, Z_I, 0
+        WEND
+        CALL Z_MOVE_OBJECT, O_GUNK, O_MACHINE
+    ENDIF
+ENDIF
+RETURN
+
+@Z_MINE_ENTER
+IF Z_HERE == R_BAT_ROOM && Z_PARENT:O_GARLIC != Z_PLAYER && Z_PARENT:O_GARLIC != Z_HERE
+    CALL Z_LOOK, 1
+    CALL Z_BAT_FLY
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_BAT_FLY
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_DEST
+PRINTL     Fweep!
+PRINTL     Fweep!
+PRINTL     Fweep!
+PRINTL
+PRINTL The bat grabs you by the scruff of your neck and lifts you away....
+; PICK-ONE: shuffled-without-replacement table. Count/order both saved.
+Z_INDEX = Z_BAT_COUNT + (Z_RANDOM(8 - Z_BAT_COUNT) - 1)
+Z_DEST = Z_BAT_ORDER:Z_INDEX
+Z_BAT_ORDER:Z_INDEX = Z_BAT_ORDER:Z_BAT_COUNT
+Z_BAT_ORDER:Z_BAT_COUNT = Z_DEST
+Z_BAT_COUNT += 1
+SIF Z_BAT_COUNT == 8
+    Z_BAT_COUNT = 0
+CALL Z_RELOCATE, Z_DEST
+RETURN
+
+@Z_MINE_END
+#DIM DYNAMIC Z_O
+SIF Z_GAME_OVER || Z_HERE != R_GAS_ROOM
+    RETURN
+IF (Z_WITHIN(O_CANDLES, Z_PLAYER) && Z_HAS(O_CANDLES, ZF_ON)) || (Z_WITHIN(O_TORCH, Z_PLAYER) && Z_HAS(O_TORCH, ZF_ON)) || (Z_WITHIN(O_MATCH, Z_PLAYER) && Z_HAS(O_MATCH, ZF_ON))
+    ; BOOM-ROOM M-END: DUMMY? when this turn lit the flame
+    IF (Z_VERB == "on" || Z_VERB == "burn") && (Z_DOBJ == O_CANDLES || Z_DOBJ == O_TORCH || Z_DOBJ == O_MATCH)
+        PRINTFORML How sad for an aspiring adventurer to light a %Z_OBJ_NAME:Z_DOBJ% in a room which
+        PRINTL reeks of gas. Fortunately, there is justice in the world.
+    ELSE
+        PRINTL Oh dear. It appears that the smell coming from this room was coal gas.
+        PRINTL I would have thought twice about carrying flaming objects in here.
+    ENDIF
+    PRINTL
+    PRINTL       ** BOOOOOOOOOOOM **
+    CALL Z_FATAL_BOUNDARY
+ENDIF
+RETURN
+
+@Z_DESCRIBE_REGIONS
+SELECTCASE Z_HERE
+CASE R_ARAGAIN_FALLS
+    PRINTVL Z_ROOM_DESC:Z_HERE
+    IF Z_RAINBOW
+        PRINTL A solid rainbow spans the falls.
+    ELSE
+        PRINTL A beautiful rainbow can be seen over the falls and to the west.
+    ENDIF
+CASE R_MACHINE_ROOM
+    PRINTVL Z_ROOM_DESC:Z_HERE
+    IF Z_HAS(O_MACHINE, ZF_OPEN)
+        PRINTL On the front of the machine is a large lid, which is open.
+    ELSE
+        PRINTL On the front of the machine is a large lid, which is closed.
+    ENDIF
+CASEELSE
+    RETURN 0
+ENDSELECT
+RETURN 1
+
+@Z_BAT_DESCRIPTION
+; 1actions.zil BAT-D, invoked by generic DESCRIBE-OBJECT/DESCFCN dispatch.
+IF Z_PARENT:O_GARLIC == Z_PLAYER || Z_PARENT:O_GARLIC == Z_HERE
+    PRINTL In the corner of the room on the ceiling is a large vampire bat who
+    PRINTL is obviously deranged and holding his nose.
+ELSE
+    PRINTL A large vampire bat, hanging from the ceiling, swoops down at you!
+ENDIF
+RETURN

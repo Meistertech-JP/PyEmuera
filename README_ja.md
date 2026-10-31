@@ -9,7 +9,7 @@ Emuera専用バリアントが動くeramakerだと思ってください。
 
 フォント描画は本家GUI固有の機能を指し、端末そのもののフォント設定は利用できます。ERHにも対応し、本家 Emuera と同じ評価順序・状態変化・保存・文字出力になることを目標にしています。
 
-この版は **PyEmuera 3.0.0 Beta 2（`3.0.0b2`）** です。ベータ版で、すべての Emuera 機能・すべてのバリアントでの互換性は保証しません。確認できている範囲と、まだ確認していない条件は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) にまとめています。
+この版は **PyEmuera 3.0.0 Beta 3（`3.0.0b3`）** です。ベータ版で、すべての Emuera 機能・すべてのバリアントでの互換性は保証しません。確認できている範囲と、まだ確認していない条件は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) にまとめています。
 
 PyEmuera は Emuera の公式版ではなく、Emuera やバリアントの作者による承認を受けたものではありません。
 
@@ -31,7 +31,12 @@ PyEmuera は Emuera の公式版ではなく、Emuera やバリアントの作�
 python PyEmuera.pyz --version
 python PyEmuera.pyz --help
 python PyEmuera.pyz "バリアントフォルダー"
+python PyEmuera.pyz ZORKERB
 ```
+
+実行用 ZIP には「ぱみゅーら散歩帳」（`sample/`）と [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29)（`ZORKERB/`）を同梱しています。ZORKERB は1970年代の大型計算機で生まれたテキストアドベンチャー Zork を起源とする、Zork I の非公式 ERB 移植です。独立した [ZORKERB プロジェクト](https://github.com/Meistertech-JP/ZORKERB)は I・II・III の移植を目指しており、r29 が対応するのは I です。入力は英語で、Z-machine や Frotz は必要ありません。Windows では `ZORKERB` フォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップできます。権利とライセンスは同梱の `ZORKERB/LICENSE`、`ZORKERB/THIRD_PARTY_NOTICES.md` および `ZORKERB/licenses/` を参照してください。
+
+Linux などでは必要に応じて `python3` を使用してください。
 
 「バリアントフォルダー」は、`ERB` と `CSV` が入っているフォルダーです。
 

@@ -1,7 +1,7 @@
 """Build the two public ZIPs and SHA-256 inventory from a frozen source tree.
 
 Usage: python tools/build_pyz.py --out PyEmuera.pyz
-       python tools/build_release_archives.py --out ../beta2-dist
+       python tools/build_release_archives.py --out ../beta3-dist
 
 Standard-library only. Refuses existing output files, symlinks and mismatched
 pyz sources. ZIP metadata and entry order are deterministic on one zlib build.
@@ -15,7 +15,7 @@ import sys
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.0.0b2'
+VERSION = '3.0.0b3'
 STAMP = (2026, 10, 28, 0, 0, 0)
 
 
@@ -108,6 +108,8 @@ def runtime_files(source):
             out[name] = raw
         elif name.startswith('examples/smoke/') and name != 'examples/smoke/README_ja.txt':
             out['sample/' + name[len('examples/smoke/'):]] = raw
+        elif name.startswith('examples/zorkerb/'):
+            out['ZORKERB/' + name[len('examples/zorkerb/'):]] = raw
     return out
 
 

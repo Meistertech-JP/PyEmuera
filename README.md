@@ -1,6 +1,6 @@
 # PyEmuera（ぱみゅーら）
 
-**PyEmuera 3.0.0 Beta 2（`3.0.0b2`）** · [English](README_en.md)
+**PyEmuera 3.0.0 Beta 3（`3.0.0b3`）** · [English](README_en.md)
 
 PyEmuera は、Emuera 用のバリアント（ERB・ERH・CSV で作られたゲーム）を、文字だけのターミナルで動かす Python 製の独立した互換エンジンです。バリアントのゲームファイルは原則として変更せずに読み込みます。
 
@@ -10,17 +10,20 @@ Emuera 専用バリアントが動く eramaker のようなものと考えてく
 
 ## ダウンロードと起動
 
-[Releases](https://github.com/Meistertech-JP/PyEmuera/releases) から **`PyEmuera-3.0.0b2-runtime.zip`** を取得して展開してください。ソースコードとテストは **`PyEmuera-3.0.0b2-source.zip`** に分けて配布します。GitHub が自動生成する `Source code` アーカイブは実行用ZIPではありません。
+[Releases](https://github.com/Meistertech-JP/PyEmuera/releases) から **`PyEmuera-3.0.0b3-runtime.zip`** を取得して展開してください。ソースコードとテストは **`PyEmuera-3.0.0b3-source.zip`** に分けて配布します。GitHub が自動生成する `Source code` アーカイブは実行用ZIPではありません。
 
 Python 3.10 以上が必要です（Python自体は同梱していません）。Windowsではバリアントフォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップできます。ターミナルからも実行できます。
 
 ```console
 python PyEmuera.pyz --help
 python PyEmuera.pyz "バリアントフォルダー"
+python PyEmuera.pyz ZORKERB
 python PyEmuera.pyz sample --inputs sample/replay.txt --no-wait
 ```
 
 Linuxなどで `python` コマンドがない場合は `python3` を使用してください。バリアントフォルダーには通常 `ERB` と `CSV` が入っています。
+
+実行用 ZIP には「ぱみゅーら散歩帳」（`sample/`）と [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29)（`ZORKERB/`）を同梱しています。ZORKERB は1970年代の大型計算機で生まれたテキストアドベンチャー Zork を起源とする、Zork I の非公式 ERB 移植です。独立した [ZORKERB プロジェクト](https://github.com/Meistertech-JP/ZORKERB)は I・II・III の移植を目指しており、r29 が対応するのは I です。入力は英語で、Z-machine や Frotz は必要ありません。Windows では `ZORKERB` フォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップできます。権利とライセンスは同梱の `ZORKERB/LICENSE`、`ZORKERB/THIRD_PARTY_NOTICES.md` および `ZORKERB/licenses/` を参照してください。
 
 使い方の詳細は実行用ZIP内の **`HOW_TO_USE_ja.txt`**、起動オプション・保存先・解析機能の仕様は[詳細ガイド](README_ja.md)を参照してください。
 

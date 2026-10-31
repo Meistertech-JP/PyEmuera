@@ -1,0 +1,992 @@
+﻿; r8 command stream. All gameplay remains native ERB. @SHOW_SHOP owns
+; BEGIN/LOADDATA; ordinary helpers return a control request, never transfer flow.
+; A statement is parsed/resolved fully before execution. Lists cost one turn.
+@Z_READ_TURN
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_CORRECTED_INPUT
+#DIM DYNAMIC Z_PREVIOUS_IT
+#DIM DYNAMIC Z_PREVIOUS_VALID
+#DIMS DYNAMIC Z_PREVIOUS_COMMAND
+#DIMS DYNAMIC Z_ANSWER
+#DIMS DYNAMIC Z_OUTER_PENDING
+#DIMS DYNAMIC Z_SAY_LINE
+CALL Z_RESET_TRANSIENT
+; FINISH owns input after death or victory (gverbs.zil).
+IF Z_GAME_OVER
+    CALL Z_FINISH_INPUT
+    RETURN
+ENDIF
+IF Z_PENDING == "" && Z_ACTOR_PENDING == ""
+    PRINT > 
+    INPUTS
+    Z_ACTOR = 0
+    Z_QUOTE_STREAM = 0
+    Z_PENDING '= Z_NORMALIZE(Z_INPUT_LINE(RESULTS))
+    ; PARSER: P-LEN 0
+    IF Z_PENDING == ""
+        PRINTL I beg your pardon?
+        RETURN
+    ENDIF
+    IF Z_LOUD_LOOP
+        CALL Z_LOUD_LOOP_INPUT
+        SIF RESULT
+            RETURN
+    ELSE
+        CALL Z_SP_TOKENIZE, Z_PENDING
+        CALL Z_LEXV_REMEMBER
+    ENDIF
+ENDIF
+SIF Z_PENDING == "" && Z_ACTOR_PENDING == ""
+    RETURN
+IF SUBSTRING(Z_PENDING, 0, 5) == "oops," || SUBSTRING(Z_PENDING, 0, 5) == "oops."
+    Z_PENDING '= "oops " + Z_TRIM(SUBSTRING(Z_PENDING, 5))
+ENDIF
+IF Z_ACTOR_PENDING != ""
+    Z_ORDER_ACTOR = Z_ACTOR
+    Z_OUTER_PENDING '= Z_PENDING
+    Z_PENDING '= Z_ACTOR_PENDING
+    CALL Z_NEXT_STATEMENT
+    ; A closing quote (including TO in nested TELL) ends the actor's
+    ; quotation. The command before it still belongs to Z_ORDER_ACTOR;
+    ; only its continuation returns to the player. Keep delimiters intact.
+    IF Z_ACTOR
+        Z_ACTOR_PENDING '= Z_PENDING
+        Z_PENDING '= Z_OUTER_PENDING
+    ELSE
+        Z_ACTOR_PENDING =
+        SIF Z_OUTER_PENDING != ""
+            Z_PENDING '= Z_PENDING + ". " + Z_OUTER_PENDING
+    ENDIF
+ELSE
+    Z_ACTOR = 0
+    CALL Z_NEXT_STATEMENT
+ENDIF
+SIF Z_COMMAND == ""
+    RETURN
+CALL Z_PARSE_COMMAND_HEAD
+IF Z_VERB == "oops"
+    CALL Z_APPLY_OOPS
+    SIF !RESULT
+        RETURN
+    Z_CORRECTED_INPUT = 1
+    ; Correction restarts lexical/syntax processing without consuming another INPUT.
+    CALL Z_NEXT_STATEMENT
+    CALL Z_PARSE_COMMAND_HEAD
+ELSE
+    Z_OOPS_COMMAND =
+    Z_OOPS_PENDING =
+    Z_OOPS_LENGTH = 0
+    Z_OOPS_START = 0
+    Z_OOPS_QUOTED = 0
+    Z_OOPS_ACTOR = 0
+ENDIF
+IF Z_VERB == "again" || Z_VERB == "g"
+    IF Z_NOUN != ""
+        PRINTL I couldn't understand that sentence.
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN
+    ENDIF
+    IF Z_LAST_COMMAND == ""
+        PRINTL Beg pardon?
+        Z_PENDING =
+        RETURN
+    ENDIF
+    IF !Z_LAST_VALID
+        PRINTL That would just repeat a mistake.
+        Z_PENDING =
+        RETURN
+    ENDIF
+    Z_COMMAND '= Z_LAST_COMMAND
+    Z_WAS_AGAIN = 1
+    Z_NOUN =
+    CALL Z_PARSE_COMMAND_HEAD
+ENDIF
+IF Z_ORDER_ACTOR
+    CALL Z_PROCESS_ACTOR_ORDER
+    RETURN
+ENDIF
+; TALK has only TALK TO OBJECT: any other particle fails SYNTAX-CHECK before
+; the speech layer (V-TELL) could take the sentence.
+IF Z_VERB == "talk" && Z_NOUN != "" && Z_FIRST_WORD(Z_NOUN) != "to"
+    CALL Z_SOURCE_SYNTAX_GATE
+    IF !RESULT
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN
+    ENDIF
+ENDIF
+IF !Z_GAME_OVER && !Z_DEAD
+    CALL Z_PREPARE_SPEECH
+    SIF RESULT
+        RETURN
+ENDIF
+IF Z_NOUN != ""
+    SELECTCASE Z_VERB
+    CASE "portstate"
+        PRINTL I couldn't understand that sentence.
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN
+    CASE "diagnose", "version", "score", "verbose", "brief", "superbrief", "inventory", "wait", "odysseus", "ulysses"
+        ; Object-less SYNTAX lines: the parser scan decides (unknown word,
+        ; "That sentence isn't one I recognize."); words that survive it
+        ; (buzz words) leave the sentence without objects.
+        CALL Z_SOURCE_SYNTAX_GATE
+        SIF RESULT
+            CALL Z_CHECK_WORDS, Z_COMMAND
+        IF !RESULT
+            Z_PENDING =
+            Z_LAST_VALID = 0
+            RETURN
+        ENDIF
+        Z_NOUN =
+    ENDSELECT
+ENDIF
+SELECTCASE Z_VERB
+CASE "portstate"
+    CALL Z_PORT_STATE
+    RETURN
+CASE "version"
+    Z_AFTER_SAY = 0
+    CALL Z_STORY_VERSION
+    RETURN
+CASE "score"
+    Z_AFTER_SAY = 0
+    CALL Z_SCORE
+    RETURN
+CASE "verbose"
+    Z_AFTER_SAY = 0
+    Z_VERBOSE = 2
+    PRINTL Maximum verbosity.
+    RETURN
+CASE "brief"
+    Z_AFTER_SAY = 0
+    Z_VERBOSE = 1
+    PRINTL Brief descriptions.
+    RETURN
+CASE "superbrief"
+    Z_AFTER_SAY = 0
+    Z_VERBOSE = 0
+    PRINTL Superbrief descriptions.
+    RETURN
+CASE "save", "restore"
+    Z_AFTER_SAY = 0
+    IF Z_NOUN == ""
+        Z_SLOT = 0
+    ELSEIF STRLENS(Z_NOUN) == 1 && STRFIND("0123456789", Z_NOUN) >= 0
+        Z_SLOT = TOINT(Z_NOUN)
+    ELSE
+        PRINTL Use a save slot from 0 to 9.
+        Z_PENDING =
+        RETURN
+    ENDIF
+    IF Z_VERB == "save"
+        Z_CONTROL = ZC_SAVE
+    ELSE
+        Z_CONTROL = ZC_LOAD
+    ENDIF
+    RETURN
+CASE "restart", "quit", "q"
+    ; V-QUIT / V-RESTART: V-SCORE, the question, then YES?.
+    Z_AFTER_SAY = 0
+    CALL Z_V_SCORE
+    IF Z_VERB == "restart"
+        PRINT Do you wish to restart? (Y is affirmative): 
+    ELSE
+        PRINT Do you wish to leave the game? (Y is affirmative): 
+    ENDIF
+    ; YES?: PRINTI ">" and READ; only the first word counts.
+    PRINT >
+    INPUTS
+    Z_ANSWER '= Z_DICTIONARY_KEY(Z_FIRST_WORD(Z_NORMALIZE(RESULTS)))
+    IF Z_ANSWER == "yes" || Z_ANSWER == "y"
+        Z_PENDING =
+        IF Z_VERB == "restart"
+            PRINTL Restarting.
+            Z_CONTROL = ZC_RESTART
+        ELSE
+            Z_CONTROL = ZC_QUIT
+        ENDIF
+    ELSEIF Z_VERB != "restart"
+        PRINTL Ok.
+    ENDIF
+    RETURN
+ENDSELECT
+IF Z_VERB == "say" && !Z_DEAD && !Z_GAME_OVER
+    ; Quoted speech is data, not commands run by the player. Z_PREPARE_SPEECH
+    ; already performed its bounded dictionary validation.
+    RESULT = 1
+ELSE
+    ; gparser's left-to-right scan: CANT-USE, too many nouns and an
+    ; unmatched SYNTAX stop before object resolution and the clock.
+    ; The opening quote ends the scan (P-CONT points past it), so a dead
+    ; player's SAY "..." is parsed as SAY alone; DEAD-FUNCTION then clears
+    ; P-CONT and the next READ resets QUOTE-FLAG.
+    Z_SAY_LINE '= Z_COMMAND
+    SIF Z_VERB == "say" && STRFIND(Z_COMMAND, "\"") >= 0
+        Z_COMMAND '= Z_TRIM(SUBSTRING(Z_COMMAND, 0, STRFIND(Z_COMMAND, "\"")))
+    CALL Z_SOURCE_SYNTAX_GATE
+    SIF RESULT
+        CALL Z_CHECK_WORDS, Z_COMMAND
+    Z_COMMAND '= Z_SAY_LINE
+ENDIF
+IF !RESULT
+    Z_PENDING =
+    Z_LAST_VALID = 0
+    RETURN
+ENDIF
+Z_DIRECTION = Z_DIRECTION_ID(Z_COMMAND)
+IF Z_DIRECTION >= 0
+    Z_VERB = walk
+    Z_VALID = 1
+ELSEIF Z_VERB == ""
+    IF Z_CORRECTED_INPUT
+        PRINTL There was no verb in that sentence!
+    ELSEIF Z_WORD_IS_NOMINAL(Z_FIRST_WORD(Z_COMMAND)) || STRFIND("|then|the|a|an|and|all|one|some|in|out|up|down|with|to|for|from|about|at|of|except|but|", "|" + Z_FIRST_WORD(Z_COMMAND) + "|") >= 0
+        CALL Z_NO_VERB_INPUT
+    ELSE
+        ; PARSER after the word loop without a verb.
+        CALL Z_NO_VERB_INPUT
+    ENDIF
+ELSE
+    CALL Z_PARSE_ACTION
+ENDIF
+IF !Z_VALID || Z_ABORT
+    SIF !Z_REPARSE
+        Z_PENDING =
+    Z_LAST_VALID = 0
+    RETURN
+ENDIF
+CALL Z_PREPARE_REQUIRED_OBJECTS
+IF !RESULT
+    ; A parsed but rejected DROP ALL is a failed history entry. AGAIN must
+    ; report that the previous attempt was a mistake, not Beg pardon?.
+    SIF Z_VERB == "drop" && Z_ALL
+        Z_LAST_COMMAND '= Z_COMMAND
+    Z_LAST_VALID = 0
+    Z_PENDING =
+    RETURN
+ENDIF
+Z_PREVIOUS_COMMAND '= Z_LAST_COMMAND
+Z_PREVIOUS_IT = Z_IT
+Z_PREVIOUS_VALID = Z_LAST_VALID
+; History stores resolved noun phrases, not an unfinished clarification prompt.
+Z_LAST_COMMAND '= Z_BUILD_HISTORY()
+Z_LAST_VALID = 1
+Z_AFTER_SAY = Z_VERB == "say"
+Z_TIME = 1
+CALL Z_REGION_BEGIN
+CALL Z_PERFORM
+; LOUD-ROOM-FCN's READ loop runs inside this turn's GOTO (Z_LOUD_ENTER).
+SIF Z_LOUD_DEFER
+    RETURN
+IF !Z_TIME && Z_VERB != "wait"
+    Z_LAST_COMMAND '= Z_PREVIOUS_COMMAND
+    Z_IT = Z_PREVIOUS_IT
+    Z_LAST_VALID = Z_PREVIOUS_VALID
+    Z_PENDING =
+ENDIF
+IF (Z_TIME || Z_VERB == "wait") && !Z_DEATH_THIS_TURN && !Z_GAME_OVER
+    CALL Z_CASE_END_TURN
+    CALL Z_TEMPLE_END_TURN
+    CALL Z_REGION_END
+ENDIF
+SIF Z_TIME
+    CALL Z_TICK
+; Original parser continuations end at fatal/death and darkness transitions.
+IF Z_ABORT || Z_DEATH_THIS_TURN || Z_GAME_OVER || !Z_IS_LIT()
+    Z_PENDING =
+ENDIF
+RETURN
+
+@Z_FIRST_WORD(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_I
+#DIMS DYNAMIC Z_C
+Z_S '= Z_TRIM(Z_S)
+FOR Z_I, 0, STRLENS(Z_S)
+    Z_C '= SUBSTRING(Z_S, Z_I, 1)
+    SIF Z_C == " " || Z_C == "." || Z_C == "," || Z_C == "\""
+        RETURNF SUBSTRING(Z_S, 0, Z_I)
+NEXT
+RETURNF Z_S
+
+@Z_IS_COMMAND_START(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_W
+Z_W '= Z_FIRST_WORD(Z_S)
+RETURNF Z_W != "" && (Z_VERB_ID(Z_W) != "" || Z_DIRECTION_ID(Z_W) >= 0)
+
+; Direction grammar may have an explicit WALK/GO verb, unlike a raw
+; direction token. Keep the distinction when THEN updates QUOTE-FLAG.
+@Z_STREAM_DIRECTION(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+SIF Z_VERB_ID(Z_FIRST_WORD(Z_S)) == "walk"
+    Z_S '= Z_TRIM(SUBSTRING(Z_S, STRFIND(Z_S, " ") + 1))
+RETURNF Z_DIRECTION_ID(Z_S)
+
+@Z_NEXT_STATEMENT
+#DIM DYNAMIC Z_LEADING_THEN
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_QUOTED
+#DIM DYNAMIC Z_CUT
+#DIM DYNAMIC Z_SKIP
+#DIMS DYNAMIC Z_C
+#DIMS DYNAMIC Z_TAIL
+Z_PENDING '= Z_TRIM(Z_PENDING)
+; Outside a quotation, PARSER consumes a leading THEN before deciding
+; whether the remaining noun/comma syntax addresses a character.
+WHILE !Z_QUOTE_STREAM && SUBSTRING(Z_PENDING, 0, 5) == "then "
+    Z_LEADING_THEN = 1
+    Z_PENDING '= Z_TRIM(SUBSTRING(Z_PENDING, 5))
+WEND
+Z_CURRENT_STREAM '= Z_PENDING
+IF Z_QUOTE_STREAM && SUBSTRING(Z_PENDING, 0, 5) == "then "
+    PRINTL There was no verb in that sentence!
+    Z_PENDING =
+    Z_COMMAND =
+    Z_LAST_VALID = 0
+    RETURN
+ENDIF
+; TELL / actor, command owns the complete continuation, not just the
+; first period-delimited clause. V-TELL switches WINNER before parsing it.
+IF !Z_ORDER_ACTOR && !(Z_QUOTE_STREAM && Z_QUANTIFIER_HEAD(Z_PENDING)) && (Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "tell" || Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "talk" || (!Z_IS_COMMAND_START(Z_PENDING) && STRFIND(Z_PENDING, ",") >= 0))
+    Z_COMMAND '= Z_PENDING
+    Z_PENDING =
+    RETURN
+ENDIF
+; The opening quote stops PARSER immediately. Leave its entire tail for V-SAY.
+IF STRFIND(Z_PENDING, "\"") >= 0 && ((!Z_ORDER_ACTOR && Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "say") || (!Z_QUOTE_STREAM && Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "oops"))
+    Z_COMMAND '= Z_PENDING
+    Z_PENDING =
+    RETURN
+ENDIF
+Z_CUT = -1
+FOR Z_I, 0, STRLENS(Z_PENDING)
+    Z_C '= SUBSTRING(Z_PENDING, Z_I, 1)
+    IF Z_C == "\"" && Z_QUOTE_STREAM
+        Z_TAIL '= Z_TRIM(SUBSTRING(Z_PENDING, 0, Z_I))
+        Z_TAIL '= Z_QUOTED_QUANTIFIER_ERROR(Z_TAIL)
+        IF Z_TAIL != ""
+            PRINTFORML You used the word "%Z_TAIL%" in a way that I don't understand.
+            Z_COMMAND =
+            Z_PENDING =
+            Z_LAST_VALID = 0
+            RETURN
+        ENDIF
+        IF Z_ORDER_ACTOR
+            Z_ACTOR = 0
+            Z_QUOTE_STREAM = 0
+            SIF Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "say"
+                Z_QUOTE_STREAM = 1
+        ELSEIF !Z_AFTER_SAY
+            ; Ordinary quoted clauses close QUOTE-FLAG here. V-SAY's
+            ; continuation is distinct: it resets the source flag itself.
+            Z_QUOTE_STREAM = 0
+        ENDIF
+        Z_CUT = Z_I
+        Z_SKIP = 1
+        BREAK
+    ENDIF
+    ; Within an actor quotation, TELL ... TO toggles QUOTE-FLAG just as
+    ; a literal quote does. The actor intercepts TELL; the tail is player's.
+    IF Z_ORDER_ACTOR && (Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "tell" || Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "talk") && SUBSTRING(Z_PENDING, Z_I, 4) == " to "
+        Z_CUT = Z_I
+        Z_SKIP = 4
+        Z_ACTOR = 0
+        Z_QUOTE_STREAM = 0
+        BREAK
+    ENDIF
+    IF Z_C == "\""
+        ; PARSER stops at any QUOTE even for ordinary verbs. Its prefix
+        ; is parsed/executed first; the tail is never treated as a noun.
+        Z_QUOTE_STREAM = 1
+        Z_CUT = Z_I
+        Z_SKIP = 1
+        BREAK
+    ENDIF
+    IF Z_C == "."
+        Z_CUT = Z_I
+        Z_SKIP = 1
+        BREAK
+    ENDIF
+    IF Z_QUOTE_STREAM && Z_I == 0 && SUBSTRING(Z_PENDING, 0, 5) == "then "
+        Z_CUT = 0
+        Z_SKIP = 5
+        BREAK
+    ENDIF
+    IF SUBSTRING(Z_PENDING, Z_I, 6) == " then "
+        Z_CUT = Z_I
+        Z_SKIP = 6
+        BREAK
+    ENDIF
+    IF Z_C == "," || SUBSTRING(Z_PENDING, Z_I, 5) == " and "
+        IF Z_C == ","
+            Z_SKIP = 1
+        ELSE
+            Z_SKIP = 5
+        ENDIF
+        Z_TAIL '= Z_TRIM(SUBSTRING(Z_PENDING, Z_I + Z_SKIP))
+        ; HELLO, OBJECT starts a noun clause, not an actor or new command.
+        ; CLAUSE may split AND/COMMA followed by a verb only after a noun.
+        IF Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) == "hello" && !Z_PHRASE_HAS_NOUN(SUBSTRING(Z_PENDING, 0, Z_I))
+            CONTINUE
+        ENDIF
+        ; An object may also be a verb (BOARD, LIGHT, etc.). Inside an ALL
+        ; exclusion clause, a nominal following AND is a list member, not
+        ; a second command. Explicit THEN or a genuine verb still separates.
+        IF !Z_PHRASE_HAS_NOUN(SUBSTRING(Z_PENDING, 0, Z_I)) && Z_STREAM_DIRECTION(Z_TRIM(SUBSTRING(Z_PENDING, 0, Z_I))) < 0
+            IF Z_IS_COMMAND_START(Z_TAIL) && !Z_WORD_IS_NOMINAL(Z_FIRST_WORD(Z_TAIL))
+                PRINTFORML You used the word "%Z_FIRST_WORD(Z_TAIL)%" in a way that I don't understand.
+                Z_PENDING =
+                Z_COMMAND =
+                Z_LAST_VALID = 0
+                RETURN
+            ENDIF
+            CONTINUE
+        ENDIF
+        IF Z_IS_COMMAND_START(Z_PENDING) && Z_IS_COMMAND_START(Z_TAIL) && Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) != "tell" && Z_VERB_ID(Z_FIRST_WORD(Z_PENDING)) != "talk"
+            IF Z_C != "," && STRFIND(Z_PENDING, " all except ") >= 0 && Z_WORD_IS_NOMINAL(Z_FIRST_WORD(Z_TAIL))
+                CONTINUE
+            ENDIF
+            Z_CUT = Z_I
+            BREAK
+        ENDIF
+    ENDIF
+NEXT
+IF Z_CUT >= 0
+    Z_COMMAND '= Z_TRIM(SUBSTRING(Z_PENDING, 0, Z_CUT))
+    IF !Z_QUOTE_STREAM && Z_STREAM_DIRECTION(Z_COMMAND) >= 0 && Z_VERB_ID(Z_FIRST_WORD(Z_COMMAND)) == "" && (SUBSTRING(Z_PENDING, Z_CUT, 6) == " then " || SUBSTRING(Z_PENDING, Z_CUT, 1) == "," || SUBSTRING(Z_PENDING, Z_CUT, 5) == " and ")
+        Z_QUOTE_STREAM = 1
+    ENDIF
+    Z_PENDING '= Z_TRIM(SUBSTRING(Z_PENDING, Z_CUT + Z_SKIP))
+    IF Z_COMMAND == ""
+        PRINTL There was no verb in that sentence!
+        Z_PENDING =
+        Z_LAST_VALID = 0
+    ENDIF
+ELSE
+    Z_COMMAND '= Z_PENDING
+    Z_PENDING =
+    ; A leading THEN is a buzz word but still contributes to the source
+    ; LEN. A terminal direction consequently fails its one/two-token test.
+    IF Z_LEADING_THEN && Z_STREAM_DIRECTION(Z_COMMAND) >= 0
+        Z_TAIL '= Z_COMMAND
+        SIF Z_VERB_ID(Z_FIRST_WORD(Z_TAIL)) == "walk"
+            Z_TAIL '= Z_TRIM(SUBSTRING(Z_TAIL, STRFIND(Z_TAIL, " ") + 1))
+        PRINTFORML You used the word "%Z_FIRST_WORD(Z_TAIL)%" in a way that I don't understand.
+        Z_COMMAND =
+        Z_LAST_VALID = 0
+    ENDIF
+ENDIF
+RETURN
+
+; Matches the bounded integer and time forms of original gparser NUMBER?.
+; 0..1000 are W?INTNUM. The original accepts HH:MM (AM-style 0..7 is
+; translated to 12..19); preserve the lexical boundary, not full time actions.
+; gparser NUMBER?: digits accumulate in SUM, a colon moves SUM into TIM and
+; restarts it (any number of colons, empty parts allowed). Rejected: another
+; character, a digit after SUM exceeds 10000, a final SUM over 1000, or a
+; non-zero TIM over 23. A non-zero TIM below 8 is afternoon (+12).
+@Z_IS_ZNUMBER(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+SIF Z_S == ""
+    RETURNF 0
+RETURNF Z_NUMBER_VALUE(Z_S) >= 0
+
+@Z_NUMBER_VALUE(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_C
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_SUM
+#DIM DYNAMIC Z_TIM
+FOR Z_I, 0, STRLENS(Z_S)
+    Z_C '= SUBSTRING(Z_S, Z_I, 1)
+    IF Z_C == ":"
+        Z_TIM = Z_SUM
+        Z_SUM = 0
+    ELSEIF Z_SUM > 10000
+        RETURNF -1
+    ELSEIF STRFIND("0123456789", Z_C) >= 0
+        Z_SUM = Z_SUM * 10 + TOINT(Z_C)
+    ELSE
+        RETURNF -1
+    ENDIF
+NEXT
+SIF Z_SUM > 1000
+    RETURNF -1
+IF Z_TIM
+    IF Z_TIM < 8
+        Z_TIM += 12
+    ELSEIF Z_TIM > 23
+        RETURNF -1
+    ENDIF
+    Z_SUM += Z_TIM * 60
+ENDIF
+RETURNF Z_SUM
+
+@Z_CHECK_WORDS(Z_S)
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_START
+#DIM DYNAMIC Z_END
+#DIM DYNAMIC Z_N
+#DIMS DYNAMIC Z_W
+Z_N = STRLENS(Z_S)
+WHILE Z_START < Z_N
+    IF SUBSTRING(Z_S, Z_START, 1) == " " || SUBSTRING(Z_S, Z_START, 1) == ","
+        Z_START += 1
+        CONTINUE
+    ENDIF
+    Z_END = Z_START
+    WHILE Z_END < Z_N
+        SIF SUBSTRING(Z_S, Z_END, 1) == " " || SUBSTRING(Z_S, Z_END, 1) == ","
+            BREAK
+        Z_END += 1
+    WEND
+    Z_W '= SUBSTRING(Z_S, Z_START, Z_END - Z_START)
+    ; Original NUMBER? supplies W?INTNUM for numeric input before regular
+    ; dictionary lookup. Recognize the token without pretending it is a word.
+    IF Z_IS_ZNUMBER(Z_W)
+        Z_P_NUMBER = Z_NUMBER_VALUE(Z_W)
+    ELSEIF !Z_IN_VOCABULARY(Z_W)
+        Z_OOPS_COMMAND '= Z_S
+        Z_OOPS_PENDING '= Z_PENDING
+        Z_OOPS_START = Z_START
+        Z_OOPS_LENGTH = Z_END - Z_START
+        Z_OOPS_QUOTED = Z_QUOTE_STREAM
+        Z_OOPS_ACTOR = Z_ORDER_ACTOR
+        IF Z_QUOTE_STREAM && Z_S == Z_COMMAND
+            Z_OOPS_COMMAND '= Z_CURRENT_STREAM
+            Z_OOPS_PENDING =
+        ENDIF
+        IF Z_AFTER_SAY
+            PRINTL Nothing happens.
+        ELSE
+            PRINTFORML I don't know the word "%Z_W%".
+        ENDIF
+        RETURN 0
+    ENDIF
+    Z_START = Z_END
+WEND
+RETURN 1
+
+@Z_APPLY_OOPS
+#DIMS DYNAMIC Z_W
+#DIMS DYNAMIC Z_S
+IF Z_OOPS_LENGTH && SUBSTRING(Z_NOUN, 0, 1) == "\""
+    PRINTL Sorry, you can't correct mistakes in quoted text.
+    Z_PENDING =
+    RETURN 0
+ENDIF
+Z_W '= Z_FIRST_WORD(Z_NOUN)
+IF Z_W == ""
+    PRINTL I can't help your clumsiness.
+    Z_PENDING =
+    RETURN 0
+ENDIF
+IF !Z_OOPS_LENGTH || Z_OOPS_COMMAND == ""
+    PRINTL There was no word to replace!
+    Z_PENDING =
+    RETURN 0
+ENDIF
+IF SUBSTRING(Z_NOUN, 0, 1) == "\""
+    PRINTL Sorry, you can't correct mistakes in quoted text.
+    Z_PENDING =
+    RETURN 0
+ENDIF
+SIF Z_W != Z_NOUN
+    PRINTL Warning: only the first word after OOPS is used.
+Z_QUOTE_STREAM = Z_OOPS_QUOTED
+Z_ORDER_ACTOR = Z_OOPS_ACTOR
+; OOPS restores OWINNER for the corrected command, but does not re-enter
+; an actor quotation: the continuation after this corrected clause is player.
+Z_ACTOR = 0
+Z_S '= SUBSTRING(Z_OOPS_COMMAND, 0, Z_OOPS_START) + Z_W + SUBSTRING(Z_OOPS_COMMAND, Z_OOPS_START + Z_OOPS_LENGTH)
+Z_PENDING '= Z_S
+SIF Z_OOPS_PENDING != ""
+    Z_PENDING '= Z_PENDING + ". " + Z_OOPS_PENDING
+Z_OOPS_COMMAND =
+Z_OOPS_PENDING =
+Z_OOPS_LENGTH = 0
+Z_OOPS_START = 0
+Z_NOUN =
+RETURN 1
+
+@Z_READ_REPLY
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_Q
+#DIMS DYNAMIC Z_W
+; A fresh orphan input replaces the unfinished ordinary quoted clause;
+; it must not execute that obsolete tail again after resolving the object.
+IF Z_QUOTE_STREAM && !Z_ORDER_ACTOR && !Z_AFTER_SAY
+    Z_PENDING =
+ENDIF
+IF Z_ORDER_ACTOR
+    CALL Z_ACTOR_CANT_ORPHAN
+    Z_ABORT = 1
+    RETURN
+ENDIF
+PRINTL >
+INPUTS
+Z_INPUT_REPLY '= Z_NORMALIZE(Z_INPUT_LINE(RESULTS))
+CALL Z_REMEMBER_LINE, Z_INPUT_REPLY
+WHILE Z_INPUT_REPLY == "" || Z_FIRST_WORD(Z_INPUT_REPLY) == "again" || Z_FIRST_WORD(Z_INPUT_REPLY) == "g"
+    ; PARSER: P-LEN 0, or AGAIN while P-OFLAG: the orphan stays pending.
+    IF Z_INPUT_REPLY == ""
+        PRINTL I beg your pardon?
+    ELSE
+        PRINTL It's difficult to repeat fragments.
+    ENDIF
+    PRINTL >
+    INPUTS
+    Z_INPUT_REPLY '= Z_NORMALIZE(Z_INPUT_LINE(RESULTS))
+    CALL Z_REMEMBER_LINE, Z_INPUT_REPLY
+WEND
+IF Z_HISTORY_PREP != "" && SUBSTRING(Z_INPUT_REPLY, 0, STRLENS(Z_HISTORY_PREP) + 1) == Z_HISTORY_PREP + " "
+    Z_INPUT_REPLY '= Z_TRIM(SUBSTRING(Z_INPUT_REPLY, STRLENS(Z_HISTORY_PREP) + 1))
+ENDIF
+; ORPHAN-MERGE: a reply with the orphaned sentence's verb (ADJ) and at
+; most one noun clause fills the missing slot with that clause.
+IF Z_SAME_VERB_VALUE(Z_FIRST_WORD(Z_INPUT_REPLY), Z_FIRST_WORD(Z_COMMAND)) && Z_REPLY_CLAUSES(Z_INPUT_REPLY) <= 1
+    Z_INPUT_REPLY '= Z_TRIM(SUBSTRING(Z_INPUT_REPLY, STRLENS(Z_FIRST_WORD(Z_INPUT_REPLY))))
+    ; END-ON-PREP: a final preposition is P-PREP1, not part of the clause.
+    Z_P = Z_LAST_SPACE(Z_INPUT_REPLY)
+    IF Z_P > 0
+        Z_W '= SUBSTRING(Z_INPUT_REPLY, Z_P + 1)
+        Z_Q = Z_PT_INFO(Z_DICTIONARY_KEY(Z_W))
+        SIF Z_Q >= 0 && ((Z_Q / 65536) & 8) && !((Z_Q / 65536) & (128 | 32))
+            Z_INPUT_REPLY '= Z_TRIM(SUBSTRING(Z_INPUT_REPLY, 0, Z_P))
+    ENDIF
+    IF Z_REPLY_CLAUSES(Z_INPUT_REPLY) == 0
+        PRINTL There seems to be a noun missing in that sentence!
+        Z_ABORT = 1
+        RETURN
+    ENDIF
+ELSEIF Z_IS_COMMAND_START(Z_INPUT_REPLY)
+    Z_PENDING '= Z_INPUT_REPLY
+    Z_REPARSE = 1
+    Z_ABORT = 1
+    RETURN
+ENDIF
+; PARSER: THEN after verbless words (not after a period) becomes TELL with
+; a quotation (ACT?TELL, W?QUOTE), so ORPHAN-MERGE fails on the verb.
+IF STRFIND(Z_INPUT_REPLY, " then ") >= 0 && (STRFIND(Z_INPUT_REPLY, ".") < 0 || STRFIND(Z_INPUT_REPLY, " then ") < STRFIND(Z_INPUT_REPLY, "."))
+    Z_PENDING '= "tell " + SUBSTRING(Z_INPUT_REPLY, 0, STRFIND(Z_INPUT_REPLY, " then ")) + " \"" + SUBSTRING(Z_INPUT_REPLY, STRFIND(Z_INPUT_REPLY, " then ") + 6) + "\""
+    Z_REPARSE = 1
+    Z_ABORT = 1
+    RETURN
+ENDIF
+; A quotation in the reply is its own sentence.
+IF STRFIND(Z_INPUT_REPLY, "\"") >= 0
+    Z_PENDING '= Z_INPUT_REPLY
+    Z_REPARSE = 1
+    Z_ABORT = 1
+    RETURN
+ENDIF
+; A period ends the merged sentence; P-CONT continues after it.
+IF STRFIND(Z_INPUT_REPLY, ".") >= 0
+    Z_PENDING '= Z_TRIM(SUBSTRING(Z_INPUT_REPLY, STRFIND(Z_INPUT_REPLY, ".") + 1))
+    Z_INPUT_REPLY '= Z_TRIM(SUBSTRING(Z_INPUT_REPLY, 0, STRFIND(Z_INPUT_REPLY, ".")))
+ENDIF
+; Unknown words belong to this input line, not the saved orphan command.
+; OOPS subsequently corrects this line; it does not resurrect the old verb.
+CALL Z_CHECK_WORDS, Z_INPUT_REPLY
+SIF !RESULT
+    Z_ABORT = 1
+RETURN
+
+@Z_CANON_PHRASE(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_R
+#DIMS DYNAMIC Z_W
+#DIM DYNAMIC Z_P
+WHILE Z_S != ""
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_W '= Z_S
+        Z_S =
+    ELSE
+        Z_W '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= SUBSTRING(Z_S, Z_P + 1)
+    ENDIF
+    SELECTCASE Z_W
+    CASE "using"
+        Z_W = with
+    CASE "into", "inside"
+        Z_W = in
+    CASE "onto"
+        Z_W = on
+    CASE "underneath", "beneath", "below"
+        Z_W = under
+    CASE "but"
+        Z_W = except
+    CASEELSE
+        ; r29: any other pure preposition synonym takes its PREP-FIND word
+        ; (U -> UP, D -> DOWN, BENEATH -> UNDER, THRU -> WITH ...).
+        Z_P = Z_PT_INFO(Z_DICTIONARY_KEY(Z_W))
+        IF Z_P >= 0 && ((Z_P / 65536) & 8) && !((Z_P / 65536) & (128 | 64 | 32))
+            SIF ((Z_P / 65536) & 3) == 0
+                Z_W '= Z_PT_PREP_WORD((Z_P / 256) % 256)
+        ENDIF
+    ENDSELECT
+    SIF Z_R != ""
+        Z_R += " "
+    Z_R += Z_W
+WEND
+RETURNF Z_R
+
+@Z_RESOLVE_LIST(Z_PHRASE, Z_EXCEPTION)
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_EXCEPTION
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_Q
+#DIM DYNAMIC Z_CUT
+#DIM DYNAMIC Z_SKIP
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_N
+#DIM DYNAMIC Z_SEEN, 256
+#DIMS DYNAMIC Z_PART
+#DIM DYNAMIC Z_MEMBER
+#DIM DYNAMIC Z_LEN
+; Resolve the whole selection before touching the world, including exceptions.
+WHILE Z_PHRASE != ""
+    Z_P = STRFIND(Z_PHRASE, " and ")
+    Z_Q = STRFIND(Z_PHRASE, ",")
+    Z_CUT = Z_P
+    Z_SKIP = 5
+    IF Z_Q >= 0 && (Z_P < 0 || Z_Q < Z_P)
+        Z_CUT = Z_Q
+        Z_SKIP = 1
+    ENDIF
+    IF Z_CUT < 0
+        Z_PART '= Z_TRIM(Z_PHRASE)
+        Z_PHRASE =
+    ELSE
+        Z_PART '= Z_TRIM(SUBSTRING(Z_PHRASE, 0, Z_CUT))
+        Z_PHRASE '= Z_TRIM(SUBSTRING(Z_PHRASE, Z_CUT + Z_SKIP))
+        IF Z_PHRASE == "" || Z_PART == ""
+            PRINTL I couldn't understand that sentence.
+            Z_ABORT = 1
+            RETURN 0
+        ENDIF
+    ENDIF
+    Z_RESOLVE_ROLE = 1
+    Z_RESOLVE_MEMBER = Z_MEMBER > 0
+    CALL Z_RESOLVE, Z_PART, 0
+    Z_RESOLVE_MEMBER = 0
+    Z_RESOLVE_ROLE = 0
+    Z_O = RESULT
+    Z_MEMBER += 1
+    SIF !Z_O || Z_ABORT
+        RETURN 0
+    IF Z_P_ONE_LEN && Z_MEMBER > 1 && !Z_EXCEPTION
+        ; GET-OBJECT with P-ONE and TLEN > 0: <PUT TBL 1 <GET TBL <RANDOM LEN>>>
+        ; reads the table from its start, then MATCHLEN becomes 1.
+        Z_LEN = Z_P_ONE_LEN
+        IF Z_LEN > 1
+            Z_Q = Z_RANDOM(Z_LEN) - 1
+            IF Z_Q < Z_LIST_COUNT
+                Z_O = Z_LIST:Z_Q
+            ELSE
+                Z_O = Z_CANDIDATES:(Z_Q - Z_LIST_COUNT)
+            ENDIF
+            PRINTFORML (How about the %Z_OBJ_NAME:Z_O%?)
+        ELSEIF Z_LIST_COUNT
+            Z_O = Z_LIST:0
+        ENDIF
+        Z_LIST_COUNT = 0
+        VARSET Z_SEEN
+    ENDIF
+    ; Multiple pseudo nouns append the same mutable identity more than once.
+    SIF Z_SEEN:Z_O && Z_O != O_PSEUDO_OBJECT
+        CONTINUE
+    Z_SEEN:Z_O = 1
+    Z_N += 1
+    IF Z_EXCEPTION
+        Z_EXCLUDED:Z_O = 1
+    ELSE
+        ; A 120-character READ line names at most 40 objects (two letters
+        ; and a separator each), below the 64 cells of Z_LIST.
+        SIF Z_LIST_COUNT >= 64
+            THROW Zork invariant: object list longer than one READ line allows.
+        Z_NOTHERE_LIST:Z_LIST_COUNT '= Z_PART
+        Z_LIST:Z_LIST_COUNT = Z_O
+        Z_LIST_COUNT += 1
+    ENDIF
+WEND
+RETURN Z_N > 0
+
+@Z_BUILD_HISTORY()
+#FUNCTIONS
+#DIMS DYNAMIC Z_H
+#DIMS DYNAMIC Z_CLAUSE
+#DIM DYNAMIC Z_I
+; Missing clauses are reparsed on AGAIN; clarified explicit clauses remain resolved.
+SIF Z_INFER_D || Z_INFER_I
+    RETURNF Z_COMMAND
+SIF Z_IOBJ == O_NOT_HERE_OBJECT || Z_IOBJ == O_IT_OBJECT
+    RETURNF Z_COMMAND
+FOR Z_I, 0, Z_LIST_COUNT
+    SIF Z_LIST:Z_I == O_NOT_HERE_OBJECT || Z_LIST:Z_I == O_IT_OBJECT
+        RETURNF Z_COMMAND
+NEXT
+SIF Z_VERB == "walk" || !Z_DOBJ && !Z_ALL && Z_LIST_COUNT == 0
+    RETURNF Z_COMMAND
+Z_H '= Z_VERB
+SIF Z_HISTORY_HEAD != ""
+    Z_H '= Z_HISTORY_HEAD
+SELECTCASE Z_VERB
+CASE "inside"
+    Z_H = look in
+CASE "under"
+    Z_H = look under
+CASE "climb"
+    IF Z_DIRECTION == 8
+        Z_H = climb up
+    ELSEIF Z_DIRECTION == 9
+        Z_H = climb down
+    ENDIF
+ENDSELECT
+IF Z_ALL
+    Z_CLAUSE = all
+    SIF Z_ALL_FILTER != ""
+        Z_CLAUSE += " " + Z_ALL_FILTER
+    FOR Z_I, 1, Z_OBJECT_COUNT + 1
+        IF Z_EXCLUDED:Z_I
+            IF Z_CLAUSE == "all"
+                Z_CLAUSE += " except "
+            ELSE
+                Z_CLAUSE += " and "
+            ENDIF
+            Z_CLAUSE += Z_REPLAY_NAME:Z_I
+        ENDIF
+    NEXT
+ELSE
+    FOR Z_I, 0, Z_LIST_COUNT
+        SIF Z_I
+            Z_CLAUSE += " and "
+        Z_CLAUSE += Z_REPLAY_NAME:(Z_LIST:Z_I)
+    NEXT
+ENDIF
+Z_H '= Z_H + " " + Z_CLAUSE
+SIF Z_IOBJ
+    Z_H '= Z_H + " " + Z_HISTORY_PREP + " " + Z_REPLAY_NAME:Z_IOBJ
+RETURNF Z_H
+
+@Z_PERFORM_LIST
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_N
+#DIM DYNAMIC Z_ANY_TIME
+Z_N = Z_LIST_COUNT
+; Disable list dispatch before calling the ordinary single-object dispatcher.
+Z_LIST_COUNT = 0
+FOR Z_I, 0, Z_N
+    Z_DOBJ = Z_LIST:Z_I
+    Z_NOTHERE_D '= Z_NOTHERE_LIST:Z_I
+    IF Z_DOBJ == O_NOT_HERE_OBJECT
+        PRINTL The other object that you mentioned isn't here.
+        Z_ANY_TIME = 1
+        Z_PENDING =
+        CONTINUE
+    ENDIF
+    IF Z_DOBJ == O_IT_OBJECT
+        PRINTFORM %Z_OBJ_NAME:Z_IT%: 
+    ELSE
+        PRINTFORM %Z_OBJ_NAME:Z_DOBJ%: 
+    ENDIF
+    Z_TIME = 1
+    CALL Z_PERFORM
+    SIF Z_TIME
+        Z_ANY_TIME = 1
+    SIF Z_ABORT || Z_DEATH_THIS_TURN || Z_GAME_OVER
+        BREAK
+NEXT
+Z_TIME = Z_ANY_TIME
+Z_LIST_COUNT = Z_N
+RETURN
+
+; Parse the input head without conflating a comma after HELLO with an actor.
+@Z_PARSE_COMMAND_HEAD
+#DIM DYNAMIC Z_P
+#DIMS DYNAMIC Z_HEAD
+Z_HEAD '= Z_FIRST_WORD(Z_COMMAND)
+IF Z_VERB_ID(Z_HEAD) == "hello"
+    Z_VERB = hello
+    Z_NOUN '= Z_TRIM(SUBSTRING(Z_COMMAND, STRLENS(Z_HEAD)))
+    WHILE SUBSTRING(Z_NOUN, 0, 1) == "," || SUBSTRING(Z_NOUN, 0, 4) == "and "
+        IF SUBSTRING(Z_NOUN, 0, 1) == ","
+            Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, 1))
+        ELSE
+            Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, 4))
+        ENDIF
+    WEND
+    RETURN
+ENDIF
+Z_P = STRFIND(Z_COMMAND, " ")
+IF Z_P < 0
+    Z_VERB '= Z_VERB_ID(Z_COMMAND)
+ELSE
+    Z_VERB '= Z_VERB_ID(SUBSTRING(Z_COMMAND, 0, Z_P))
+    Z_NOUN '= Z_TRIM(SUBSTRING(Z_COMMAND, Z_P + 1))
+ENDIF
+; PARSER takes a verb only from a word with the verb part of speech. The
+; port's internal verb names for ON/OFF/... are not story verbs; AGAIN, G
+; and OOPS are handled before the word loop.
+Z_P = Z_PT_INFO(Z_DICTIONARY_KEY(Z_HEAD))
+IF Z_VERB != "" && Z_P >= 0 && ((Z_P / 65536) & (64 | 16)) == 0 && Z_HEAD != "again" && Z_HEAD != "g" && Z_HEAD != "oops"
+    Z_VERB =
+ENDIF
+RETURN
+
+; READ: the story's P-INBUF holds 120 characters; the interpreter keeps the
+; first 120 of a longer line.
+@Z_INPUT_LINE(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+SIF STRLENS(Z_S) > 120
+    RETURNF SUBSTRING(Z_S, 0, 120)
+RETURNF Z_S
+
+@Z_LAST_SPACE(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_I
+FOR Z_I, STRLENS(Z_S) - 1, -1, -1
+    SIF SUBSTRING(Z_S, Z_I, 1) == " "
+        RETURNF Z_I
+NEXT
+RETURNF -1
+
+; READ fills P-LEXV with every line, orphan replies included.
+; Own word split: the shared Z_SP_* scan still describes the pending sentence.
+@Z_REMEMBER_LINE(Z_S)
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_I
+#DIMS DYNAMIC Z_W
+#DIMS DYNAMIC Z_K, 3
+#DIM DYNAMIC Z_N
+SIF Z_S == ""
+    RETURN
+Z_S '= REPLACE(REPLACE(REPLACE(Z_S, ",", " , "), ".", " . "), "\"", " \" ")
+WHILE Z_TRIM(Z_S) != "" && Z_N < 3
+    Z_S '= Z_TRIM(Z_S)
+    Z_W '= Z_FIRST_WORD(Z_S)
+    SIF Z_W == ""
+        Z_W '= SUBSTRING(Z_S, 0, 1)
+    Z_S '= SUBSTRING(Z_S, STRLENS(Z_W))
+    Z_K:Z_N '= Z_DICTIONARY_KEY(Z_W)
+    Z_N += 1
+WEND
+SIF Z_K:0 == "save" || Z_K:0 == "restor"
+    Z_N = MIN(Z_N, 1)
+FOR Z_I, 0, Z_N
+    Z_LEXV_STALE:Z_I '= Z_K:Z_I
+NEXT
+RETURN

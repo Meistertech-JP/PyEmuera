@@ -1,0 +1,423 @@
+﻿; r29: gverbs.zil action routines whose dictionary words the earlier port did
+; not accept. Object actions run from Z_GENERIC_OBJECT_ACTION, i.e. only after
+; PRE-actions and both objects' ACTION routines have declined (gmain PERFORM).
+
+@Z_SOURCE_VERB_OBJECT(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+SELECTCASE Z_VERB
+CASE "climb_on"
+    ; V-CLIMB-ON: a vehicle is boarded, otherwise refused.
+    IF Z_SRC_ATTR:Z_O & (1 << 27)
+        CALL Z_GENERIC_REPERFORM, "board", Z_O, 0
+    ELSE
+        PRINTFORML You can't climb onto the %Z_OBJ_NAME:Z_O%.
+    ENDIF
+CASE "board"
+    ; PRE-BOARD for anything the boat/water ACTIONs did not take.
+    IF Z_O == O_WATER || Z_O == O_GLOBAL_WATER
+        CALL Z_GENERIC_REPERFORM, "swim", Z_O, 0
+    ELSEIF !(Z_SRC_ATTR:Z_O & (1 << 27))
+        PRINTFORML You have a theory on how to board a %Z_OBJ_NAME:Z_O%, perhaps?
+        Z_PENDING =
+    ELSE
+        RETURN 0
+    ENDIF
+CASE "look_behind"
+    PRINTFORML There is nothing behind the %Z_OBJ_NAME:Z_O%.
+CASE "look_on"
+    IF Z_HAS(Z_O, ZF_SURFACE)
+        CALL Z_GENERIC_REPERFORM, "inside", Z_O, 0
+    ELSE
+        PRINTFORML Look on a %Z_OBJ_NAME:Z_O%???
+    ENDIF
+CASE "put_behind"
+    PRINTL That hiding place is too obvious.
+CASE "walk_around"
+    PRINTL Use compass directions for movement.
+CASE "look_room"
+    ; V-LOOK (the object only had to be found)
+    CALL Z_LOOK, 1
+CASE "walk_to"
+    IF Z_O && (Z_PARENT:Z_O == Z_HERE || Z_GLOBAL_IN(Z_O, Z_HERE))
+        PRINTL It's here!
+    ELSE
+        PRINTL You should supply a direction!
+    ENDIF
+CASE "reply"
+    ; V-REPLY clears P-CONT and QUOTE-FLAG.
+    PRINTFORML It is hardly likely that the %Z_OBJ_NAME:Z_O% is interested.
+    Z_PENDING =
+    Z_ACTOR_PENDING =
+    Z_ACTOR = 0
+    Z_QUOTE_STREAM = 0
+CASE "curse_obj"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTL Insults of this nature won't help you.
+    ELSE
+        PRINTL What a loony!
+    ENDIF
+CASE "read_page"
+    ; V-READ-PAGE: PERFORM READ PRSO (the page clause is dropped).
+    CALL Z_GENERIC_REPERFORM, "read", Z_O, 0
+CASE "overboard"
+    ; V-OVERBOARD (THROW OBJECT OBJECT; OVERBOARD is a TEETH synonym).
+    IF Z_TARGET == O_TEETH
+        IF Z_IN_BOAT
+            CALL Z_MOVE_OBJECT, Z_O, Z_HERE
+            PRINTFORML Ahoy -- %Z_OBJ_NAME:Z_O% overboard!
+        ELSE
+            PRINTL You're not in anything!
+        ENDIF
+    ELSEIF Z_IN_BOAT
+        CALL Z_GENERIC_REPERFORM, "throw", Z_O, 0
+    ELSE
+        PRINTL Huh?
+    ENDIF
+CASE "strike"
+    ; V-STRIKE
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML Since you aren't versed in hand-to-hand combat, you'd better attack the %Z_OBJ_NAME:Z_O% with a weapon.
+    ELSE
+        CALL Z_GENERIC_REPERFORM, "on", Z_O, 0
+    ENDIF
+CASE "lean"
+    ; V-LEAN-ON
+    PRINTL Getting tired?
+CASE "disenchant", "enchant"
+    ; Zork I compiles V-ENCHANT to V-DISENCHANT, whose Zork I body is this.
+    PRINTL Nothing happens.
+CASE "spin"
+    PRINTL You can't spin that!
+CASE "hatch"
+    PRINTL Bizarre!
+CASE "send"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML Why would you send for the %Z_OBJ_NAME:Z_O%?
+    ELSE
+        PRINTL That doesn't make sends.
+    ENDIF
+CASE "pump"
+    IF Z_TARGET && Z_TARGET != O_PUMP
+        PRINTFORML Pump it up with a %Z_OBJ_NAME:Z_TARGET%?
+    ELSEIF Z_PARENT:O_PUMP == Z_PLAYER
+        CALL Z_GENERIC_REPERFORM, "inflate", Z_O, O_PUMP
+    ELSE
+        PRINTL It's really not clear how.
+    ENDIF
+CASE "wear"
+    ; No Zork I object has WEARBIT.
+    PRINTFORML You can't wear the %Z_OBJ_NAME:Z_O%.
+CASE "command"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML The %Z_OBJ_NAME:Z_O% pays no attention.
+    ELSE
+        PRINTL You cannot talk to that!
+    ENDIF
+CASE "play"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML You become so engrossed in the role of the %Z_OBJ_NAME:Z_O% that
+        PRINTL you kill yourself, just as he might have done!
+        ; <JIGS-UP ""> : the pinned story's string for "" is the tail of
+        ; " has no effect." (compiler string sharing), printed as the
+        ; death message.
+        PRINTL  has no effect.
+        CALL Z_FATAL_BOUNDARY
+    ELSE
+        PRINTL That's silly!
+    ENDIF
+CASE "rape"
+    PRINTL What a (ahem!) strange idea.
+CASE "put_under"
+    PRINTL You can't do that.
+CASE "push_to"
+    PRINTL You can't push things to that.
+CASE "push"
+    CALL Z_HACK_HACK, "Pushing the ", Z_O
+CASE "exorcise"
+    PRINTL What a bizarre concept!
+CASE "random"
+    ; V-RANDOM: <RANDOM <- 0 ,P-NUMBER>> seeds the generator (03_Random).
+    IF Z_O != O_INTNUM
+        PRINTL Illegal call to #RND.
+    ELSE
+        CALL Z_SEED_RANDOM, Z_P_NUMBER
+    ENDIF
+CASE "exit"
+    ; V-EXIT: PERFORM DISEMBARK on the vehicle the player is in.
+    IF Z_IN_BOAT && Z_O == O_INFLATED_BOAT
+        CALL Z_DISEMBARK
+    ELSE
+        CALL Z_WALK, 11
+    ENDIF
+CASEELSE
+    RETURN 0
+ENDSELECT
+RETURN 1
+
+; Zero-object source verbs (no SYNTAX line has an object).
+@Z_SOURCE_VERB_SIMPLE
+SELECTCASE Z_VERB
+CASE "walk_around"
+    ; SYNTAX WALK = V-WALK-AROUND
+    PRINTL Use compass directions for movement.
+CASE "treasure"
+    ; V-TREASURE: the TEMPLE/TREASURE magic words.
+    IF Z_HERE == R_NORTH_TEMPLE
+        CALL Z_GOTO_ROOM, R_TREASURE_ROOM, Z_IS_LIT()
+    ELSEIF Z_HERE == R_TREASURE_ROOM
+        CALL Z_GOTO_ROOM, R_NORTH_TEMPLE, Z_IS_LIT()
+    ELSE
+        PRINTL Nothing happens.
+    ENDIF
+CASE "exit", "leave"
+    ; V-EXIT / V-LEAVE without an object.
+    IF Z_IN_BOAT && Z_VERB == "exit"
+        CALL Z_DISEMBARK
+    ELSE
+        CALL Z_WALK, 11
+    ENDIF
+CASE "script"
+    PRINTL Here begins a transcript of interaction with
+    CALL Z_STORY_VERSION
+CASE "unscript"
+    PRINTL Here ends a transcript of interaction with
+    CALL Z_STORY_VERSION
+CASE "verify"
+    ; The ERB runtime has no story file to checksum. The port reports the
+    ; success branch, as for the unmodified story.
+    PRINTL Verifying disk...
+    PRINTL The disk is correct.
+CASE "record", "unrecord", "commandfile"
+    ; DIROUT 4 / DIROUT -4 / DIRIN 1 change host streams and print nothing.
+CASEELSE
+    RETURN 0
+ENDSELECT
+RETURN 1
+
+; r29: object ACTION routines (1actions.zil) missing from earlier revisions.
+; PRSI's ACTION is tried before PRSO's, as in gmain PERFORM.
+@Z_SOURCE_OBJECT_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_TARGET == O_GHOSTS || Z_O == O_GHOSTS
+    ; GHOSTS-F (TELL is answered by the speech layer).
+    IF Z_VERB == "exorcise"
+        PRINTL Only the ceremony itself has any effect.
+    ELSEIF (Z_VERB == "attack" || Z_VERB == "break") && Z_O == O_GHOSTS
+        PRINTL How can you attack a spirit with material objects?
+    ELSE
+        PRINTL You seem unable to interact with these spirits.
+    ENDIF
+    RETURN 1
+ENDIF
+IF (Z_O == O_FRONT_DOOR || Z_O == O_WOODEN_DOOR) && Z_VERB == "look_behind"
+    ; FRONT-DOOR-FCN LOOK-BEHIND
+    PRINTL It won't open.
+    RETURN 1
+ENDIF
+IF Z_O == O_RUG && Z_VERB == "climb_on"
+    ; RUG-FCN CLIMB-ON
+    IF !Z_RUG_MOVED && !Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+        PRINTL As you sit, you notice an irregularity underneath it. Rather than be
+        PRINTL uncomfortable, you stand up again.
+    ELSE
+        PRINTL I suppose you think it's a magic carpet?
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_SWORD && Z_VERB == "examine" && Z_SWORD_GLOW
+    ; SWORD-FCN EXAMINE (P?TVALUE is the glow level of I-SWORD)
+    IF Z_SWORD_GLOW == 1
+        PRINTL Your sword is glowing with a faint blue glow.
+    ELSE
+        PRINTL Your sword is glowing very brightly.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_TROLL && Z_VERB == "listen"
+    ; TROLL-FCN LISTEN
+    PRINTL Every so often the troll says something, probably uncomplimentary, in
+    PRINTL his guttural tongue.
+    RETURN 1
+ENDIF
+IF Z_O == O_PEDESTAL
+    ; DUMB-CONTAINER
+    IF Z_VERB == "open" || Z_VERB == "close" || Z_VERB == "inside"
+        PRINTL You can't do that.
+        RETURN 1
+    ELSEIF Z_VERB == "examine"
+        PRINTFORML It looks pretty much like a %Z_OBJ_NAME:Z_O%.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_STAIRS && Z_VERB == "enter"
+    ; STAIRS-F: V-THROUGH
+    PRINTL You should say whether you want to go up or down.
+    RETURN 1
+ENDIF
+IF Z_O == O_WHITE_HOUSE && Z_VERB != "find" && Z_VERB != "examine"
+    ; WHITE-HOUSE-F (FIND/EXAMINE are answered in 46/60 as in r28).
+    IF Z_HERE == R_KITCHEN || Z_HERE == R_LIVING_ROOM || Z_HERE == R_ATTIC
+        IF Z_VERB == "walk_around"
+            CALL Z_GO_NEXT, 3
+            RETURN 1
+        ENDIF
+        RETURN 0
+    ENDIF
+    IF Z_HERE != R_EAST_OF_HOUSE && Z_HERE != R_WEST_OF_HOUSE && Z_HERE != R_NORTH_OF_HOUSE && Z_HERE != R_SOUTH_OF_HOUSE
+        PRINTL You're not at the house.
+        RETURN 1
+    ENDIF
+    IF Z_VERB == "walk_around"
+        CALL Z_GO_NEXT, 1
+        RETURN 1
+    ELSEIF Z_VERB == "enter" || Z_VERB == "open"
+        IF Z_HERE == R_EAST_OF_HOUSE
+            IF Z_HAS(O_KITCHEN_WINDOW, ZF_OPEN)
+                CALL Z_GOTO_ROOM, R_KITCHEN, Z_IS_LIT()
+            ELSE
+                PRINTL The window is closed.
+                Z_IT = O_KITCHEN_WINDOW
+            ENDIF
+        ELSE
+            PRINTL I can't see how to get in from here.
+        ENDIF
+        RETURN 1
+    ENDIF
+    RETURN 0
+ENDIF
+IF Z_O == O_FOREST
+    ; FOREST-F: WALK-AROUND's COND clause returns GO-NEXT's value, so next to
+    ; the house the message is followed by V-WALK-AROUND's default.
+    IF Z_VERB == "walk_around"
+        SIF Z_HERE == R_WEST_OF_HOUSE || Z_HERE == R_NORTH_OF_HOUSE || Z_HERE == R_SOUTH_OF_HOUSE || Z_HERE == R_EAST_OF_HOUSE
+            PRINTL You aren't even in the forest.
+        CALL Z_GO_NEXT, 2
+        RETURN RESULT
+    ELSEIF Z_VERB == "disembark"
+        PRINTL You will have to specify a direction.
+        RETURN 1
+    ENDIF
+ENDIF
+RETURN 0
+
+; GO-NEXT with the 1dungeon.zil walk-around tables: 1 HOUSE-AROUND,
+; 2 FOREST-AROUND, 3 IN-HOUSE-AROUND. LKP returns the element after HERE.
+@Z_GO_NEXT(Z_TABLE)
+#DIM DYNAMIC Z_TABLE
+#DIM DYNAMIC Z_NEXT_ROOM
+Z_NEXT_ROOM = 0
+SELECTCASE Z_TABLE
+CASE 1
+    SELECTCASE Z_HERE
+    CASE R_WEST_OF_HOUSE
+        Z_NEXT_ROOM = R_NORTH_OF_HOUSE
+    CASE R_NORTH_OF_HOUSE
+        Z_NEXT_ROOM = R_EAST_OF_HOUSE
+    CASE R_EAST_OF_HOUSE
+        Z_NEXT_ROOM = R_SOUTH_OF_HOUSE
+    CASE R_SOUTH_OF_HOUSE
+        Z_NEXT_ROOM = R_WEST_OF_HOUSE
+    ENDSELECT
+CASE 2
+    SELECTCASE Z_HERE
+    CASE R_FOREST_1
+        Z_NEXT_ROOM = R_FOREST_2
+    CASE R_FOREST_2
+        Z_NEXT_ROOM = R_FOREST_3
+    CASE R_FOREST_3
+        Z_NEXT_ROOM = R_PATH
+    CASE R_PATH
+        Z_NEXT_ROOM = R_CLEARING
+    CASE R_CLEARING
+        Z_NEXT_ROOM = R_FOREST_1
+    ENDSELECT
+CASE 3
+    SELECTCASE Z_HERE
+    CASE R_LIVING_ROOM
+        Z_NEXT_ROOM = R_KITCHEN
+    CASE R_KITCHEN
+        Z_NEXT_ROOM = R_ATTIC
+    CASE R_ATTIC
+        Z_NEXT_ROOM = R_KITCHEN
+    ENDSELECT
+ENDSELECT
+SIF !Z_NEXT_ROOM
+    RETURN 0
+CALL Z_GOTO_ROOM, Z_NEXT_ROOM, Z_IS_LIT()
+RETURN 1
+
+; GLOBAL-IN? (gverbs.zil): OBJ is listed in ROOM's P?GLOBAL property.
+@Z_GLOBAL_IN(Z_O, Z_ROOM)
+#FUNCTION
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_I
+SIF Z_ROOM <= 0
+    RETURNF 0
+FOR Z_I, 0, Z_ROOM_GLOBAL_COUNT:Z_ROOM
+    SIF Z_ROOM_GLOBALS:Z_ROOM:Z_I == Z_O
+        RETURNF 1
+NEXT
+RETURNF 0
+
+; The V-CLIMB-UP / V-CLIMB-DOWN / V-CLIMB-FOO default once object and room
+; ACTIONs have declined. V-CLIMB-UP is PERFORMed without its OBJ argument.
+@Z_CLIMB_DEFAULT(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_DIR
+#DIM DYNAMIC Z_OBJ
+Z_DIR = 8
+Z_OBJ = Z_O
+IF Z_SP_ACTION == "V-CLIMB-DOWN" || (Z_SP_ACTION == "" && Z_DIRECTION == 9)
+    Z_DIR = 9
+ELSEIF Z_SP_ACTION == "V-CLIMB-UP" || (Z_SP_ACTION == "" && Z_DIRECTION == 8)
+    Z_OBJ = 0
+ENDIF
+CALL Z_CLIMB_UP_SOURCE, Z_DIR, Z_OBJ
+RETURN
+
+@Z_CLIMB_UP_SOURCE(Z_DIR, Z_OBJ)
+#DIM DYNAMIC Z_DIR
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_XSIZE
+Z_XSIZE = Z_SRC_EXIT_SIZE:Z_HERE:Z_DIR
+IF Z_XSIZE
+    IF Z_OBJ && (Z_XSIZE == 2 || ((Z_XSIZE == 4 || Z_XSIZE == 5 || Z_XSIZE == 1) && !Z_GLOBAL_IN(Z_OBJ, Z_SRC_EXIT_DEST:Z_HERE:Z_DIR)))
+        PRINTFORM The %Z_OBJ_NAME:Z_OBJ% do
+        SIF Z_OBJ != O_STAIRS
+            PRINT es
+        PRINT n't lead 
+        IF Z_DIR == 8
+            PRINT up
+        ELSE
+            PRINT down
+        ENDIF
+        PRINTL ward.
+        RETURN
+    ENDIF
+    CALL Z_WALK, Z_DIR
+ELSEIF Z_OBJ && STRFIND(Z_NOUNS:Z_OBJ, "|wall|") >= 0
+    PRINTL Climbing the walls is to no avail.
+ELSEIF Z_HERE != R_PATH && (Z_OBJ == 0 || Z_OBJ == O_TREE) && Z_GLOBAL_IN(O_TREE, Z_HERE)
+    PRINTL There are no climbable trees here.
+ELSEIF Z_OBJ == 0
+    PRINTL You can't go that way.
+ELSE
+    PRINTL You can't do that!
+ENDIF
+RETURN
+
+; CCOUNT: direct children (no Zork I object has WEARBIT).
+@Z_CHILD_COUNT(Z_O)
+#FUNCTION
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_N
+#DIM DYNAMIC Z_C
+Z_C = Z_FIRST_CHILD(Z_O)
+WHILE Z_C
+    Z_N += 1
+    Z_C = Z_NEXT:Z_C
+WEND
+RETURNF Z_N

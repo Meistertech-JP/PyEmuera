@@ -1,0 +1,635 @@
+﻿; r29 source-faithful lexical scan: gparser.zil PARSER word loop, CLAUSE and
+; the matching half of SYNTAX-CHECK, driven by the original dictionary bytes
+; and VERBS table in 38_ParserTables (generated from the pinned story file).
+;
+; The scan only decides whether the original parser stops before object
+; resolution (CANT-USE, too many nouns, no syntax line). In that case it prints
+; the original message and the caller abandons the statement: no turn, no IT
+; or PSEUDO change, no implicit take, no RNG, and the rest of the line is
+; dropped (MAIN-LOOP-1 clears P-CONT when PARSER fails). When a syntax line
+; matches exactly or can drive an orphan/GWIM, the established resolver runs.
+; An unknown word is left to Z_CHECK_WORDS, which owns OOPS bookkeeping.
+;
+; Return: 1 = continue with ordinary parsing; 0 = rejected and reported.
+
+@Z_SP_TOKENIZE(Z_S)
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_I
+#DIMS DYNAMIC Z_C
+#DIMS DYNAMIC Z_W
+Z_SP_N = 0
+FOR Z_I, 0, STRLENS(Z_S) + 1
+    Z_C '= SUBSTRING(Z_S, Z_I, 1)
+    IF Z_C == " " || Z_C == "" || Z_C == "," || Z_C == "." || Z_C == "\""
+        IF Z_W != "" && Z_SP_N < 160
+            Z_SP_WORD:Z_SP_N '= Z_W
+            Z_SP_N += 1
+        ENDIF
+        Z_W =
+        IF Z_C != " " && Z_C != "" && Z_SP_N < 160
+            Z_SP_WORD:Z_SP_N '= Z_C
+            Z_SP_N += 1
+        ENDIF
+    ELSE
+        Z_W += Z_C
+    ENDIF
+NEXT
+FOR Z_I, 0, Z_SP_N
+    Z_SP_KEY:Z_I '= Z_DICTIONARY_KEY(Z_SP_WORD:Z_I)
+    Z_SP_INFO:Z_I = Z_PT_INFO(Z_SP_KEY:Z_I)
+    ; <OR <GET P-LEXV PTR> <NUMBER? PTR>>: a dictionary word wins.
+    IF Z_SP_INFO:Z_I < 0 && Z_IS_ZNUMBER(Z_SP_WORD:Z_I)
+        Z_SP_KEY:Z_I = intnum
+        Z_SP_INFO:Z_I = Z_PT_INFO("intnum")
+    ENDIF
+NEXT
+RETURN
+
+; WT? without B1: part-of-speech bit test.
+@Z_SP_IS(Z_I, Z_BIT)
+#FUNCTION
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_BIT
+SIF Z_I < 0 || Z_I >= Z_SP_N
+    RETURNF 0
+SIF Z_SP_INFO:Z_I < 0
+    RETURNF 0
+RETURNF ((Z_SP_INFO:Z_I / 65536) & Z_BIT) != 0
+
+; WT? with B1: the first value byte when the P1 bits equal B1, else the second.
+; A value of zero is false, exactly as in the source.
+@Z_SP_VALUE(Z_I, Z_BIT, Z_P1)
+#FUNCTION
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_BIT
+#DIM DYNAMIC Z_P1
+SIF !Z_SP_IS(Z_I, Z_BIT)
+    RETURNF 0
+SIF ((Z_SP_INFO:Z_I / 65536) & 3) == Z_P1
+    RETURNF (Z_SP_INFO:Z_I / 256) % 256
+RETURNF Z_SP_INFO:Z_I % 256
+
+@Z_SP_NEXT_KEY(Z_I)
+#FUNCTIONS
+#DIM DYNAMIC Z_I
+SIF Z_SP_PLEN == 0 || Z_I + 1 >= Z_SP_N
+    RETURNF ""
+RETURNF Z_SP_KEY:(Z_I + 1)
+
+@Z_SP_CANT_USE(Z_I)
+#DIM DYNAMIC Z_I
+IF Z_AFTER_SAY
+    PRINTL Nothing happens.
+ELSE
+    PRINTFORML You used the word "%Z_SP_WORD:Z_I%" in a way that I don't understand.
+ENDIF
+Z_QUOTE_STREAM = 0
+RETURN
+
+@Z_SP_RESET
+Z_SP_VERB = 0
+Z_SP_NCN = 0
+Z_SP_PREP1 = 0
+Z_SP_PREP2 = 0
+Z_SP_FOUND = 0
+Z_SP_LOC1 = 0
+Z_SP_LOC2 = 0
+Z_SP_ACTION =
+Z_SP_DRIVEN = 0
+Z_SP_GWIM_D = 0
+Z_SP_GWIM_I = 0
+Z_SP_ORPHAN_TEXT =
+Z_SP_ORPHAN_PREP =
+Z_SP_IPREP =
+Z_SP_END_ON_PREP = 0
+Z_SP_VERB_PTR = -1
+Z_SP_NC1_START = -1
+Z_SP_NC1_END = -1
+Z_SP_NC2_START = -1
+Z_SP_NC2_END = -1
+RETURN
+
+@Z_SOURCE_SYNTAX_GATE
+#DIM DYNAMIC Z_PTR
+#DIM DYNAMIC Z_LEN
+#DIM DYNAMIC Z_VAL
+#DIM DYNAMIC Z_OF_FLAG
+#DIM DYNAMIC Z_K
+#DIM DYNAMIC Z_NUM
+#DIM DYNAMIC Z_SYN
+#DIM DYNAMIC Z_DRIVE1
+#DIM DYNAMIC Z_DRIVE2
+#DIM DYNAMIC Z_GBIT
+#DIM DYNAMIC Z_PREP
+#DIMS DYNAMIC Z_W
+#DIMS DYNAMIC Z_NW
+CALL Z_SP_RESET
+CALL Z_SP_TOKENIZE, Z_COMMAND
+Z_LEN = Z_SP_N
+Z_SP_PLEN = Z_SP_N
+Z_PTR = 0
+WHILE 1
+    Z_SP_PLEN -= 1
+    SIF Z_SP_PLEN < 0
+        BREAK
+    SIF Z_SP_INFO:Z_PTR < 0
+        RETURN 1
+    Z_W '= Z_SP_KEY:Z_PTR
+    Z_NW '= Z_SP_NEXT_KEY(Z_PTR)
+    SIF Z_W == "then" || Z_W == "." || Z_W == "\""
+        BREAK
+    Z_VAL = Z_SP_VALUE(Z_PTR, 16, 3)
+    IF Z_VAL && (Z_SP_VERB == 0 || Z_PT_VERB_IS_WALK(Z_SP_VERB)) && (Z_LEN == 1 || (Z_LEN == 2 && Z_PT_VERB_IS_WALK(Z_SP_VERB)) || ((Z_NW == "then" || Z_NW == "." || Z_NW == "\"") && Z_LEN >= 2) || (Z_LEN > 2 && (Z_NW == "," || Z_NW == "and")))
+        ; A direction sentence is WALK; SYNTAX-CHECK is not reached.
+        RETURN 1
+    ELSEIF Z_SP_IS(Z_PTR, 64) && Z_SP_VERB == 0
+        Z_SP_VERB = Z_SP_VALUE(Z_PTR, 64, 1)
+        Z_SP_VERB_PTR = Z_PTR
+    ELSEIF Z_SP_VALUE(Z_PTR, 8, 0) || Z_W == "all" || Z_W == "one" || Z_SP_IS(Z_PTR, 32) || Z_SP_IS(Z_PTR, 128)
+        Z_VAL = Z_SP_VALUE(Z_PTR, 8, 0)
+        IF Z_SP_PLEN > 1 && Z_NW == "of" && Z_VAL == 0 && Z_W != "all" && Z_W != "one" && Z_W != "a"
+            Z_OF_FLAG = 1
+        ELSEIF Z_VAL && (Z_SP_PLEN == 0 || Z_NW == "then" || Z_NW == ".")
+            Z_SP_END_ON_PREP = 1
+            SIF Z_SP_NCN < 2
+                Z_SP_PREP1 = Z_VAL
+        ELSEIF Z_SP_NCN == 2
+            PRINTL There were too many nouns in that sentence.
+            RETURN 0
+        ELSE
+            Z_SP_NCN += 1
+            CALL Z_SP_CLAUSE, Z_PTR, Z_VAL
+            SIF RESULT == -2
+                RETURN 1
+            SIF RESULT == -3
+                RETURN 0
+            SIF RESULT == -1
+                BREAK
+            Z_PTR = RESULT
+        ENDIF
+    ELSEIF Z_W == "of"
+        IF !Z_OF_FLAG || Z_NW == "." || Z_NW == "then"
+            CALL Z_SP_CANT_USE, Z_PTR
+            RETURN 0
+        ENDIF
+        Z_OF_FLAG = 0
+    ELSEIF Z_SP_IS(Z_PTR, 4)
+        ; Buzz word.
+    ELSE
+        ; TELL's own verb check belongs to the actor parser (Z_PREPARE_SPEECH).
+        SIF Z_PT_VERB_IS_TELL(Z_SP_VERB)
+            RETURN 1
+        CALL Z_SP_CANT_USE, Z_PTR
+        RETURN 0
+    ENDIF
+    Z_PTR += 1
+WEND
+; AGAIN restores P-ITBL without rescanning, so END-ON-PREP stays false.
+SIF Z_WAS_AGAIN
+    Z_SP_END_ON_PREP = 0
+; No verb: the established "There was no verb" / CANT-USE paths remain.
+SIF Z_SP_VERB == 0
+    RETURN 1
+; SYNTAX-CHECK matching. An exact line, or any orphan/GWIM driver, proceeds.
+Z_DRIVE1 = -1
+Z_DRIVE2 = -1
+FOR Z_K, 0, Z_PT_SYN_COUNT(Z_SP_VERB)
+    Z_SYN = Z_PT_SYN(Z_SP_VERB, Z_K)
+    Z_NUM = Z_SYN / 65536
+    IF Z_SP_NCN > Z_NUM
+    ELSEIF Z_NUM >= 1 && Z_SP_NCN == 0 && (Z_SP_PREP1 == 0 || Z_SP_PREP1 == (Z_SYN / 256) % 256)
+        Z_DRIVE1 = Z_K
+    ELSEIF (Z_SYN / 256) % 256 == Z_SP_PREP1
+        IF Z_NUM == 2 && Z_SP_NCN == 1
+            Z_DRIVE2 = Z_K
+        ELSEIF Z_SYN % 256 == Z_SP_PREP2
+            ; SYNTAX-FOUND: the first exact line in story order.
+            Z_SP_FOUND = 1
+            Z_SP_LOC1 = Z_PT_SYN_LOC(Z_SP_VERB, Z_K) / 256
+            Z_SP_LOC2 = Z_PT_SYN_LOC(Z_SP_VERB, Z_K) % 256
+            Z_SP_ACTION '= Z_PT_SYN_ACTION(Z_SP_VERB, Z_K)
+            Z_SP_IPREP '= Z_PT_PREP_WORD(Z_SYN % 256)
+            RETURN 1
+        ENDIF
+    ENDIF
+NEXT
+IF Z_DRIVE1 < 0 && Z_DRIVE2 < 0
+    PRINTL That sentence isn't one I recognize.
+    RETURN 0
+ENDIF
+; The remainder of SYNTAX-CHECK: GWIM the missing slot, else ORPHAN.
+IF Z_DRIVE1 >= 0
+    Z_GBIT = Z_PT_SYN_GWIM(Z_SP_VERB, Z_DRIVE1) / 256
+    ; RMUNGBIT returns ROOMS silently; the established parser owns those
+    ; bare forms (STAND UP, CLIMB UP, GET OUT...).
+    SIF Z_GBIT == 24
+        RETURN 1
+    CALL Z_SP_GWIM, Z_GBIT, Z_PT_SYN_LOC(Z_SP_VERB, Z_DRIVE1) / 256, (Z_PT_SYN(Z_SP_VERB, Z_DRIVE1) / 256) % 256
+    IF RESULT
+        Z_SP_GWIM_D = RESULT
+        CALL Z_SP_SYNTAX_FOUND, Z_DRIVE1
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_DRIVE2 >= 0
+    Z_GBIT = Z_PT_SYN_GWIM(Z_SP_VERB, Z_DRIVE2) % 256
+    SIF Z_GBIT == 24
+        RETURN 1
+    CALL Z_SP_GWIM, Z_GBIT, Z_PT_SYN_LOC(Z_SP_VERB, Z_DRIVE2) % 256, Z_PT_SYN(Z_SP_VERB, Z_DRIVE2) % 256
+    IF RESULT
+        Z_SP_GWIM_I = RESULT
+        CALL Z_SP_SYNTAX_FOUND, Z_DRIVE2
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_PT_VERB_IS_FIND(Z_SP_VERB)
+    PRINTL That question can't be answered.
+    RETURN 0
+ENDIF
+; ORPHAN: the established reply reader asks with this source text.
+Z_SP_ORPHAN_TEXT '= "What do you want to " + Z_SP_WORD:Z_SP_VERB_PTR
+IF Z_DRIVE1 >= 0
+    Z_PREP = (Z_PT_SYN(Z_SP_VERB, Z_DRIVE1) / 256) % 256
+    Z_SP_ACTION '= Z_PT_SYN_ACTION(Z_SP_VERB, Z_DRIVE1)
+ELSE
+    Z_SP_ACTION '= Z_PT_SYN_ACTION(Z_SP_VERB, Z_DRIVE2)
+    Z_SP_ORPHAN_TEXT += " " + Z_SP_CLAUSE_TEXT(Z_SP_NC1_START, Z_SP_NC1_END)
+    Z_PREP = Z_PT_SYN(Z_SP_VERB, Z_DRIVE2) % 256
+ENDIF
+SIF Z_PREP
+    Z_SP_ORPHAN_TEXT += " " + Z_PT_PREP_WORD(Z_PREP)
+SIF Z_DRIVE1 < 0
+    Z_SP_ORPHAN_PREP '= Z_PT_PREP_WORD(Z_PREP)
+Z_SP_ORPHAN_TEXT += "?"
+RETURN 1
+
+@Z_SP_SYNTAX_FOUND(Z_K)
+#DIM DYNAMIC Z_K
+Z_SP_FOUND = 1
+Z_SP_DRIVEN = 1
+Z_SP_LOC1 = Z_PT_SYN_LOC(Z_SP_VERB, Z_K) / 256
+Z_SP_LOC2 = Z_PT_SYN_LOC(Z_SP_VERB, Z_K) % 256
+Z_SP_ACTION '= Z_PT_SYN_ACTION(Z_SP_VERB, Z_K)
+Z_SP_IPREP '= Z_PT_PREP_WORD(Z_PT_SYN(Z_SP_VERB, Z_K) % 256)
+RETURN
+
+; FIND flag number -> the port's candidate test. Flags the port models
+; dynamically use its own bits; the others use the story's static attributes.
+@Z_SP_FIND_CODE(Z_GBIT)
+#FUNCTION
+#DIM DYNAMIC Z_GBIT
+SELECTCASE Z_GBIT
+CASE 16
+    RETURNF ZF_READ
+CASE 17
+    RETURNF ZF_TAKE
+CASE 18
+    RETURNF ZF_CONTAINER
+CASE 19
+    RETURNF ZF_ON
+CASE 20
+    RETURNF ZF_FOOD
+CASE 21
+    RETURNF ZG_DRINK
+CASE 22
+    RETURNF ZF_DOOR
+CASE 25
+    RETURNF ZF_FLAME
+CASE 26
+    RETURNF ZG_BURN
+CASE 28
+    RETURNF ZF_TOOL
+CASE 29
+    RETURNF ZF_WEAPON
+CASE 30
+    RETURNF ZF_ACTOR
+CASE 31
+    RETURNF ZF_LIGHT
+ENDSELECT
+SIF Z_GBIT > 0 && Z_GBIT < 32
+    RETURNF ZG_SOURCE_ATTR + Z_GBIT
+RETURNF 0
+
+; GWIM: GET-OBJECT without nouns (VRB false: failures print nothing).
+@Z_SP_GWIM(Z_GBIT, Z_LBIT, Z_PREP)
+#DIM DYNAMIC Z_GBIT
+#DIM DYNAMIC Z_LBIT
+#DIM DYNAMIC Z_PREP
+#DIM DYNAMIC Z_O
+#DIMS DYNAMIC Z_W
+SIF !Z_GBIT
+    RETURN 0
+CALL Z_FIND_CANDIDATES, "", Z_SP_FIND_CODE(Z_GBIT), Z_LBIT & 240, 0
+SIF Z_CANDIDATE_COUNT != 1
+    RETURN 0
+Z_O = Z_CANDIDATES:0
+IF Z_PREP && !Z_SP_END_ON_PREP
+    Z_W '= Z_PT_PREP_WORD(Z_PREP)
+    SIF Z_W == "out"
+        Z_W += " of"
+    IF Z_O == O_HANDS
+        PRINTFORML (%Z_W% your hands)
+    ELSE
+        PRINTFORML (%Z_W% the %Z_OBJ_NAME:Z_O%)
+    ENDIF
+ELSE
+    PRINTFORML (%Z_OBJ_NAME:Z_O%)
+ENDIF
+RETURN Z_O
+
+; BUFFER-PRINT with THE?: the typed words of a noun clause.
+@Z_SP_CLAUSE_TEXT(Z_START, Z_END)
+#FUNCTIONS
+#DIM DYNAMIC Z_START
+#DIM DYNAMIC Z_END
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_NOSP
+#DIM DYNAMIC Z_FIRST_W
+#DIM DYNAMIC Z_PN
+#DIMS DYNAMIC Z_OUT
+Z_NOSP = 1
+Z_FIRST_W = 1
+SIF Z_START < 0
+    RETURNF ""
+FOR Z_I, Z_START, Z_END
+    IF Z_SP_KEY:Z_I == ","
+        Z_OUT += ", "
+    ELSEIF Z_NOSP
+        Z_NOSP = 0
+    ELSE
+        Z_OUT += " "
+    ENDIF
+    IF Z_SP_KEY:Z_I == "." || Z_SP_KEY:Z_I == ","
+        Z_NOSP = 1
+    ELSEIF Z_SP_KEY:Z_I == "me"
+        Z_OUT += Z_OBJ_NAME:O_ME
+        Z_PN = 1
+    ELSEIF Z_SP_KEY:Z_I == "intnum"
+        Z_OUT += TOSTR(Z_P_NUMBER)
+        Z_PN = 1
+    ELSE
+        SIF Z_FIRST_W && !Z_PN
+            Z_OUT += "the "
+        IF Z_SP_KEY:Z_I == "it" && Z_IT && Z_PRONOUN_ACCESSIBLE(Z_IT)
+            Z_OUT += Z_OBJ_NAME:Z_IT
+        ELSE
+            Z_OUT += Z_SP_WORD:Z_I
+        ENDIF
+        Z_FIRST_W = 0
+    ENDIF
+NEXT
+RETURNF Z_OUT
+
+; CLAUSE (gparser.zil). Returns the last pointer of the clause, -1 at the end
+; of input, -2 for an unknown word (deferred), -3 after CANT-USE.
+@Z_SP_CLAUSE(Z_PTR, Z_VAL)
+#DIM DYNAMIC Z_PTR
+#DIM DYNAMIC Z_VAL
+#DIM DYNAMIC Z_ANDFLG
+#DIM DYNAMIC Z_CL_FIRST
+#DIM DYNAMIC Z_START
+#DIMS DYNAMIC Z_W
+#DIMS DYNAMIC Z_NW
+IF Z_VAL
+    IF Z_SP_NCN == 1
+        Z_SP_PREP1 = Z_VAL
+    ELSE
+        Z_SP_PREP2 = Z_VAL
+    ENDIF
+    Z_PTR += 1
+ELSE
+    Z_SP_PLEN += 1
+ENDIF
+IF Z_SP_PLEN == 0
+    Z_SP_NCN -= 1
+    RETURN -1
+ENDIF
+Z_START = Z_PTR
+SIF Z_SP_KEY:Z_PTR == "the" || Z_SP_KEY:Z_PTR == "a" || Z_SP_KEY:Z_PTR == "an"
+    Z_START += 1
+CALL Z_SP_SET_CLAUSE, Z_START, Z_SP_N
+Z_CL_FIRST = 1
+WHILE 1
+    Z_SP_PLEN -= 1
+    IF Z_SP_PLEN < 0
+        CALL Z_SP_SET_CLAUSE, Z_START, Z_PTR
+        RETURN -1
+    ENDIF
+    SIF Z_SP_INFO:Z_PTR < 0
+        RETURN -2
+    Z_W '= Z_SP_KEY:Z_PTR
+    Z_NW '= Z_SP_NEXT_KEY(Z_PTR)
+    IF Z_W == "and" || Z_W == ","
+        Z_ANDFLG = 1
+    ELSEIF Z_W == "all" || Z_W == "one"
+        IF Z_NW == "of"
+            Z_SP_PLEN -= 1
+            Z_PTR += 1
+        ENDIF
+    ELSEIF Z_W == "then" || Z_W == "." || (Z_SP_IS(Z_PTR, 8) && Z_SP_VERB && !Z_CL_FIRST)
+        Z_SP_PLEN += 1
+        CALL Z_SP_SET_CLAUSE, Z_START, Z_PTR
+        RETURN Z_PTR - 1
+    ELSEIF Z_SP_IS(Z_PTR, 128)
+        IF Z_SP_PLEN > 0 && Z_NW == "of" && Z_W != "all" && Z_W != "one"
+        ELSEIF Z_SP_VALUE(Z_PTR, 32, 2) && Z_NW != "" && Z_SP_IS(Z_PTR + 1, 128)
+        ELSEIF !Z_ANDFLG && Z_NW != "but" && Z_NW != "except" && Z_NW != "and" && Z_NW != ","
+            CALL Z_SP_SET_CLAUSE, Z_START, Z_PTR + 1
+            RETURN Z_PTR
+        ELSE
+            Z_ANDFLG = 0
+        ENDIF
+    ELSEIF Z_SP_VERB && (Z_SP_IS(Z_PTR, 32) || Z_SP_IS(Z_PTR, 4))
+    ELSEIF Z_ANDFLG && (Z_SP_IS(Z_PTR, 16) || Z_SP_IS(Z_PTR, 64))
+        ; The source rewrites the preceding AND as THEN: the clause and the
+        ; statement end here; the remainder is a new command.
+        RETURN -1
+    ELSEIF Z_SP_IS(Z_PTR, 8)
+    ELSE
+        CALL Z_SP_CANT_USE, Z_PTR
+        RETURN -3
+    ENDIF
+    Z_CL_FIRST = 0
+    Z_PTR += 1
+WEND
+RETURN -1
+
+; Dictionary membership is the original story vocabulary. PORTSTATE is the
+; only non-original word: a read-only verification report (02_Flow), kept
+; outside the game vocabulary contract and documented as a port extension.
+@Z_IN_VOCABULARY(Z_W)
+#FUNCTION
+#DIMS DYNAMIC Z_W
+SIF Z_DICTIONARY_KEY(Z_W) == "portst"
+    RETURNF 1
+RETURNF Z_PT_INFO(Z_DICTIONARY_KEY(Z_W)) >= 0
+
+; MANY-CHECK: the SYNTAX-FOUND line's SMANY (4) bit, else the r28 verb list.
+@Z_SOURCE_MANY()
+#FUNCTION
+; SGIVE's second clause is the port's direct list (reversed at parse time).
+SIF Z_SP_FOUND && Z_SP_ACTION == "V-SGIVE"
+    RETURNF (Z_SP_LOC2 & 4) != 0
+SIF Z_SP_FOUND
+    RETURNF (Z_SP_LOC1 & 4) != 0
+RETURNF Z_MANY_ALLOWED(Z_VERB)
+
+@Z_SP_SET_CLAUSE(Z_START, Z_END)
+#DIM DYNAMIC Z_START
+#DIM DYNAMIC Z_END
+IF Z_SP_NCN == 1
+    Z_SP_NC1_START = Z_START
+    Z_SP_NC1_END = Z_END
+ELSE
+    Z_SP_NC2_START = Z_START
+    Z_SP_NC2_END = Z_END
+ENDIF
+RETURN
+
+; The typed words of a clause (no article insertion), for the resolver.
+@Z_SP_CLAUSE_WORDS(Z_START, Z_END)
+#FUNCTIONS
+#DIM DYNAMIC Z_START
+#DIM DYNAMIC Z_END
+#DIM DYNAMIC Z_I
+#DIMS DYNAMIC Z_OUT
+SIF Z_START < 0
+    RETURNF ""
+FOR Z_I, Z_START, Z_END
+    IF Z_SP_KEY:Z_I == ","
+        Z_OUT += ","
+    ELSE
+        SIF Z_OUT != ""
+            Z_OUT += " "
+        Z_OUT += Z_SP_WORD:Z_I
+    ENDIF
+NEXT
+RETURNF Z_OUT
+
+; ORPHAN's question. The reply is merged and reparsed (ORPHAN-MERGE), so the
+; SYNTAX-CHECK results for the incomplete sentence no longer apply after it.
+@Z_SP_ORPHAN_PRINT
+PRINTVL Z_SP_ORPHAN_TEXT
+CALL Z_SP_RESET
+RETURN
+
+; NOT-HERE-PRINT: BUFFER-PRINT of the noun clause (typed words, buzz words
+; included, no article insertion). Role 1 is PRSO, 2 PRSI; SGIVE is stored
+; reversed. Without a scanned clause (orphan merge) keep the r28 phrase.
+@Z_SP_NOTHERE_TEXT(Z_ROLE, Z_FALLBACK)
+#FUNCTIONS
+#DIM DYNAMIC Z_ROLE
+#DIMS DYNAMIC Z_FALLBACK
+SIF Z_SP_ACTION == "V-SGIVE"
+    Z_ROLE = 3 - Z_ROLE
+SIF Z_ROLE == 1 && Z_SP_NC1_START >= 0 && Z_SP_NC1_END > Z_SP_NC1_START
+    RETURNF Z_SP_NOTHERE_WORDS(Z_SP_NC1_START, Z_SP_NC1_END)
+SIF Z_ROLE == 2 && Z_SP_NC2_START >= 0 && Z_SP_NC2_END > Z_SP_NC2_START
+    RETURNF Z_SP_NOTHERE_WORDS(Z_SP_NC2_START, Z_SP_NC2_END)
+RETURNF Z_FALLBACK
+
+@Z_SP_NOTHERE_WORDS(Z_START, Z_END)
+#FUNCTIONS
+#DIM DYNAMIC Z_START
+#DIM DYNAMIC Z_END
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_NOSP
+#DIMS DYNAMIC Z_OUT
+Z_NOSP = 1
+FOR Z_I, Z_START, Z_END
+    IF Z_SP_KEY:Z_I == ","
+        Z_OUT += ", "
+    ELSEIF Z_NOSP
+        Z_NOSP = 0
+    ELSE
+        Z_OUT += " "
+    ENDIF
+    IF Z_SP_KEY:Z_I == "." || Z_SP_KEY:Z_I == ","
+        Z_NOSP = 1
+    ELSEIF Z_SP_KEY:Z_I == "me"
+        Z_OUT += Z_OBJ_NAME:O_ME
+    ELSEIF Z_SP_KEY:Z_I == "intnum"
+        Z_OUT += TOSTR(Z_P_NUMBER)
+    ELSE
+        Z_OUT += Z_SP_WORD:Z_I
+    ENDIF
+NEXT
+RETURNF Z_OUT
+
+; The last token of the current statement as typed (V-ECHO).
+@Z_SP_LAST_WORD()
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_I
+Z_S '= Z_TRIM(Z_COMMAND)
+Z_P = -1
+FOR Z_I, 0, STRLENS(Z_S)
+    SIF SUBSTRING(Z_S, Z_I, 1) == " "
+        Z_P = Z_I
+NEXT
+SIF Z_P < 0
+    RETURNF Z_S
+RETURNF SUBSTRING(Z_S, Z_P + 1)
+
+; ORPHAN-MERGE (after WHICH-PRINT) test: the reply's first word has the
+; orphaned sentence's verb value and the reply has no noun clause (P-NCN 0).
+@Z_SAME_VERB_NO_NOUN(Z_S, Z_OLD)
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_OLD
+#DIMS DYNAMIC Z_W
+Z_W '= Z_FIRST_WORD(Z_S)
+SIF !Z_SAME_VERB_VALUE(Z_W, Z_OLD)
+    RETURN 0
+RETURN Z_REPLY_CLAUSES(Z_TRIM(SUBSTRING(Z_S, STRLENS(Z_W)))) == 0
+
+; Noun clauses in a verbless reply as CLAUSE counts them: a clause starts at
+; an adjective/object word (or ALL/ONE) outside a clause; a preposition ends it.
+@Z_REPLY_CLAUSES(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_W
+#DIM DYNAMIC Z_N
+#DIM DYNAMIC Z_IN
+#DIM DYNAMIC Z_C
+#DIM DYNAMIC Z_F
+WHILE Z_TRIM(Z_S) != ""
+    Z_S '= Z_TRIM(Z_S)
+    Z_W '= Z_FIRST_WORD(Z_S)
+    SIF Z_W == ""
+        Z_W '= SUBSTRING(Z_S, 0, 1)
+    Z_S '= SUBSTRING(Z_S, STRLENS(Z_W))
+    Z_C = Z_PT_INFO(Z_DICTIONARY_KEY(Z_W))
+    SIF Z_C < 0
+        CONTINUE
+    Z_F = Z_C / 65536
+    IF (Z_F & (128 | 32)) || Z_W == "all" || Z_W == "one"
+        IF !Z_IN
+            Z_N += 1
+            Z_IN = 1
+        ENDIF
+    ELSEIF (Z_F & 8) && Z_W != "and"
+        Z_IN = 0
+    ENDIF
+WEND
+RETURNF Z_N
+
+; WT? verb value equality of two words (ORPHAN-MERGE's verb test).
+@Z_SAME_VERB_VALUE(Z_A, Z_B)
+#FUNCTION
+#DIMS DYNAMIC Z_A
+#DIMS DYNAMIC Z_B
+#DIM DYNAMIC Z_X
+#DIM DYNAMIC Z_Y
+Z_X = Z_PT_INFO(Z_DICTIONARY_KEY(Z_A))
+Z_Y = Z_PT_INFO(Z_DICTIONARY_KEY(Z_B))
+SIF Z_X < 0 || Z_Y < 0 || !((Z_X / 65536) & 64) || !((Z_Y / 65536) & 64)
+    RETURNF 0
+RETURNF Z_VERB_VALUE_OF(Z_X) == Z_VERB_VALUE_OF(Z_Y)
+
+@Z_VERB_VALUE_OF(Z_X)
+#FUNCTION
+#DIM DYNAMIC Z_X
+SIF ((Z_X / 65536) & 3) == 1
+    RETURNF (Z_X / 256) % 256
+RETURNF Z_X % 256

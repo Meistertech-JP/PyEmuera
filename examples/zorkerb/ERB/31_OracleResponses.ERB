@@ -1,0 +1,192 @@
+﻿; r14: response semantics verified against unmodified Release 119 / 880429.
+; Source: gverbs V-OPEN/PRINT-CONTENTS/HACK-HACK; 1actions V-DIAGNOSE.
+; No host-side gameplay, no source-of-test dependent branches.
+@Z_STORY_VERSION
+PRINTL ZORK I: The Great Underground Empire
+PRINTL Infocom interactive fiction - a fantasy story
+PRINTL Copyright (c) 1981, 1982, 1983, 1984, 1985, 1986 Infocom, Inc. All rights reserved.
+PRINTL ZORK is a registered trademark of Infocom, Inc.
+PRINTL Release 119 / Serial number 880429
+RETURN
+
+@Z_MISSING_OBJECT(Z_PHRASE)
+#DIMS DYNAMIC Z_PHRASE
+IF !Z_IS_LIT()
+    PRINTL It's too dark to see!
+    RETURN
+ENDIF
+IF SUBSTRING(Z_PHRASE, 0, 4) == "the "
+    Z_PHRASE '= SUBSTRING(Z_PHRASE, 4)
+ELSEIF SUBSTRING(Z_PHRASE, 0, 3) == "an "
+    Z_PHRASE '= SUBSTRING(Z_PHRASE, 3)
+ELSEIF SUBSTRING(Z_PHRASE, 0, 2) == "a "
+    Z_PHRASE '= SUBSTRING(Z_PHRASE, 2)
+ENDIF
+IF Z_ORDER_ACTOR
+    PRINTFORML The %Z_OBJ_NAME:Z_ORDER_ACTOR% seems confused. "I don't see any %Z_PHRASE% here!"
+ELSE
+    PRINTFORML You can't see any %Z_PHRASE% here!
+ENDIF
+RETURN
+
+@Z_CONTAINER_OPENED(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_HEAD_ID
+Z_TOUCHED:Z_O = 1
+Z_HEAD_ID = Z_FIRST_CHILD(Z_O)
+IF !Z_HEAD_ID || Z_HAS(Z_O, ZF_TRANSPARENT)
+    PRINTL Opened.
+ELSEIF !Z_NEXT:Z_HEAD_ID && !Z_TOUCHED:Z_HEAD_ID && Z_FDESC:Z_HEAD_ID != ""
+    PRINTFORML The %Z_OBJ_NAME:Z_O% opens.
+    PRINTVL Z_FDESC:Z_HEAD_ID
+ELSE
+    PRINTFORM Opening the %Z_OBJ_NAME:Z_O% reveals 
+    CALL Z_PRINT_CONTENTS, Z_O
+    PRINTL .
+ENDIF
+RETURN
+
+@Z_PRINT_CONTENTS(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_NEXT_ID
+#DIM DYNAMIC Z_IS_FIRST = 1
+#DIM DYNAMIC Z_SINGLE
+Z_I = Z_FIRST_CHILD(Z_O)
+Z_SINGLE = Z_I
+WHILE Z_I
+    Z_NEXT_ID = Z_NEXT:Z_I
+    IF !Z_IS_FIRST
+        PRINT , 
+        SIF !Z_NEXT_ID
+            PRINT and 
+    ENDIF
+    PRINTFORM a %Z_OBJ_NAME:Z_I%
+    Z_IS_FIRST = 0
+    SIF Z_NEXT_ID
+        Z_SINGLE = 0
+    Z_I = Z_NEXT_ID
+WEND
+; PRINT-CONTENTS changes IT only for a single direct child.
+SIF Z_SINGLE
+    Z_IT = Z_SINGLE
+RETURN
+
+@Z_HACK_HACK(Z_PREFIX, Z_O)
+#DIMS DYNAMIC Z_PREFIX
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_PICKED
+#DIMS DYNAMIC Z_SUFFIX
+; gverbs HACK-HACK rejects WAVE/RAISE/LOWER on GLOBAL-OBJECTS
+; without drawing from HO-HUM. ME is global, not the inventory owner.
+IF Z_SCOPE_CLASS:Z_O == 3 && (Z_VERB == "wave" || Z_VERB == "raise" || Z_VERB == "lower")
+    PRINTFORML The %Z_OBJ_NAME:Z_O% isn't here!
+    RETURN
+ENDIF
+; PICK-ONE on HO-HUM: select/swap into the used prefix; final RAND:1 counts.
+Z_INDEX = Z_HOHUM_COUNT + (Z_RANDOM(3 - Z_HOHUM_COUNT) - 1)
+Z_PICKED = Z_HOHUM_ORDER:Z_INDEX
+Z_HOHUM_ORDER:Z_INDEX = Z_HOHUM_ORDER:Z_HOHUM_COUNT
+Z_HOHUM_ORDER:Z_HOHUM_COUNT = Z_PICKED
+Z_HOHUM_COUNT = (Z_HOHUM_COUNT + 1) % 3
+SELECTCASE Z_PICKED
+CASE 0
+    Z_SUFFIX '= " doesn't seem to work."
+CASE 1
+    Z_SUFFIX '= " isn't notably helpful."
+CASEELSE
+    Z_SUFFIX '= " has no effect."
+ENDSELECT
+PRINTFORML %Z_PREFIX%%Z_OBJ_NAME:Z_O%%Z_SUFFIX%
+RETURN
+
+@Z_HOHUM_VALIDATE
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_SEEN
+#DIM DYNAMIC Z_ENTRY_VALUE
+SIF Z_HOHUM_COUNT < 0 || Z_HOHUM_COUNT >= 3
+    RETURN 0
+FOR Z_I, 0, 3
+    Z_ENTRY_VALUE = Z_HOHUM_ORDER:Z_I
+    SIF Z_ENTRY_VALUE < 0 || Z_ENTRY_VALUE >= 3
+        RETURN 0
+    SIF Z_SEEN & (1 << Z_ENTRY_VALUE)
+        RETURN 0
+    Z_SEEN |= 1 << Z_ENTRY_VALUE
+NEXT
+RETURN Z_SEEN == 7
+
+; Original gverbs.zil DUMMY, shared by 1actions OPEN-CLOSE, BASKET-F,
+; and the cellar TRAP-DOOR-FCN fallback. Not the generic V-OPEN response.
+; A swap-based PICK-ONE cycle consumes one RAND even for its final member.
+@Z_DUMMY_RESPONSE
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_PICKED
+Z_INDEX = Z_DUMMY_COUNT + (Z_RANDOM(3 - Z_DUMMY_COUNT) - 1)
+Z_PICKED = Z_DUMMY_ORDER:Z_INDEX
+Z_DUMMY_ORDER:Z_INDEX = Z_DUMMY_ORDER:Z_DUMMY_COUNT
+Z_DUMMY_ORDER:Z_DUMMY_COUNT = Z_PICKED
+Z_DUMMY_COUNT = (Z_DUMMY_COUNT + 1) % 3
+SELECTCASE Z_PICKED
+CASE 0
+    PRINTL Look around.
+CASE 1
+    PRINTL Too late for that.
+CASEELSE
+    PRINTL Have your eyes checked.
+ENDSELECT
+RETURN
+
+@Z_DUMMY_VALIDATE
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_SEEN
+#DIM DYNAMIC Z_ENTRY_VALUE
+SIF Z_DUMMY_COUNT < 0 || Z_DUMMY_COUNT >= 3
+    RETURN 0
+FOR Z_I, 0, 3
+    Z_ENTRY_VALUE = Z_DUMMY_ORDER:Z_I
+    SIF Z_ENTRY_VALUE < 0 || Z_ENTRY_VALUE >= 3
+        RETURN 0
+    SIF Z_SEEN & (1 << Z_ENTRY_VALUE)
+        RETURN 0
+    Z_SEEN |= 1 << Z_ENTRY_VALUE
+NEXT
+RETURN Z_SEEN == 7
+
+; Source gverbs.zil YUKS table (four active responses).
+@Z_YUKS_RESPONSE
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_PICKED
+Z_INDEX = Z_YUKS_COUNT + (Z_RANDOM(4 - Z_YUKS_COUNT) - 1)
+Z_PICKED = Z_YUKS_ORDER:Z_INDEX
+Z_YUKS_ORDER:Z_INDEX = Z_YUKS_ORDER:Z_YUKS_COUNT
+Z_YUKS_ORDER:Z_YUKS_COUNT = Z_PICKED
+Z_YUKS_COUNT = (Z_YUKS_COUNT + 1) % 4
+SELECTCASE Z_PICKED
+CASE 0
+    PRINTL A valiant attempt.
+CASE 1
+    PRINTL You can't be serious.
+CASE 2
+    PRINTL An interesting idea...
+CASEELSE
+    PRINTL What a concept!
+ENDSELECT
+RETURN
+
+@Z_YUKS_VALIDATE
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_MASK
+#DIM DYNAMIC Z_ENTRY
+SIF Z_YUKS_COUNT < 0 || Z_YUKS_COUNT >= 4
+    RETURN 0
+FOR Z_I, 0, 4
+    Z_ENTRY = Z_YUKS_ORDER:Z_I
+    SIF Z_ENTRY < 0 || Z_ENTRY >= 4
+        RETURN 0
+    SIF Z_MASK & (1 << Z_ENTRY)
+        RETURN 0
+    Z_MASK |= 1 << Z_ENTRY
+NEXT
+RETURN Z_MASK == 15

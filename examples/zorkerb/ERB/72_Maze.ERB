@@ -1,0 +1,272 @@
+﻿; Grate, cyclops and troll interactions. Native ERB state, explicit returns.
+@Z_GRATE_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_OPENING
+IF Z_VERB == "put" && Z_TARGET == O_GRATE
+    IF !Z_WITHIN(Z_O, Z_PLAYER)
+        PRINTL You aren't holding that.
+    ELSEIF Z_SIZE:Z_O > 20
+        PRINTL It won't fit through the grating.
+    ELSE
+        CALL Z_MOVE_OBJECT, Z_O, R_GRATING_ROOM
+        PRINTFORML The %Z_OBJ_NAME:Z_O% goes through the grating into the darkness below.
+    ENDIF
+    RETURN
+ENDIF
+IF Z_VERB == "open" && Z_TARGET == O_KEYS
+    Z_VERB = unlock
+ENDIF
+SELECTCASE Z_VERB
+CASE "pick"
+    PRINTL You can't pick the lock.
+CASE "unlock"
+    IF Z_TARGET == O_KEYS && Z_PARENT:O_KEYS != Z_PLAYER
+        PRINTL You aren't holding the key.
+    ELSEIF Z_HERE == R_GRATING_ROOM && Z_TARGET == O_KEYS
+        Z_GRATE_UNLOCKED = 1
+        PRINTL The grate is unlocked.
+    ELSEIF Z_HERE == R_GRATING_CLEARING && Z_TARGET == O_KEYS
+        PRINTL You can't reach the lock from here.
+    ELSEIF Z_TARGET
+        PRINTFORML Can you unlock a grating with a %Z_OBJ_NAME:Z_TARGET%?
+    ELSE
+        PRINTL You must specify a suitable key with WITH.
+    ENDIF
+CASE "lock"
+    IF Z_HERE == R_GRATING_ROOM
+        Z_GRATE_UNLOCKED = 0
+        PRINTL The grate is locked.
+    ELSE
+        PRINTL You can't lock it from this side.
+    ENDIF
+CASE "open", "close"
+    IF !Z_GRATE_UNLOCKED
+        PRINTL The grating is locked.
+        RETURN
+    ENDIF
+    Z_OPENING = Z_VERB == "open"
+    IF Z_OPENING == Z_HAS(O_GRATE, ZF_OPEN)
+        PRINTL It is already that way.
+        RETURN
+    ENDIF
+    IF Z_OPENING
+        Z_FLAGS:O_GRATE |= ZF_OPEN
+        ; The original source tests CLEARING, not GRATING-CLEARING. Preserve it.
+        PRINTL The grating opens to reveal trees above you.
+        IF !Z_GRATE_REVEALED
+            PRINTL A pile of leaves falls onto your head and to the ground.
+            Z_GRATE_REVEALED = 1
+            CALL Z_MOVE_OBJECT, O_LEAVES, Z_HERE
+        ENDIF
+    ELSE
+        Z_FLAGS:O_GRATE &= ~ZF_OPEN
+        PRINTL The grating is closed.
+    ENDIF
+CASEELSE
+    PRINTL You can't do that to the grating.
+ENDSELECT
+RETURN
+
+@Z_TROLL_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_O == O_AXE && Z_VERB == "take" && Z_PARENT:O_TROLL == Z_HERE && !Z_TROLL_PASS
+    IF Z_PARENT:O_AXE == O_TROLL
+        PRINTL The troll swings it out of your reach.
+    ELSE
+        PRINTL The bloody axe seems white-hot. You can't hold on to it.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_TROLL && Z_VERB == "examine"
+    CALL Z_TROLL_DESCRIPTION
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_TROLL && (Z_VERB == "give" || Z_VERB == "throw")
+    IF !Z_WITHIN(Z_O, Z_PLAYER)
+        PRINTL You aren't holding that.
+        RETURN 1
+    ENDIF
+    CALL Z_AWAKEN_TROLL
+    IF Z_O == O_AXE
+        CALL Z_MOVE_OBJECT, O_AXE, O_TROLL
+        Z_TROLL_FIGHT = 1
+        PRINTL The troll scratches his head in confusion, then takes the axe.
+        RETURN 1
+    ENDIF
+    IF Z_VERB == "throw"
+        PRINTFORM The troll, who is remarkably coordinated, catches the %Z_OBJ_NAME:Z_O%
+    ELSE
+        PRINT The troll, who is not overly proud, graciously accepts the gift
+    ENDIF
+    ; PROB is evaluated even when the offered object is not a weapon.
+    IF Z_PROB(20) && (Z_O == O_KNIFE || Z_O == O_SWORD || Z_O == O_AXE)
+        CALL Z_MOVE_OBJECT, Z_O, 0
+        PRINTL  and eats it hungrily. Poor troll, he dies from an internal hemorrhage
+        PRINTL and his carcass disappears in a sinister black fog.
+        ; REMOVE-CAREFULLY TROLL then F-DEAD; unlike VILLAIN-RESULT this keeps
+        ; STRENGTH and FIGHTBIT, so I-FIGHT's F-BUSY? may later recover the axe.
+        CALL Z_MOVE_OBJECT, O_TROLL, 0
+        IF Z_PARENT:O_AXE == O_TROLL
+            CALL Z_MOVE_OBJECT, O_AXE, Z_HERE
+            Z_FLAGS:O_AXE &= ~ZF_NDESC
+            Z_FLAGS:O_AXE |= ZF_WEAPON
+        ENDIF
+        Z_TROLL_PASS = 1
+    ELSEIF Z_O == O_KNIFE || Z_O == O_SWORD || Z_O == O_AXE
+        CALL Z_MOVE_OBJECT, Z_O, Z_HERE
+        PRINTL  and, being for the moment sated, throws it back. Fortunately, the
+        PRINTFORML troll has poor control, and the %Z_OBJ_NAME:Z_O% falls to the floor. He does
+        PRINTL not look pleased.
+        Z_TROLL_FIGHT = 1
+    ELSE
+        CALL Z_MOVE_OBJECT, Z_O, 0
+        PRINTL  and not having the most discriminating tastes, gleefully eats it.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_TROLL && (Z_VERB == "take" || (Z_VERB == "move" && Z_SP_ACTION != "V-PUSH") || Z_VERB == "break")
+    CALL Z_AWAKEN_TROLL
+    IF Z_VERB == "break"
+        PRINTL The troll laughs at your puny gesture.
+    ELSE
+        PRINTL The troll spits in your face, grunting "Better luck next time" in a
+        PRINTL rather barbarous accent.
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_TROLL_DESCRIPTION
+; The troll's LDESC property as TROLL-FCN last set it.
+SELECTCASE Z_TROLL_LDESC
+CASE 1
+    PRINTL A pathetically babbling troll is here.
+CASE 2
+    PRINTL An unconscious troll is sprawled on the floor. All passages
+    PRINTL out of the room are open.
+CASE 3
+    PRINTL A troll is here.
+CASEELSE
+    PRINTL A nasty-looking troll, brandishing a bloody axe, blocks all passages
+    PRINTL out of the room.
+ENDSELECT
+RETURN
+
+@Z_CYCLOPS_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_CYCLOPS_SLEEP
+    IF Z_VERB == "examine"
+        PRINTL The cyclops is sleeping like a baby, albeit a very ugly one.
+    ELSEIF Z_VERB == "attack" || Z_VERB == "kick" || Z_VERB == "break" || Z_VERB == "wake" || Z_VERB == "burn"
+        PRINTL The cyclops yawns and stares at the thing that woke him up.
+        Z_CYCLOPS_SLEEP = 0
+        Z_CYCLOPS_HUNGER = ABS(Z_CYCLOPS_HUNGER)
+    ELSE
+        RETURN 0
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_VERB == "give" && Z_TARGET == O_CYCLOPS
+    IF !Z_WITHIN(Z_O, Z_PLAYER)
+        PRINTL You aren't holding that.
+        RETURN 1
+    ENDIF
+    IF Z_O == O_LUNCH
+        CALL Z_SCHEDULE, ZE_CYCLOPS, -1
+        IF Z_CYCLOPS_HUNGER >= 0
+            CALL Z_MOVE_OBJECT, O_LUNCH, 0
+            PRINTL The cyclops says "Mmm Mmm. I love hot peppers! But oh, could I use
+            PRINTL a drink. Perhaps I could drink the blood of that thing." From the
+            PRINTL gleam in his eye, it could be surmised that you are "that thing".
+            Z_CYCLOPS_HUNGER = MIN(-1, -Z_CYCLOPS_HUNGER)
+        ENDIF
+    ELSEIF Z_O == O_WATER || (Z_O == O_BOTTLE && Z_PARENT:O_WATER == O_BOTTLE)
+        IF Z_CYCLOPS_HUNGER < 0
+            CALL Z_MOVE_OBJECT, O_WATER, 0
+            CALL Z_MOVE_OBJECT, O_BOTTLE, Z_HERE
+            Z_FLAGS:O_BOTTLE |= ZF_OPEN
+            Z_CYCLOPS_SLEEP = 1
+            PRINTL The cyclops takes the bottle, checks that it's open, and drinks the water.
+            PRINTL A moment later, he lets out a yawn that nearly blows you over, and then
+            PRINTL falls fast asleep (what did you put in that drink, anyway?).
+        ELSE
+            PRINTL The cyclops apparently is not thirsty and refuses your generous offer.
+        ENDIF
+    ELSEIF Z_O == O_GARLIC
+        PRINTL The cyclops may be hungry, but there is a limit.
+    ELSE
+        PRINTL The cyclops is not so stupid as to eat THAT!
+    ENDIF
+ELSEIF Z_VERB == "attack" || Z_VERB == "throw" || Z_VERB == "break"
+    CALL Z_SCHEDULE, ZE_CYCLOPS, -1
+    IF Z_VERB == "break"
+        PRINTL "Do you think I'm as stupid as my father was?", he says, dodging.
+    ELSE
+        PRINTL The cyclops shrugs but otherwise ignores your pitiful attempt.
+        SIF Z_VERB == "throw"
+            CALL Z_MOVE_OBJECT, Z_O, Z_HERE
+    ENDIF
+ELSEIF Z_VERB == "examine"
+    PRINTL A hungry cyclops is standing at the foot of the stairs.
+ELSEIF Z_VERB == "listen"
+    PRINTL You can hear his stomach rumbling.
+ELSEIF Z_VERB == "take"
+    PRINTL The cyclops doesn't take kindly to being grabbed.
+ELSEIF Z_VERB == "tie"
+    PRINTL You cannot tie the cyclops, though he is fit to be tied.
+ELSE
+    RETURN 0
+ENDIF
+RETURN 1
+
+@Z_CYCLOPS_CLOCK
+IF Z_HERE != R_CYCLOPS_ROOM
+    CALL Z_ENABLE, ZE_CYCLOPS, 0
+    RETURN 0
+ENDIF
+IF Z_CYCLOPS_SLEEP || Z_MAGIC_FLAG || Z_GAME_OVER || !Z_CYCLOPS_ACTIVE
+    RETURN 0
+ENDIF
+IF ABS(Z_CYCLOPS_HUNGER) > 5
+    PRINTL The cyclops, tired of all of your games and trickery, grabs you firmly.
+    PRINTL As he licks his chops, he says "Mmm. Just like Mom used to make 'em."
+    PRINTL It's nice to be appreciated.
+    CALL Z_FATAL_BOUNDARY
+    RETURN 1
+ENDIF
+IF Z_CYCLOPS_HUNGER < 0
+    Z_CYCLOPS_HUNGER -= 1
+ELSE
+    Z_CYCLOPS_HUNGER += 1
+ENDIF
+SELECTCASE ABS(Z_CYCLOPS_HUNGER)
+CASE 1
+    PRINTL The cyclops seems somewhat agitated.
+CASE 2
+    PRINTL The cyclops appears to be getting more agitated.
+CASE 3
+    PRINTL The cyclops is moving about the room, looking for something.
+CASE 4
+    PRINTL The cyclops was looking for salt and pepper. No doubt they are
+    PRINTL condiments for his upcoming snack.
+CASE 5
+    PRINTL The cyclops is moving toward you in an unfriendly manner.
+CASE 6
+    PRINTL You have two choices: 1. Leave  2. Become dinner.
+ENDSELECT
+RETURN 1
+
+@Z_ODYSSEUS
+IF Z_PARENT:O_CYCLOPS == Z_HERE && !Z_CYCLOPS_SLEEP
+    PRINTL The cyclops, hearing the name of his father's deadly nemesis, flees the
+    PRINTL room by knocking down the wall on the east of the room.
+    Z_MAGIC_FLAG = 1
+    Z_CYCLOPS_SLEEP = 1
+    CALL Z_REMOVE_CAREFULLY, O_CYCLOPS
+ELSE
+    PRINTL Wasn't he a sailor?
+ENDIF
+RETURN

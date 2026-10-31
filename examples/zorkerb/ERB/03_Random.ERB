@@ -1,0 +1,45 @@
+﻿; r29: Z-machine RANDOM (gmacros/ZIL <RANDOM n>, 1..n) as the single draw
+; primitive of the port. The ordinary mode is the engine RNG (RAND, saved by
+; DUMPRAND). #RANDOM (V-RANDOM) seeds it like a Standard 1.1 interpreter: a
+; seed 1..999 selects the predictable sequential mode (result = counter mod
+; seed, value = result mod n + 1), larger seeds reseed the engine RNG and 0
+; reseeds it unpredictably. Like RAND itself this function advances RNG state;
+; it changes nothing else.
+@Z_RANDOM(Z_N)
+#FUNCTION
+#DIM DYNAMIC Z_N
+#DIM DYNAMIC Z_R
+SIF Z_N <= 0
+    RETURNF 0
+IF Z_RNG_INTERVAL > 0
+    Z_R = Z_RNG_COUNTER
+    Z_RNG_COUNTER += 1
+    SIF Z_RNG_COUNTER >= Z_RNG_INTERVAL
+        Z_RNG_COUNTER = 0
+    RETURNF Z_R % Z_N + 1
+ENDIF
+RETURNF RAND:Z_N + 1
+
+@Z_SEED_RANDOM(Z_SEED)
+#DIM DYNAMIC Z_SEED
+IF Z_SEED > 0 && Z_SEED < 1000
+    Z_RNG_INTERVAL = Z_SEED
+    Z_RNG_COUNTER = 0
+ELSEIF Z_SEED >= 1000
+    Z_RNG_INTERVAL = 0
+    Z_RNG_COUNTER = 0
+    RANDOMIZE Z_SEED
+ELSE
+    Z_RNG_INTERVAL = 0
+    Z_RNG_COUNTER = 0
+    RANDOMIZE
+ENDIF
+RETURN
+
+@Z_RANDOM_VALIDATE
+#FUNCTION
+SIF Z_RNG_INTERVAL < 0 || Z_RNG_INTERVAL > 999
+    RETURNF 0
+SIF Z_RNG_INTERVAL == 0
+    RETURNF Z_RNG_COUNTER == 0
+RETURNF Z_RNG_COUNTER >= 0 && Z_RNG_COUNTER < Z_RNG_INTERVAL

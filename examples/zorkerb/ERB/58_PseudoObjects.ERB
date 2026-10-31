@@ -1,0 +1,129 @@
+﻿; r28: pinned gparser GLOBAL-CHECK and 1actions *-PSEUDO routines.
+; All local pseudo names share one object, mutable DESC and mutable ACTION.
+; Neither selecting the name nor rebinding metadata advances clocks or RNG.
+@Z_SELECT_PSEUDO(Z_PHRASE)
+#DIMS DYNAMIC Z_PHRASE
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_I
+Z_WORD '= Z_PHRASE_NOUN(Z_PHRASE)
+SIF Z_WORD == ""
+    RETURN 0
+FOR Z_I, 0, Z_PSEUDO_COUNT:Z_HERE
+    IF Z_PSEUDO_KEYS:Z_HERE:Z_I == Z_WORD
+        Z_PSEUDO_WORD '= Z_WORD
+        Z_PSEUDO_ACTION = Z_PSEUDO_ACTIONS:Z_HERE:Z_I
+        CALL Z_PSEUDO_REBIND
+        RETURN O_PSEUDO_OBJECT
+    ENDIF
+NEXT
+RETURN 0
+
+@Z_PSEUDO_REBIND
+Z_OBJ_NAME:O_PSEUDO_OBJECT '= Z_PSEUDO_WORD
+Z_REPLAY_NAME:O_PSEUDO_OBJECT '= Z_PSEUDO_WORD
+RETURN
+
+@Z_PSEUDO_VALIDATE
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_I
+IF Z_PSEUDO_ACTION == 0
+    RETURN Z_PSEUDO_WORD == "pseudo"
+ENDIF
+SIF Z_PSEUDO_ACTION < 1 || Z_PSEUDO_ACTION > 10
+    RETURN 0
+FOR Z_ROOM, 256, 512
+    FOR Z_I, 0, Z_PSEUDO_COUNT:Z_ROOM
+        IF Z_PSEUDO_WORD == Z_PSEUDO_KEYS:Z_ROOM:Z_I && Z_PSEUDO_ACTION == Z_PSEUDO_ACTIONS:Z_ROOM:Z_I
+            RETURN 1
+        ENDIF
+    NEXT
+NEXT
+RETURN 0
+
+@Z_PSEUDO_DISPATCH(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+SELECTCASE Z_PSEUDO_ACTION
+CASE 1
+    IF Z_VERB == "take"
+        PRINTL The nails, deeply imbedded in the door, cannot be removed.
+        RETURN 1
+    ENDIF
+CASE 2
+    IF Z_LOW_TIDE
+        PRINTL There's not much lake left....
+        RETURN 1
+    ELSEIF Z_VERB == "cross"
+        PRINTL It's too wide to cross.
+        RETURN 1
+    ELSEIF Z_VERB == "enter"
+        PRINTL You can't swim in this lake.
+        RETURN 1
+    ENDIF
+CASE 3
+    IF Z_VERB == "swim" || Z_VERB == "enter"
+        PRINTL You can't swim in the stream.
+        RETURN 1
+    ELSEIF Z_VERB == "cross"
+        PRINTL The other side is a sheer rock cliff.
+        RETURN 1
+    ENDIF
+CASE 4
+    IF Z_VERB == "leap" || (Z_VERB == "put" && Z_O == O_ME)
+        PRINTL You look before leaping, and realize that you would never survive.
+        RETURN 1
+    ELSEIF Z_VERB == "cross"
+        PRINTL It's too far to jump, and there's no bridge.
+        RETURN 1
+    ELSEIF Z_TARGET == O_PSEUDO_OBJECT && (Z_VERB == "put" || Z_VERB == "throw_off")
+        PRINTFORML The %Z_OBJ_NAME:Z_O% drops out of sight into the chasm.
+        CALL Z_REMOVE_CAREFULLY, Z_O
+        RETURN 1
+    ENDIF
+CASE 5
+    IF Z_VERB == "kiss"
+        PRINTL No.
+        RETURN 1
+    ENDIF
+CASE 6
+    IF Z_VERB == "enter"
+        CALL Z_WALK, 10
+    ELSE
+        PRINTL The gate is protected by an invisible force. It makes your
+        PRINTL teeth ache to touch it.
+    ENDIF
+    RETURN 1
+CASE 7
+    IF Z_VERB == "open" || Z_VERB == "close"
+        PRINTL The door won't budge.
+        RETURN 1
+    ELSEIF Z_VERB == "enter"
+        CALL Z_WALK, 2
+        RETURN 1
+    ENDIF
+CASE 8
+    IF Z_VERB == "break"
+        PRINTL Some paint chips away, revealing more paint.
+        RETURN 1
+    ENDIF
+CASE 9
+    IF Z_VERB == "breathe"
+        PRINTL There is too much gas to blow away.
+        RETURN 1
+    ELSEIF Z_VERB == "smell"
+        PRINTL It smells like coal gas in here.
+        RETURN 1
+    ENDIF
+CASE 10
+    IF Z_VERB == "take" || (Z_VERB == "move" && Z_SP_ACTION != "V-PUSH")
+        PRINTL The chain is secure.
+        RETURN 1
+    ELSEIF Z_VERB == "raise" || Z_VERB == "lower"
+        PRINTL Perhaps you should do that to the basket.
+        RETURN 1
+    ELSEIF Z_VERB == "examine"
+        PRINTL The chain secures a basket within the shaft.
+        RETURN 1
+    ENDIF
+ENDSELECT
+RETURN 0

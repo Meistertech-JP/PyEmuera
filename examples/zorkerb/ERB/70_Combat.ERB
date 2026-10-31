@@ -1,0 +1,426 @@
+﻿; Native ERB adaptation of 1actions.zil MELEE, TROLL and I-FIGHT.
+; RNG is Emuera RAND, not the Z-machine's interpreter-specific RNG.
+; Text tables are generated separately. No host-side game evaluation is used.
+@Z_PROB(Z_BASE, Z_LUCK_SENSITIVE = 0)
+#FUNCTION
+#DIM DYNAMIC Z_BASE
+#DIM DYNAMIC Z_LUCK_SENSITIVE
+; One-argument PROB never consults LUCKY. Only the macro's two-argument
+; spelling expands to ZPROB; its legacy LOSER value is not itself evaluated.
+IF !Z_LUCK_SENSITIVE || Z_LUCKY
+    RETURNF Z_BASE > (Z_RANDOM(100) - 1) + 1
+ENDIF
+RETURNF Z_BASE > (Z_RANDOM(300) - 1) + 1
+
+@Z_HERO_STRENGTH(Z_ADJUST)
+#FUNCTION
+#DIM DYNAMIC Z_ADJUST
+RETURNF 2 + Z_TOTAL_SCORE() / 70 + Z_ADJUST * Z_HERO_WOUND
+
+@Z_WEAPON(Z_OWNER)
+#FUNCTION
+#DIM DYNAMIC Z_OWNER
+#DIM DYNAMIC Z_I
+; Source FIND-WEAPON follows sibling order and recognises five identities.
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_OWNER)
+WHILE Z_LINK_CURSOR1
+    Z_I = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_I
+    IF Z_I == O_STILETTO || Z_I == O_AXE || Z_I == O_SWORD || Z_I == O_KNIFE || Z_I == O_RUSTY_KNIFE
+        RETURNF Z_I
+    ENDIF
+WEND
+RETURNF 0
+
+@Z_BLOW_RESULT(Z_ATTACK, Z_DEFEND)
+#FUNCTION
+#DIM DYNAMIC Z_ATTACK
+#DIM DYNAMIC Z_DEFEND
+#DIM DYNAMIC Z_OFFSET
+#DIM DYNAMIC Z_INDEX
+#DIMS DYNAMIC Z_TABLE
+; The digit strings are the literal DEF1/DEF2/DEF3 outcome tables.
+IF Z_DEFEND == 1
+    Z_TABLE = 1111662233333
+    Z_OFFSET = MIN(3, Z_ATTACK) - 1
+ELSEIF Z_DEFEND == 2
+    Z_ATTACK = MIN(4, Z_ATTACK)
+    IF Z_ATTACK == 1
+        Z_TABLE = 1111166442
+        Z_OFFSET = 0
+    ELSE
+        Z_TABLE = 111664442333
+        Z_OFFSET = Z_ATTACK - 2
+    ENDIF
+ELSE
+    Z_OFFSET = LIMIT(Z_ATTACK - Z_DEFEND, -2, 2)
+    SELECTCASE Z_OFFSET
+    CASE -2, -1
+        Z_TABLE = 11111664455
+        Z_OFFSET += 2
+    CASE 0, 1
+        Z_TABLE = 11166444555
+    CASE 2
+        Z_TABLE = 1664444555
+        Z_OFFSET = 0
+    ENDSELECT
+ENDIF
+Z_INDEX = Z_OFFSET + (Z_RANDOM(9) - 1)
+RETURNF TOINT(SUBSTRING(Z_TABLE, Z_INDEX, 1))
+
+@Z_REMARK(Z_HERO, Z_RESULT, Z_WEP)
+#DIM DYNAMIC Z_HERO
+#DIM DYNAMIC Z_RESULT
+#DIM DYNAMIC Z_WEP
+#DIM DYNAMIC Z_N
+#DIMS DYNAMIC Z_LINE
+IF Z_HERO
+    Z_N = Z_HERO_REMARK_COUNT:Z_RESULT
+    Z_LINE '= Z_HERO_REMARKS:Z_RESULT:((Z_RANDOM(Z_N) - 1))
+ELSE
+    Z_N = Z_TROLL_REMARK_COUNT:Z_RESULT
+    Z_LINE '= Z_TROLL_REMARKS:Z_RESULT:((Z_RANDOM(Z_N) - 1))
+ENDIF
+Z_LINE '= REPLACE(Z_LINE, "@DEF@", "troll")
+IF Z_WEP > 0
+    Z_LINE '= REPLACE(Z_LINE, "@WEP@", Z_OBJ_NAME:Z_WEP)
+ELSE
+    Z_LINE '= REPLACE(Z_LINE, "@WEP@", "weapon")
+ENDIF
+PRINTVL Z_LINE
+RETURN
+
+@Z_TROLL_RESULT(Z_DEF, Z_RES, Z_SILENT = 0)
+#DIM DYNAMIC Z_DEF
+#DIM DYNAMIC Z_RES
+#DIM DYNAMIC Z_SILENT
+Z_TROLL_STRENGTH = Z_DEF
+IF Z_DEF == 0
+    Z_TROLL_FIGHT = 0
+    Z_TROLL_PASS = 1
+    IF !Z_SILENT
+        PRINTL Almost as soon as the troll breathes his last breath, a cloud
+        PRINTL of sinister black fog envelops him, and when the fog lifts, the
+        PRINTL carcass has disappeared.
+    ENDIF
+    CALL Z_MOVE_OBJECT, O_TROLL, 0
+    IF Z_PARENT:O_AXE == O_TROLL
+        CALL Z_MOVE_OBJECT, O_AXE, Z_HERE
+        Z_FLAGS:O_AXE &= ~ZF_NDESC
+        Z_FLAGS:O_AXE |= ZF_WEAPON
+    ENDIF
+ELSEIF Z_RES == 2
+    Z_TROLL_FIGHT = 0
+    Z_TROLL_PASS = 1
+    Z_TROLL_LDESC = 2
+    IF Z_PARENT:O_AXE == O_TROLL
+        CALL Z_MOVE_OBJECT, O_AXE, Z_HERE
+        Z_FLAGS:O_AXE &= ~ZF_NDESC
+        Z_FLAGS:O_AXE |= ZF_WEAPON
+    ENDIF
+ENDIF
+RETURN
+
+@Z_AWAKEN_TROLL
+IF Z_TROLL_STRENGTH >= 0
+    RETURN
+ENDIF
+Z_TROLL_STRENGTH = -Z_TROLL_STRENGTH
+Z_TROLL_PASS = 0
+IF Z_PARENT:O_TROLL == Z_HERE
+    Z_TROLL_FIGHT = 1
+    PRINTL The troll stirs, quickly resuming a fighting stance.
+ENDIF
+; F-CONSCIOUS sets the troll's LDESC.
+IF Z_PARENT:O_AXE == O_TROLL
+    Z_TROLL_LDESC = 0
+ELSEIF Z_PARENT:O_AXE == R_TROLL_ROOM
+    CALL Z_MOVE_OBJECT, O_AXE, O_TROLL
+    Z_FLAGS:O_AXE |= ZF_NDESC
+    Z_FLAGS:O_AXE &= ~ZF_WEAPON
+    Z_TROLL_LDESC = 0
+ELSE
+    Z_TROLL_LDESC = 3
+ENDIF
+RETURN
+
+@Z_TROLL_BUSY
+IF Z_PARENT:O_AXE == O_TROLL
+    RETURN 0
+ENDIF
+IF Z_PARENT:O_AXE == Z_HERE && Z_PROB(75, 1)
+    CALL Z_MOVE_OBJECT, O_AXE, O_TROLL
+    Z_FLAGS:O_AXE |= ZF_NDESC
+    Z_FLAGS:O_AXE &= ~ZF_WEAPON
+    Z_TROLL_LDESC = 0
+    IF Z_PARENT:O_TROLL == Z_HERE
+        PRINTL The troll, angered and humiliated, recovers his weapon. He appears to have
+        PRINTL an axe to grind with you.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_PARENT:O_TROLL == Z_HERE
+    Z_TROLL_LDESC = 1
+    PRINTL The troll, disarmed, cowers in terror, pleading for his life in
+    PRINTL the guttural tongue of the trolls.
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_HERO_ATTACK(Z_O, Z_WEP)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_WEP
+#DIM DYNAMIC Z_DEF
+#DIM DYNAMIC Z_RES
+#DIM DYNAMIC Z_DWEP
+#DIM DYNAMIC Z_ATT
+IF !Z_ACCESS(Z_O, 1)
+    PRINTL You can't reach it.
+    RETURN
+ENDIF
+IF Z_O == O_CYCLOPS
+    CALL Z_CYCLOPS_ACTION, Z_O, Z_WEP
+    RETURN
+ENDIF
+IF !Z_HAS(Z_O, ZF_ACTOR)
+    ; V-ATTACK rejects inanimate targets before checking the weapon.
+    PRINTFORML I've known strange people, but fighting a %Z_OBJ_NAME:Z_O%?
+    RETURN
+ENDIF
+IF Z_O != O_TROLL
+    ; ME, THIEF, GHOSTS and BAT take ATTACK in their own ACTIONs and the
+    ; cyclops above; no other Zork I object has ACTORBIT.
+    THROW Zork invariant: ATTACK reached an actor without an ACTION.
+ENDIF
+; V-ATTACK (gverbs.zil): bare hands, not held, not a weapon, then HERO-BLOW.
+IF !Z_WEP || Z_WEP == O_HANDS
+    PRINTFORML Trying to attack a %Z_OBJ_NAME:Z_O% with your bare hands is suicidal.
+    RETURN
+ENDIF
+IF Z_PARENT:Z_WEP != Z_PLAYER
+    PRINTFORML You aren't even holding the %Z_OBJ_NAME:Z_WEP%.
+    RETURN
+ENDIF
+IF Z_WEP == O_RUSTY_KNIFE
+    CALL Z_MOVE_OBJECT, O_RUSTY_KNIFE, 0
+    PRINTL As the knife approaches its victim, your mind is submerged by an
+    PRINTL overmastering will. Slowly, your hand turns, until the rusty blade
+    PRINTL is an inch from your neck. The knife seems to sing as it savagely
+    PRINTL slits your throat.
+    CALL Z_FATAL_BOUNDARY
+    RETURN
+ENDIF
+IF !Z_HAS(Z_WEP, ZF_WEAPON)
+    PRINTFORML Trying to attack the %Z_OBJ_NAME:Z_O% with a %Z_OBJ_NAME:Z_WEP% is suicidal.
+    RETURN
+ENDIF
+Z_IOBJ = Z_WEP
+Z_TROLL_FIGHT = 1
+IF Z_HERO_STAGGER
+    PRINTL You are still recovering from that last blow, so your attack is
+    PRINTL ineffective.
+    Z_HERO_STAGGER = 0
+    RETURN
+ENDIF
+Z_ATT = MAX(1, Z_HERO_STRENGTH(1))
+Z_DEF = Z_TROLL_STRENGTH
+SIF Z_DEF >= 0 && Z_WEP == O_SWORD
+    Z_DEF = MAX(1, Z_DEF - 1)
+Z_DWEP = Z_WEAPON(O_TROLL)
+; F-BUSY clears WEAPONBIT on a recovered axe; FIND-WEAPON is name-based in ZIL.
+SIF Z_PARENT:O_AXE == O_TROLL
+    Z_DWEP = O_AXE
+IF !Z_DWEP || Z_DEF < 0
+    IF Z_DEF < 0
+        PRINTL The unconscious troll cannot defend himself: He dies.
+    ELSE
+        PRINTL The unarmed troll cannot defend himself: He dies.
+    ENDIF
+    Z_RES = 3
+ELSE
+    Z_RES = Z_BLOW_RESULT(Z_ATT, Z_DEF)
+    SIF Z_RES == 6 && Z_PROB(25)
+        Z_RES = 7
+    CALL Z_REMARK, 1, Z_RES, Z_WEP
+ENDIF
+SELECTCASE Z_RES
+CASE 2
+    Z_DEF = -Z_DEF
+CASE 3
+    Z_DEF = 0
+CASE 4
+    Z_DEF = MAX(0, Z_DEF - 1)
+CASE 5
+    Z_DEF = MAX(0, Z_DEF - 2)
+CASE 6
+    Z_TROLL_STAGGER = 1
+CASE 7
+    CALL Z_MOVE_OBJECT, O_AXE, Z_HERE
+    Z_FLAGS:O_AXE &= ~ZF_NDESC
+    Z_FLAGS:O_AXE |= ZF_WEAPON
+    Z_IT = O_AXE
+ENDSELECT
+CALL Z_TROLL_RESULT, Z_DEF, Z_RES
+RETURN
+
+@Z_TROLL_BLOW(Z_OUT)
+#DIM DYNAMIC Z_OUT
+#DIM DYNAMIC Z_ATT
+#DIM DYNAMIC Z_DEF
+#DIM DYNAMIC Z_BASE
+#DIM DYNAMIC Z_WEP
+#DIM DYNAMIC Z_RES
+Z_HERO_STAGGER = 0
+IF Z_TROLL_STAGGER
+    Z_TROLL_STAGGER = 0
+    PRINTL The troll slowly regains his feet.
+    RETURN 1
+ENDIF
+Z_ATT = Z_TROLL_STRENGTH
+; Original VILLAIN-STRENGTH sees the current indirect object, even on defense.
+SIF Z_IOBJ == O_SWORD
+    Z_ATT = MAX(1, Z_ATT - 1)
+Z_DEF = Z_HERO_STRENGTH(1)
+Z_BASE = Z_HERO_STRENGTH(0)
+SIF Z_DEF <= 0
+    RETURN 1
+Z_WEP = Z_WEAPON(Z_PLAYER)
+Z_RES = Z_BLOW_RESULT(Z_ATT, Z_DEF)
+IF Z_OUT
+    IF Z_RES == 6
+        Z_RES = 8
+    ELSE
+        Z_RES = 9
+    ENDIF
+ENDIF
+SIF Z_RES == 6 && Z_WEP && Z_PROB(25, 1)
+    Z_RES = 7
+CALL Z_REMARK, 0, Z_RES, Z_WEP
+SELECTCASE Z_RES
+CASE 3, 9
+    Z_DEF = 0
+CASE 4
+    Z_DEF = MAX(0, Z_DEF - 1)
+    SIF Z_LOAD_LIMIT > 50
+        Z_LOAD_LIMIT -= 10
+CASE 5
+    Z_DEF = MAX(0, Z_DEF - 2)
+    SIF Z_LOAD_LIMIT > 50
+        Z_LOAD_LIMIT -= 20
+CASE 6
+    Z_HERO_STAGGER = 1
+CASE 7
+    CALL Z_MOVE_OBJECT, Z_WEP, Z_HERE
+    Z_WEP = Z_WEAPON(Z_PLAYER)
+    SIF Z_WEP
+        PRINTFORML Fortunately, you still have a %Z_OBJ_NAME:Z_WEP%.
+ENDSELECT
+Z_HERO_WOUND = Z_DEF - Z_BASE
+SIF Z_HERO_WOUND < 0
+    CALL Z_SCHEDULE, ZE_CURE, 30
+IF Z_DEF <= 0
+    PRINTL It appears that that last blow was too much for you. I'm afraid you
+    PRINTL are dead.
+    Z_HERO_WOUND = 1 - Z_BASE
+    CALL Z_FATAL_BOUNDARY
+    RETURN 0
+ENDIF
+RETURN Z_RES
+
+@Z_DIAGNOSE
+#DIM DYNAMIC Z_WOUND
+#DIM DYNAMIC Z_STRENGTH
+#DIM DYNAMIC Z_POS
+IF Z_DEAD
+    PRINTL You are dead.
+    RETURN
+ENDIF
+Z_STRENGTH = Z_HERO_STRENGTH(1)
+Z_WOUND = -Z_HERO_WOUND
+; Original V-DIAGNOSE calls INT, which can allocate the disabled cure slot.
+CALL Z_INT, ZE_CURE
+Z_POS = RESULT
+SIF !Z_Q_ENABLED:Z_POS
+    Z_WOUND = 0
+IF Z_WOUND == 0
+    PRINTL You are in perfect health.
+ELSE
+    SELECTCASE Z_WOUND
+    CASE 1
+        PRINT You have a light wound,
+    CASE 2
+        PRINT You have a serious wound,
+    CASE 3
+        PRINT You have several wounds,
+    CASEELSE
+        PRINT You have serious wounds,
+    ENDSELECT
+    PRINTFORML  which will be cured after {30 * (Z_WOUND - 1) + Z_Q_TICK:Z_POS} moves.
+ENDIF
+SELECTCASE Z_STRENGTH
+CASE 0
+    PRINTL You can expect death soon.
+CASE 1
+    PRINTL You can be killed by one more light wound.
+CASE 2
+    PRINTL You can be killed by a serious wound.
+CASE 3
+    PRINTL You can survive one serious wound.
+CASEELSE
+    PRINTL You can survive several wounds.
+ENDSELECT
+IF Z_DEATHS == 1
+    PRINTL You have been killed once.
+ELSEIF Z_DEATHS
+    PRINTL You have been killed twice.
+ENDIF
+RETURN
+
+@Z_SWORD_CLOCK
+#DIM DYNAMIC Z_GLOW
+#DIM DYNAMIC Z_D
+#DIM DYNAMIC Z_R
+IF Z_PARENT:O_SWORD != Z_PLAYER
+    CALL Z_ENABLE, ZE_SWORD, 0
+    RETURN 0
+ENDIF
+SIF !Z_SWORD_ENABLED
+    RETURN 0
+IF Z_ROOM_INFESTED(Z_HERE)
+    Z_GLOW = 2
+ELSE
+    FOR Z_D, 0, 12
+        Z_R = Z_EXITS:Z_HERE:Z_D
+        SIF Z_R && Z_ROOM_INFESTED(Z_R)
+            Z_GLOW = 1
+    NEXT
+ENDIF
+IF Z_GLOW == Z_SWORD_GLOW
+    RETURN 0
+ENDIF
+Z_SWORD_GLOW = Z_GLOW
+SELECTCASE Z_GLOW
+CASE 2
+    PRINTL Your sword has begun to glow very brightly.
+CASE 1
+    PRINTL Your sword is glowing with a faint blue glow.
+CASE 0
+    PRINTL Your sword is no longer glowing.
+ENDSELECT
+RETURN 1
+
+; 1actions.zil INFESTED? walks a room's direct children. NDESCBIT does
+; not exclude an actor: GHOSTS and BAT still make the sword glow. A hidden
+; thief is excluded by INVISIBLE, represented here by ZF_HIDDEN.
+@Z_ROOM_INFESTED(Z_ROOM)
+#FUNCTION
+#DIM DYNAMIC Z_ROOM
+#DIM DYNAMIC Z_O
+Z_O = Z_FIRST_CHILD(Z_ROOM)
+WHILE Z_O
+    SIF Z_HAS(Z_O, ZF_ACTOR) && !Z_HAS(Z_O, ZF_HIDDEN)
+        RETURNF 1
+    Z_O = Z_NEXT:Z_O
+WEND
+RETURNF 0

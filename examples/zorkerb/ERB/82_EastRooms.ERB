@@ -1,0 +1,156 @@
+﻿@Z_EAST_EXIT(Z_DEST, Z_DIR)
+#DIM DYNAMIC Z_DEST
+#DIM DYNAMIC Z_DIR
+IF Z_DEST == R_MAINTENANCE_ROOM && Z_WATER_LEVEL >= 14
+    PRINTL The room is full of water and cannot be entered.
+    RETURN -1
+ENDIF
+IF ((Z_HERE == R_RESERVOIR_SOUTH && Z_DIR == 0) || (Z_HERE == R_RESERVOIR_NORTH && Z_DIR == 2)) && !Z_LOW_TIDE && !Z_IN_BOAT
+    PRINTL You would drown.
+    RETURN -1
+ENDIF
+IF Z_HERE == R_DOME_ROOM && Z_DIR == 9 && !Z_DOME_TIED
+    PRINTL You cannot go down without fracturing many bones.
+    RETURN -1
+ENDIF
+IF Z_HERE == R_SOUTH_TEMPLE && Z_DIR == 9 && Z_PARENT:O_COFFIN == Z_PLAYER
+    PRINTL You haven't a prayer of getting the coffin down there.
+    RETURN -1
+ENDIF
+IF Z_HERE == R_ENTRANCE_TO_HADES && (Z_DIR == 10 || Z_DIR == 2) && !Z_LLD_OPEN
+    PRINTL Some invisible force prevents you from passing through the gate.
+    RETURN -1
+ENDIF
+RETURN Z_DEST
+
+@Z_DESCRIBE_EAST
+SELECTCASE Z_HERE
+CASE R_MIRROR_ROOM_1, R_MIRROR_ROOM_2
+    PRINTL You are in a large square room with tall ceilings. On the south wall
+    PRINTL is an enormous mirror which fills the entire wall. There are exits
+    PRINTL on the other three sides of the room.
+    SIF Z_MIRROR_BROKEN
+        PRINTL Unfortunately, the mirror has been destroyed by your recklessness.
+CASE R_DOME_ROOM
+    PRINTL You are at the periphery of a large dome, which forms the ceiling
+    PRINTL of another room below. Protecting you from a precipitous drop is a
+    PRINTL wooden railing which circles the dome.
+    IF Z_DOME_TIED
+        PRINTL Hanging down from the railing is a rope which ends about ten feet
+        PRINTL from the floor below.
+    ENDIF
+CASE R_TORCH_ROOM
+    PRINTL This is a large room with a prominent doorway leading to a down
+    PRINTL staircase. Above you is a large dome. Up around the edge of the
+    PRINTL dome (20 feet up) is a wooden railing. In the center of the room
+    PRINTL sits a white marble pedestal.
+    IF Z_DOME_TIED
+        PRINTL A piece of rope descends from the railing above, ending some
+        PRINTL five feet above your head.
+    ENDIF
+CASE R_ENTRANCE_TO_HADES
+    PRINTL You are outside a large gateway, on which is inscribed
+    PRINTL
+    PRINTL   Abandon every hope
+    PRINTL all ye who enter here!
+    PRINTL
+    PRINTL The gate is open; through it you can see a desolation, with a pile of
+    PRINTL mangled bodies in one corner. Thousands of voices, lamenting some
+    PRINTL hideous fate, can be heard.
+    IF !Z_LLD_OPEN && !Z_DEAD
+        PRINTL The way through the gate is barred by evil spirits, who jeer at your
+        PRINTL attempts to pass.
+    ENDIF
+CASE R_DEEP_CANYON
+    PRINTL You are on the south edge of a deep canyon. Passages lead off to the
+    PRINTL east, northwest and southwest. A stairway leads down.
+    IF Z_GATES_OPEN && !Z_LOW_TIDE && !Z_IN_BOAT
+        PRINTL You can hear a loud roaring sound, like that of rushing water, from
+        PRINTL below.
+    ELSEIF !(!Z_GATES_OPEN && Z_LOW_TIDE)
+        PRINTL You can hear the sound of flowing water from below.
+    ENDIF
+CASE R_LOUD_ROOM
+    PRINTL This is a large room with a ceiling which cannot be detected from
+    PRINTL the ground. There is a narrow passage from east to west and a stone
+    PRINT stairway leading upward.
+    IF Z_LOUD_SOLVED || (!Z_GATES_OPEN && Z_LOW_TIDE)
+        PRINTL  The room is eerie in its quietness.
+    ELSE
+        PRINTL  The room is deafeningly loud with an
+        PRINTL undetermined rushing sound. The sound seems to reverberate from all
+        PRINTL of the walls, making it difficult even to think.
+    ENDIF
+CASE R_DAM_ROOM
+    PRINTL You are standing on the top of the Flood Control Dam #3, which was
+    PRINTL quite a tourist attraction in times far distant. There are paths to
+    PRINTL the north, south, and west, and a scramble down.
+    IF Z_GATES_OPEN && Z_LOW_TIDE
+        PRINTL The water level behind the dam is low: The sluice gates have been opened.
+    ELSEIF Z_GATES_OPEN
+        PRINTL The sluice gates are open, and water rushes through the dam.
+        PRINTL The water level behind the dam is still high.
+    ELSEIF Z_LOW_TIDE
+        PRINTL The sluice gates are closed. The water level in the reservoir is
+        PRINTL quite low, but the level is rising quickly.
+    ELSE
+        PRINTL The sluice gates on the dam are closed. Behind the dam, there can be
+        PRINTL seen a wide reservoir. Water is pouring over the top of the now
+        PRINTL abandoned dam.
+    ENDIF
+    PRINTL There is a control panel here, on which a large metal bolt is mounted.
+    PRINT Directly above the bolt is a small green plastic bubble
+    SIF Z_GATE_ENABLED
+        PRINT  which is glowing serenely
+    PRINTL .
+CASE R_RESERVOIR_SOUTH
+    IF Z_LOW_TIDE && Z_GATES_OPEN
+        PRINTL You are in a long room, to the north of which was formerly a lake.
+        PRINTL However, with the water level lowered, there is merely a wide stream
+        PRINTL running through the center of the room.
+    ELSEIF Z_GATES_OPEN
+        PRINTL You are in a long room. To the north is a large lake, too deep
+        PRINTL to cross. You notice, however, that the water level appears to be
+        PRINTL dropping at a rapid rate. Before long, it might be possible to cross
+        PRINTL to the other side from here.
+    ELSEIF Z_LOW_TIDE
+        PRINTL You are in a long room, to the north of which is a wide area which
+        PRINTL was formerly a reservoir, but now is merely a stream. You notice,
+        PRINTL however, that the level of the stream is rising quickly and that
+        PRINTL before long it will be impossible to cross here.
+    ELSE
+        PRINTL You are in a long room on the south shore of a large lake, far
+        PRINTL too deep and wide for crossing.
+    ENDIF
+    PRINTL There is a path along the stream to the east or west, a steep pathway
+    PRINTL climbing southwest along the edge of a chasm, and a path leading into a
+    PRINTL canyon to the southeast.
+CASE R_RESERVOIR
+    IF Z_LOW_TIDE
+        PRINTL You are on what used to be a large lake, but which is now a large
+        PRINTL mud pile. There are "shores" to the north and south.
+    ELSE
+        PRINTL You are on the lake. Beaches can be seen north and south.
+        PRINTL Upstream a small stream enters the lake through a narrow cleft
+        PRINTL in the rocks. The dam can be seen downstream.
+    ENDIF
+CASE R_RESERVOIR_NORTH
+    IF Z_LOW_TIDE && Z_GATES_OPEN
+        PRINTL You are in a large cavernous room, the south of which was formerly
+        PRINTL a lake. However, with the water level lowered, there is merely
+        PRINTL a wide stream running through there.
+    ELSEIF Z_GATES_OPEN
+        PRINTL You are in a large cavernous area. To the south is a wide lake,
+        PRINTL whose water level appears to be falling rapidly.
+    ELSEIF Z_LOW_TIDE
+        PRINTL You are in a cavernous area, to the south of which is a very wide
+        PRINTL stream. The level of the stream is rising rapidly, and it appears
+        PRINTL that before long it will be impossible to cross to the other side.
+    ELSE
+        PRINTL You are in a large cavernous room, north of a large lake.
+    ENDIF
+    PRINTL There is a slimy stairway leaving the room to the north.
+CASEELSE
+    RETURN 0
+ENDSELECT
+RETURN 1

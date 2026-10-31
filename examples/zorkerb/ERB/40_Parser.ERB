@@ -1,0 +1,1228 @@
+﻿; r8 native object grammar. See 42_CommandStream for input ownership.
+@Z_PARSE_ACTION
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_Q
+#DIM DYNAMIC Z_BRUSH_I_COUNT
+#DIM DYNAMIC Z_THROUGH_SYNTAX
+#DIM DYNAMIC Z_GATE_SPLIT
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_INFER_PREPOSITION
+Z_SOURCE_VERB '= Z_VERB
+Z_NOUN '= Z_CANON_PHRASE(Z_NOUN)
+; r29: END-ON-PREP stored a final particle as P-PREP1 (BLOW CANDLES OUT is
+; BLOW OUT CANDLES). Present it in leading position to the verb grammar.
+IF Z_SP_FOUND && Z_SP_END_ON_PREP && Z_SP_PREP1 && Z_SP_NCN == 1
+    Z_S '= Z_PT_PREP_WORD(Z_SP_PREP1)
+    IF STRLENS(Z_NOUN) > STRLENS(Z_S) && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - STRLENS(Z_S) - 1) == " " + Z_S
+        Z_NOUN '= Z_S + " " + Z_TRIM(SUBSTRING(Z_NOUN, 0, STRLENS(Z_NOUN) - STRLENS(Z_S) - 1))
+    ENDIF
+ENDIF
+CALL Z_ADDITIONAL_GRAMMAR
+SIF RESULT < 0
+    RETURN
+IF RESULT == 2
+    Z_VALID = 1
+    RETURN
+ENDIF
+; gsyntax: WALK WITH OBJECT and CLIMB WITH OBJECT are V-THROUGH.
+; WITH has THROUGH/THRU/USING synonyms; canon already converts USING.
+; Consume only the leading preposition, retaining adjectives and IT in the
+; direct clause. Incomplete "walk through" must orphan, not walk IN.
+IF Z_VERB == "go" || Z_VERB == "walk" || Z_VERB == "climb"
+    Z_S '= Z_FIRST_WORD(Z_NOUN)
+    IF Z_S == "with" || Z_S == "thru" || SUBSTRING(Z_S, 0, 6) == "throug"
+        Z_HISTORY_HEAD '= Z_FIRST_WORD(Z_COMMAND) + " " + Z_S
+        Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_S)))
+        Z_VERB = enter
+        Z_THROUGH_SYNTAX = 1
+    ENDIF
+ENDIF
+; ANSWER OBJECT (V-REPLY) and CURSE OBJECT (V-CURSES) take an object.
+IF Z_NOUN != "" && (Z_SP_FOUND || Z_SP_ORPHAN_TEXT != "") && (Z_VERB == "answer" || Z_VERB == "curse")
+    IF Z_VERB == "answer"
+        Z_VERB = reply
+    ELSE
+        Z_VERB = curse_obj
+    ENDIF
+ELSEIF Z_SIMPLE_VERB(Z_VERB)
+    IF Z_NOUN != ""
+        PRINTL I couldn't understand that sentence.
+        RETURN
+    ENDIF
+    Z_VALID = 1
+    RETURN
+ENDIF
+; WALK OVER is the same LEAP grammar, but bare WALK is not.
+IF (Z_VERB == "walk" || Z_VERB == "go") && SUBSTRING(Z_NOUN, 0, 5) == "over "
+    Z_VERB = leap
+ENDIF
+SELECTCASE Z_VERB
+CASE "leap"
+    IF Z_NOUN == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+    Z_S '= Z_FIRST_WORD(Z_NOUN)
+    IF STRFIND("|over|across|in|from|off|", "|" + Z_S + "|") < 0
+        PRINTL That sentence isn't one I recognize.
+        RETURN
+    ENDIF
+    Z_HISTORY_HEAD '= Z_FIRST_WORD(Z_COMMAND) + " " + Z_S
+    Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_S)))
+    ; An empty prepositional slot reaches the ordinary orphan prompt.
+CASE "go", "walk"
+    ; WALK AROUND/TO/IN/ON... are other SYNTAX lines, not V-WALK.
+    IF Z_NOUN == ""
+        ; SYNTAX WALK = V-WALK-AROUND
+        Z_VERB = walk_around
+        Z_VALID = 1
+        RETURN
+    ENDIF
+    IF (Z_SP_FOUND && Z_SP_ACTION != "V-WALK") || Z_SP_ORPHAN_TEXT != ""
+        Z_VERB = walk
+        GOTO Z_PARSE_ACTION_SOURCE_LINE
+    ENDIF
+    Z_DIRECTION = Z_DIRECTION_ID(Z_NOUN)
+    IF Z_DIRECTION < 0
+        ; WALK [AWAY] OBJECT = V-WALK, which PERFORMs WALK-TO without a
+        ; direction.
+        IF SUBSTRING(Z_NOUN, 0, 5) == "away "
+            Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, 5))
+        ENDIF
+        Z_VERB = walk_to
+        GOTO Z_PARSE_ACTION_SOURCE_LINE
+    ENDIF
+    Z_VERB = walk
+    Z_VALID = 1
+    RETURN
+CASE "follow"
+    IF Z_NOUN == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "say"
+    Z_VALID = 1
+    RETURN
+CASE "stand"
+    IF Z_NOUN == "" || Z_NOUN == "up"
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "hello"
+    IF Z_NOUN == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+    CALL Z_CHECK_GREETING_SYNTAX
+    SIF !RESULT
+        RETURN
+    IF Z_NOUN == "all" || SUBSTRING(Z_NOUN, 0, 4) == "all "
+        CALL Z_PREPARE_GREETING_ALL
+        RETURN
+    ENDIF
+CASE "search"
+    IF SUBSTRING(Z_NOUN, 0, 4) == "for "
+        Z_VERB = find
+        Z_NOUN '= SUBSTRING(Z_NOUN, 4)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 3) == "in "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+    ENDIF
+CASE "l", "look"
+    ; LOOK AROUND/UP/DOWN without an object: GWIM of RMUNGBIT is ROOMS.
+    IF Z_NOUN == "" || Z_NOUN == "around" || Z_NOUN == "up" || Z_NOUN == "down" || (Z_SP_FOUND && Z_SP_ACTION == "V-LOOK" && Z_SP_NCN == 0)
+        Z_VERB = look
+        Z_VALID = 1
+        RETURN
+    ELSEIF Z_SP_FOUND && Z_SP_ACTION == "V-LOOK"
+        ; LOOK AROUND/UP/DOWN OBJECT (FIND RMUNGBIT) = V-LOOK
+        Z_S '= Z_FIRST_WORD(Z_NOUN)
+        Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_S)))
+        Z_VERB = look_room
+    ELSEIF Z_SP_FOUND && Z_SP_ACTION == "V-READ" && SUBSTRING(Z_NOUN, 0, 3) == "at "
+        ; LOOK AT OBJECT WITH OBJECT = V-READ PRE-READ
+        Z_VERB = read
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 4) == "for "
+        Z_VERB = find
+        Z_NOUN '= SUBSTRING(Z_NOUN, 4)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 6) == "under "
+        Z_VERB = under
+        Z_NOUN '= SUBSTRING(Z_NOUN, 6)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 3) == "in "
+        Z_VERB = inside
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 7) == "inside "
+        Z_VERB = inside
+        Z_NOUN '= SUBSTRING(Z_NOUN, 7)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 3) == "at "
+        Z_VERB = examine
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+    ELSE
+        Z_VERB = examine
+    ENDIF
+CASE "diagnose"
+    Z_VALID = 1
+    RETURN
+CASE "i", "inventory"
+    Z_VERB = inventory
+    Z_VALID = 1
+    RETURN
+CASE "z", "wait"
+    Z_VERB = wait
+    Z_VALID = 1
+    RETURN
+CASE "disembark"
+    ; DISEMBARK OBJECT (FIND VEHBIT): GWIM the boat or ORPHAN (r29).
+    IF Z_NOUN == "" && !Z_SP_GWIM_D && Z_SP_ORPHAN_TEXT == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "launch"
+    ; LAUNCH OBJECT (FIND VEHBIT): the boat is GWIMmed or the verb orphans.
+    IF Z_NOUN == "" && !Z_SP_GWIM_D && Z_SP_ORPHAN_TEXT == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "pray", "echo", "land"
+    Z_VALID = 1
+    RETURN
+CASE "odysseus", "ulysses"
+    Z_VERB = odysseus
+    Z_VALID = 1
+    RETURN
+CASE "kill", "hit", "strike", "fight"
+    Z_VERB = attack
+CASE "smash", "destroy"
+    Z_VERB = break
+CASE "brush", "clean"
+    Z_VERB = brush
+CASE "get", "take"
+    IF SUBSTRING(Z_NOUN, 0, 3) == "in "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+        Z_VERB = board
+    ELSEIF Z_NOUN == "out"
+        Z_VERB = disembark
+        Z_VALID = 1
+        RETURN
+    ELSEIF SUBSTRING(Z_NOUN, 0, 7) == "out of "
+        Z_VERB = disembark
+        Z_NOUN '= SUBSTRING(Z_NOUN, 7)
+    ELSE
+        Z_VERB = take
+    ENDIF
+CASE "pick"
+    IF Z_NOUN == "up" || SUBSTRING(Z_NOUN, 0, 3) == "up "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+        Z_VERB = take
+        Z_HISTORY_HEAD = pick up
+    ELSEIF STRLENS(Z_NOUN) >= 3 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 3) == " up"
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, STRLENS(Z_NOUN) - 3)
+        Z_VERB = take
+        Z_HISTORY_HEAD = pick up
+    ENDIF
+CASE "examine"
+    Z_VERB = examine
+CASE "put", "insert", "place"
+    IF SUBSTRING(Z_NOUN, 0, 5) == "down "
+        Z_VERB = drop
+        Z_HISTORY_HEAD = put down
+        Z_NOUN '= SUBSTRING(Z_NOUN, 5)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 4) == "out "
+        Z_VERB = off
+        Z_HISTORY_HEAD = put out
+        Z_NOUN '= SUBSTRING(Z_NOUN, 4)
+    ELSE
+        Z_VERB = put
+    ENDIF
+CASE "turn", "switch"
+    IF Z_NOUN == "on" || SUBSTRING(Z_NOUN, 0, 3) == "on "
+        Z_HISTORY_HEAD = turn on
+        Z_VERB = on
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+    ELSEIF Z_NOUN == "off" || SUBSTRING(Z_NOUN, 0, 4) == "off "
+        Z_HISTORY_HEAD = turn off
+        Z_VERB = off
+        Z_NOUN '= SUBSTRING(Z_NOUN, 4)
+    ELSEIF STRLENS(Z_NOUN) >= 3 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 3) == " on"
+        Z_HISTORY_HEAD = turn on
+        Z_VERB = on
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, STRLENS(Z_NOUN) - 3)
+    ELSEIF STRLENS(Z_NOUN) >= 4 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 4) == " off"
+        Z_HISTORY_HEAD = turn off
+        Z_VERB = off
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, STRLENS(Z_NOUN) - 4)
+    ELSE
+        Z_VERB = turn
+    ENDIF
+CASE "on", "light", "activate"
+    Z_HISTORY_HEAD '= Z_SOURCE_VERB
+    Z_VERB = on
+CASE "off", "extinguish"
+    Z_HISTORY_HEAD '= Z_SOURCE_VERB
+    Z_VERB = off
+CASE "push", "pull", "slide"
+    Z_VERB = move
+    ; PUSH/SLIDE OBJECT TO|UNDER OBJECT are V-PUSH-TO / V-PUT-UNDER.
+    IF Z_SP_ACTION == "V-PUSH-TO" || Z_SP_ACTION == "V-PUT-UNDER"
+        Z_P = STRFIND(Z_NOUN, " to ")
+        Z_Q = 4
+        IF Z_P < 0
+            Z_P = STRFIND(Z_NOUN, " under ")
+            Z_Q = 7
+        ENDIF
+        IF Z_P >= 0
+            Z_HISTORY_PREP '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 1, Z_Q - 2))
+            Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_Q))
+            Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+        ENDIF
+        Z_VERB = push_to
+        SIF Z_SP_ACTION == "V-PUT-UNDER"
+            Z_VERB = put_under
+    ENDIF
+    SIF SUBSTRING(Z_NOUN, 0, 3) == "on "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+    SIF SUBSTRING(Z_NOUN, 0, 3) == "up "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+CASE "leave"
+    IF Z_NOUN == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+    Z_VERB = drop
+CASE "exit"
+    IF Z_NOUN == ""
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "lean", "send", "pump", "exorcise"
+    ; Strip the source particle (LEAN ON, SEND FOR, PUMP UP, EXORCISE OUT/AWAY).
+    Z_S '= Z_FIRST_WORD(Z_NOUN)
+    IF (Z_VERB == "lean" && Z_S == "on") || (Z_VERB == "send" && Z_S == "for") || (Z_VERB == "pump" && Z_S == "up") || (Z_VERB == "exorcise" && (Z_S == "out" || Z_S == "away"))
+        Z_HISTORY_HEAD '= Z_FIRST_WORD(Z_COMMAND) + " " + Z_S
+        Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_S)))
+    ENDIF
+CASE "disenchant", "enchant", "spin", "hatch", "wear", "command", "play", "rape", "random"
+    ; r29 source verbs with one direct object.
+CASE "lift", "raise"
+    Z_VERB = raise
+CASE "climb"
+    IF SUBSTRING(Z_NOUN, 0, 3) == "up "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+        Z_DIRECTION = 8
+    ELSEIF SUBSTRING(Z_NOUN, 0, 5) == "down "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 5)
+        Z_DIRECTION = 9
+    ELSEIF Z_NOUN == "up" || Z_NOUN == "down"
+        Z_DIRECTION = Z_DIRECTION_ID(Z_NOUN)
+        Z_VERB = walk
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "enter"
+    IF Z_NOUN == "" && !Z_THROUGH_SYNTAX
+        Z_DIRECTION = 10
+        Z_VERB = walk
+        Z_VALID = 1
+        RETURN
+    ENDIF
+CASE "reply", "curse_obj", "look_room", "walk_around", "walk_to", "swim", "breathe", "blast_object", "melt", "oil", "spray", "apply", "swing", "fill", "pour", "cut", "shake", "find", "stab", "knock", "inflate", "deflate", "board", "lower", "dig", "wave", "cross", "drop", "open", "close", "read", "move", "eat", "drink", "count", "smell", "listen", "unlock", "lock", "break", "attack", "wind", "give", "throw", "wake", "kick", "rub", "tie", "untie", "ring", "plug", "squeeze", "burn", "kiss", "make"
+    ; Explicitly registered in the r1 action layer.
+CASEELSE
+    PRINTL I don't understand that command in this development port.
+    RETURN
+ENDSELECT
+$Z_PARSE_ACTION_SOURCE_LINE
+; r29: the SYNTAX-FOUND line consumed a leading particle (CLIMB ON, WAKE UP,
+; TAKE IN ...) that no verb case above removed; drop it from the clause.
+IF (Z_SP_FOUND || Z_SP_ORPHAN_TEXT != "") && Z_SP_PREP1
+    Z_S '= Z_FIRST_WORD(Z_NOUN)
+    IF Z_S != "" && Z_S == Z_PT_PREP_WORD(Z_SP_PREP1)
+        SIF Z_HISTORY_HEAD == ""
+            Z_HISTORY_HEAD '= Z_FIRST_WORD(Z_COMMAND) + " " + Z_S
+        Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_S)))
+    ELSEIF Z_SP_END_ON_PREP
+        ; END-ON-PREP put the final particle in P-PREP1 (WAKE TROLL UP).
+        Z_S '= Z_PT_PREP_WORD(Z_SP_PREP1)
+        IF STRLENS(Z_NOUN) > STRLENS(Z_S) && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - STRLENS(Z_S) - 1) == " " + Z_S
+            SIF Z_HISTORY_HEAD == ""
+                Z_HISTORY_HEAD '= Z_FIRST_WORD(Z_COMMAND) + " " + Z_S
+            Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, 0, STRLENS(Z_NOUN) - STRLENS(Z_S) - 1))
+        ENDIF
+    ENDIF
+ENDIF
+IF Z_SP_FOUND || Z_SP_ORPHAN_TEXT != ""
+    ; Collapsed r28 verbs whose source action has its own default routine.
+    SELECTCASE Z_SP_ACTION
+    CASE "V-LOOK-INSIDE"
+        Z_VERB = inside
+    CASE "V-CLIMB-ON"
+        Z_VERB = climb_on
+    CASE "V-CLIMB-UP", "V-CLIMB-DOWN", "V-CLIMB-FOO"
+        ; WALK UP/DOWN OBJECT are V-CLIMB-UP/DOWN lines too.
+        SIF Z_VERB == "walk"
+            Z_VERB = climb
+    CASE "V-WEAR"
+        Z_VERB = wear
+    CASE "V-BOARD"
+        Z_VERB = board
+    CASE "V-DISEMBARK"
+        Z_VERB = disembark
+    CASE "V-STAND"
+        Z_VERB = stand
+    CASE "V-ATTACK"
+        Z_VERB = attack
+    CASE "V-OPEN"
+        Z_VERB = open
+    CASE "V-INFLATE"
+        Z_VERB = inflate
+    CASE "V-LAMP-OFF"
+        Z_VERB = off
+    CASE "V-LAMP-ON"
+        Z_VERB = on
+    CASE "V-THROUGH"
+        Z_VERB = enter
+    CASE "V-DRINK-FROM"
+        Z_VERB = drink_from
+    CASE "V-DROP"
+        Z_VERB = drop
+    CASE "V-FIND"
+        Z_VERB = find
+    CASE "V-LOOK-UNDER"
+        Z_VERB = under
+    CASE "V-LOOK-BEHIND"
+        Z_VERB = look_behind
+    CASE "V-LOOK-ON"
+        Z_VERB = look_on
+    CASE "V-PUT-BEHIND"
+        Z_VERB = put_behind
+    CASE "V-PUT-UNDER"
+        Z_VERB = put_under
+    CASE "V-WALK-AROUND"
+        Z_VERB = walk_around
+    CASE "V-WALK-TO"
+        Z_VERB = walk_to
+    CASE "V-ALARM"
+        Z_VERB = wake
+    CASE "V-KNOCK"
+        Z_VERB = knock
+    CASE "V-SEARCH"
+        Z_VERB = search
+    CASE "V-EXAMINE"
+        Z_VERB = examine
+    CASE "V-BLAST"
+        Z_VERB = blast_object
+    CASE "V-PUT", "V-PUT-ON"
+        ; APPLY keeps its own orphan/MANY wording until the action (below).
+        SIF Z_VERB != "apply"
+            Z_VERB = put
+    CASE "V-POUR-ON"
+        Z_VERB = pour_on
+    CASE "V-THROW-OFF"
+        Z_VERB = throw_off
+    CASE "V-THROW"
+        Z_VERB = throw
+    CASE "V-TURN"
+        Z_VERB = turn
+    CASE "V-PUSH-TO"
+        Z_VERB = push_to
+    CASE "V-STRIKE"
+        Z_VERB = strike
+    CASE "V-OVERBOARD"
+        Z_VERB = overboard
+    CASE "V-READ-PAGE"
+        Z_VERB = read_page
+    ENDSELECT
+    ; Two-object forms new in r29 split at the SYNTAX-FOUND line's PREP2.
+    IF (Z_VERB == "put_behind" || Z_VERB == "put_under") && Z_SP_IPREP != ""
+        Z_P = STRFIND(Z_NOUN, " " + Z_SP_IPREP + " ")
+        IF Z_P >= 0
+            Z_HISTORY_PREP '= Z_SP_IPREP
+            Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + STRLENS(Z_SP_IPREP) + 2))
+            Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+        ENDIF
+    ENDIF
+ENDIF
+IF Z_VERB == "brush"
+    CALL Z_CHECK_BRUSH_SYNTAX
+    SIF !RESULT
+        RETURN
+ENDIF
+; These verbs have a single object slot in gsyntax; a WITH clause is a syntax
+; failure before object resolution, IT updates, or turn consumption.
+IF (Z_VERB == "eat" || Z_VERB == "make" || Z_VERB == "disembark" || Z_VERB == "examine" || Z_VERB == "untie") && (STRFIND(Z_NOUN, " with ") >= 0 || (STRLENS(Z_NOUN) >= 5 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 5) == " with"))
+    PRINTL That sentence isn't one I recognize.
+    RETURN
+ENDIF
+; The original CLAUSE parser cannot omit the direct noun before WITH.
+IF (Z_VERB == "melt" || Z_VERB == "oil" || Z_VERB == "lock" || Z_VERB == "unlock" || Z_VERB == "plug") && (Z_NOUN == "with" || SUBSTRING(Z_NOUN, 0, 5) == "with ")
+    PRINTL That sentence isn't one I recognize.
+    RETURN
+ENDIF
+IF Z_VERB == "break"
+    IF SUBSTRING(Z_NOUN, 0, 5) == "down "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 5)
+    ELSEIF SUBSTRING(Z_NOUN, 0, 3) == "in "
+        Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+        Z_VERB = open
+    ENDIF
+ENDIF
+CALL Z_CHECK_NOUN_VERBS, Z_NOUN
+SIF !RESULT
+    RETURN
+; Empty prepositional direct clauses supported by the same one-slot syntax.
+IF (Z_VERB == "open" && Z_NOUN == "up") || (Z_VERB == "read" && Z_NOUN == "from")
+    Z_NOUN =
+ENDIF
+IF Z_NOUN == "" && (Z_SP_GWIM_D || Z_SP_ORPHAN_TEXT != "")
+    ; r29: the source SYNTAX-CHECK already chose GWIM (and printed it) or
+    ; decided to ORPHAN. Do not substitute the r28 per-verb inference.
+    Z_INFER_D = Z_SP_GWIM_D
+    SIF Z_INFER_D
+        Z_NOUN '= Z_REPLAY_NAME:Z_INFER_D
+ELSEIF Z_NOUN == ""
+    CALL Z_INFER_DIRECT
+    Z_INFER_D = RESULT
+    IF Z_INFER_D
+        ; AGAIN reparses the saved syntax without END-ON-PREP. The original
+        ; prints the preposition on this repetition, but not on the first use.
+        Z_P = STRFIND(Z_COMMAND, " ")
+        SIF Z_P >= 0
+            Z_INFER_PREPOSITION '= Z_TRIM(SUBSTRING(Z_COMMAND, Z_P + 1))
+        IF Z_WAS_AGAIN && (Z_INFER_PREPOSITION == "from" || Z_INFER_PREPOSITION == "up" || Z_INFER_PREPOSITION == "on" || Z_INFER_PREPOSITION == "off")
+            PRINTFORML (%Z_INFER_PREPOSITION% the %Z_OBJ_NAME:Z_INFER_D%)
+        ELSE
+            PRINTFORML (%Z_OBJ_NAME:Z_INFER_D%)
+        ENDIF
+        Z_NOUN '= Z_REPLAY_NAME:Z_INFER_D
+    ELSEIF Z_VERB == "find"
+        PRINTL That question can't be answered.
+        RETURN
+    ENDIF
+ENDIF
+IF Z_NOUN == "" && Z_ORDER_ACTOR
+    ; GET-OBJECT may already have reported an ambiguous GWIM. A missing
+    ; syntactic slot now produces the SYNTAX-CHECK refusal exactly once.
+    CALL Z_ACTOR_CANT_ORPHAN
+    RETURN
+ENDIF
+IF Z_NOUN == ""
+    IF Z_SP_ORPHAN_TEXT != ""
+        CALL Z_SP_ORPHAN_PRINT
+    ELSEIF Z_THROUGH_SYNTAX
+        ; Source orphan prompts use WITH's canonical dictionary spelling.
+        PRINTFORML What do you want to %Z_FIRST_WORD(Z_COMMAND)% with?
+    ELSE
+        PRINTFORML What do you want to %Z_COMMAND%?
+    ENDIF
+    CALL Z_READ_REPLY
+    SIF Z_ABORT
+        RETURN
+    IF Z_SOURCE_VERB == "blow" && (Z_FIRST_WORD(Z_INPUT_REPLY) == "in" || Z_FIRST_WORD(Z_INPUT_REPLY) == "out" || Z_FIRST_WORD(Z_INPUT_REPLY) == "up")
+        CALL Z_NO_VERB_INPUT
+        RETURN
+    ENDIF
+    ; ORPHAN-MERGE refuses a reply with two noun clauses (P-NCN 2); the
+    ; verbless reply then fails as a sentence of its own.
+    IF Z_REPLY_CLAUSES(Z_INPUT_REPLY) >= 2
+        CALL Z_NO_VERB_INPUT
+        RETURN
+    ENDIF
+    IF Z_VERB == "spray" || Z_VERB == "apply" || Z_VERB == "melt" || Z_VERB == "oil"
+        ; ORPHAN-MERGE supplies only the missing direct clause. A reply
+        ; containing a new preposition is reparsed without the old verb.
+        IF STRFIND(Z_INPUT_REPLY, " with ") >= 0 || STRFIND(Z_INPUT_REPLY, " to ") >= 0 || STRFIND(Z_INPUT_REPLY, " on ") >= 0
+            CALL Z_NO_VERB_INPUT
+            RETURN
+        ENDIF
+        Z_NOUN '= Z_ORPHAN_DICTIONARY_WORDS(Z_ORPHAN_WORDS(Z_INPUT_REPLY))
+    ELSE
+        Z_NOUN '= Z_ORPHAN_WORDS(Z_INPUT_REPLY)
+    ENDIF
+    Z_COMMAND '= Z_COMMAND + " " + Z_INPUT_REPLY
+    ; The merged sentence is SYNTAX-CHECKed again: BLOW UP OBJECT is an exact
+    ; one-object line (V-BLAST), while the question came from BLOW UP ... WITH.
+    SIF Z_SOURCE_VERB == "blow" && Z_VERB == "inflate" && STRFIND(Z_INPUT_REPLY, " with ") < 0
+        Z_VERB = blast_object
+ENDIF
+; Source preposition aliases are token based, not substring replacement.
+Z_NOUN '= Z_CANON_PHRASE(Z_NOUN)
+IF Z_VERB == "brush"
+    CALL Z_CHECK_BRUSH_SYNTAX
+    SIF !RESULT
+        RETURN
+ENDIF
+; r28 heuristic for sentences without a SYNTAX-FOUND line (orphan merges).
+IF !Z_SP_FOUND && (Z_VERB == "drop" || Z_VERB == "throw")
+    IF STRFIND(Z_NOUN, " in ") >= 0 || STRFIND(Z_NOUN, " on ") >= 0
+        Z_VERB = put
+    ENDIF
+ENDIF
+IF Z_VERB == "open" && SUBSTRING(Z_NOUN, 0, 3) == "up "
+    Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+ENDIF
+IF Z_VERB == "wave" && SUBSTRING(Z_NOUN, 0, 3) == "at "
+    Z_HISTORY_HEAD = wave at
+    Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+ENDIF
+; Trailing prepositions must remain visible to the splitter for orphan input.
+IF Z_VERB == "put" || Z_VERB == "give" || Z_VERB == "throw" || Z_VERB == "tie"
+    Z_NOUN += " "
+ELSEIF STRLENS(Z_NOUN) >= 5 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 5) == " with"
+    Z_NOUN += " "
+ENDIF
+IF Z_VERB == "drink" && SUBSTRING(Z_NOUN, 0, 5) == "from "
+    Z_VERB = drink_from
+    Z_HISTORY_HEAD = drink from
+    Z_NOUN '= SUBSTRING(Z_NOUN, 5)
+ELSEIF Z_VERB == "read" && SUBSTRING(Z_NOUN, 0, 5) == "from "
+    Z_NOUN '= SUBSTRING(Z_NOUN, 5)
+ELSEIF Z_VERB == "knock" && (SUBSTRING(Z_NOUN, 0, 3) == "on " || SUBSTRING(Z_NOUN, 0, 3) == "at ")
+    Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+ELSEIF Z_VERB == "listen" && SUBSTRING(Z_NOUN, 0, 3) == "to "
+    Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+ELSEIF Z_VERB == "listen" && SUBSTRING(Z_NOUN, 0, 4) == "for "
+    Z_NOUN '= SUBSTRING(Z_NOUN, 4)
+ELSEIF (Z_VERB == "wind" || Z_VERB == "wake" || Z_VERB == "raise") && SUBSTRING(Z_NOUN, 0, 3) == "up "
+    Z_NOUN '= SUBSTRING(Z_NOUN, 3)
+ENDIF
+; r29: a two-clause SYNTAX-FOUND line has its boundary from the source scan
+; (NC1, PREP2, NC2), whatever preposition the verb uses. The per-verb
+; splitters below remain for multi-instrument grammars and orphan merges.
+Z_GATE_SPLIT = 0
+IF Z_SP_FOUND && Z_SP_NCN == 2 && (Z_SP_PREP2 || Z_SP_ACTION == "V-SGIVE" || Z_SP_ACTION == "V-OVERBOARD" || Z_SP_ACTION == "V-PUSH-TO" || Z_SP_ACTION == "V-READ-PAGE") && Z_OTHER_NOUN == "" && !Z_MULTI_INSTRUMENT_GRAMMAR() && Z_VERB != "spray" && Z_VERB != "apply" && Z_VERB != "sspray"
+    Z_GATE_SPLIT = 1
+    Z_NOUN '= Z_SP_CLAUSE_WORDS(Z_SP_NC1_START, Z_SP_NC1_END)
+    Z_OTHER_NOUN '= Z_CANON_PHRASE(Z_SP_CLAUSE_WORDS(Z_SP_NC2_START, Z_SP_NC2_END))
+    Z_HISTORY_PREP '= Z_PT_PREP_WORD(Z_SP_PREP2)
+    IF Z_SP_ACTION == "V-SGIVE"
+        ; PRE-SGIVE performs GIVE PRSI PRSO: store the clauses reversed.
+        Z_OTHER_NOUN '= Z_SP_CLAUSE_WORDS(Z_SP_NC1_START, Z_SP_NC1_END)
+        Z_NOUN '= Z_SP_CLAUSE_WORDS(Z_SP_NC2_START, Z_SP_NC2_END)
+        Z_HISTORY_PREP = to
+    ENDIF
+    ; r28 keeps FROM as the history/location tag of all TAKE ... FROM forms.
+    SIF Z_VERB == "take"
+        Z_HISTORY_PREP = from
+ENDIF
+; Split only the prepositions belonging to the selected grammar.
+IF Z_GATE_SPLIT
+ELSEIF Z_VERB == "pour"
+    Z_HISTORY_HEAD = pour
+    Z_P = STRFIND(Z_NOUN, " on ")
+    Z_Q = 4
+    IF Z_P >= 0
+        Z_VERB = pour_on
+        Z_HISTORY_PREP = on
+    ELSE
+        Z_VERB = drop
+        Z_P = STRFIND(Z_NOUN, " from ")
+        Z_Q = 6
+        SIF Z_P >= 0
+            Z_HISTORY_PREP = from
+        IF Z_P < 0
+            Z_P = STRFIND(Z_NOUN, " in ")
+            Z_Q = 4
+            SIF Z_P >= 0
+                Z_HISTORY_PREP = in
+        ENDIF
+    ENDIF
+    IF Z_P >= 0
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_Q))
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    ENDIF
+ELSEIF Z_VERB == "spray" || Z_VERB == "apply"
+    CALL Z_SPLIT_ADDITIONAL_PAIR
+    SIF !RESULT
+        RETURN
+ELSEIF Z_VERB == "put"
+    Z_P = STRFIND(Z_NOUN, " in ")
+    Z_Q = 4
+    IF Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " into ")
+        Z_Q = 6
+    ENDIF
+    IF Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " on ")
+        Z_Q = 4
+    ENDIF
+    IF Z_P < 0 && Z_SP_GWIM_I
+        Z_P = STRLENS(Z_NOUN)
+        Z_NOUN '= Z_NOUN + " in " + Z_REPLAY_NAME:Z_SP_GWIM_I
+        Z_Q = 4
+    ELSEIF Z_P < 0
+        IF Z_SP_ORPHAN_TEXT != ""
+            CALL Z_SP_ORPHAN_PRINT
+        ELSEIF !Z_ORDER_ACTOR
+            PRINTL Put it in what?
+        ENDIF
+        Z_HISTORY_PREP = in
+        CALL Z_READ_REPLY
+        SIF Z_ABORT
+            RETURN
+        Z_COMMAND '= Z_COMMAND + " in " + Z_INPUT_REPLY
+        Z_NOUN '= Z_TRIM(Z_NOUN) + " in " + Z_INPUT_REPLY
+        Z_P = STRFIND(Z_NOUN, " in ")
+        Z_Q = 4
+    ENDIF
+    Z_HISTORY_PREP '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 1, Z_Q - 2))
+    Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_Q))
+    Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+ELSEIF Z_VERB == "melt" || Z_VERB == "oil" || Z_VERB == "fill" || Z_VERB == "cut" || Z_VERB == "inflate" || Z_VERB == "dig" || Z_VERB == "attack" || Z_VERB == "unlock" || Z_VERB == "lock" || Z_VERB == "open" || Z_VERB == "break" || Z_VERB == "turn" || Z_VERB == "rub" || Z_VERB == "plug" || Z_VERB == "on" || Z_VERB == "burn" || Z_VERB == "read" || Z_VERB == "ring" || Z_VERB == "stab" || Z_VERB == "brush" || Z_VERB == "pick"
+    Z_P = STRFIND(Z_NOUN, " with ")
+    Z_Q = 6
+    Z_INFER_PREPOSITION = with
+    IF Z_VERB == "turn" && Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " to ")
+        Z_Q = 4
+        Z_INFER_PREPOSITION = to
+        IF Z_P < 0
+            Z_P = STRFIND(Z_NOUN, " for ")
+            Z_Q = 5
+            Z_INFER_PREPOSITION = for
+        ENDIF
+    ENDIF
+    IF Z_P >= 0
+        Z_HISTORY_PREP '= Z_INFER_PREPOSITION
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_Q))
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    ENDIF
+ELSEIF Z_VERB == "untie"
+    Z_P = STRFIND(Z_NOUN, " from ")
+    IF Z_P >= 0
+        Z_HISTORY_PREP = from
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 6))
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    ENDIF
+ELSEIF Z_VERB == "swing" || Z_VERB == "wave"
+    Z_P = STRFIND(Z_NOUN, " at ")
+    IF Z_P >= 0
+        Z_HISTORY_PREP = at
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 4))
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    ENDIF
+ELSEIF Z_VERB == "throw" && (STRFIND(Z_NOUN, " over ") >= 0 || STRFIND(Z_NOUN, " off ") >= 0)
+    ; THROW-OFF is distinct from THROW: no lantern smash or actor-hit action.
+    Z_P = STRFIND(Z_NOUN, " over ")
+    Z_Q = 6
+    Z_HISTORY_PREP = over
+    IF Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " off ")
+        Z_Q = 5
+        Z_HISTORY_PREP = off
+    ENDIF
+    Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_Q))
+    Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    Z_VERB = throw_off
+ELSEIF Z_VERB == "give" || Z_VERB == "throw" || Z_VERB == "tie"
+    Z_P = STRFIND(Z_NOUN, " to ")
+    IF Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " at ")
+    ENDIF
+    IF Z_P >= 0
+        Z_HISTORY_PREP = to
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 4))
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    ELSE
+        ; SGIVE reverses the noun clauses, not the ownership check or action.
+        Z_P = -1
+        ; Only when SYNTAX-CHECK has not already chosen a line (r29).
+        SIF Z_VERB == "give" && !Z_SP_FOUND && Z_SP_ORPHAN_TEXT == ""
+            Z_P = Z_BARE_RECIPIENT_SPLIT(Z_TRIM(Z_NOUN))
+        IF Z_P >= 0
+            Z_HISTORY_PREP = to
+            Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, 0, Z_P))
+            Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 1))
+        ELSE
+            Z_INFER_I = 0
+            IF Z_SP_GWIM_I || Z_SP_ORPHAN_TEXT != ""
+                Z_INFER_I = Z_SP_GWIM_I
+            ELSEIF Z_VERB == "give"
+                CALL Z_GWIM, ZF_ACTOR, ZS_SOG
+                Z_INFER_I = RESULT
+                SIF Z_INFER_I
+                    PRINTFORML (to the %Z_OBJ_NAME:Z_INFER_I%)
+            ENDIF
+            Z_HISTORY_PREP = to
+            SIF Z_SP_IPREP != ""
+                Z_HISTORY_PREP '= Z_SP_IPREP
+            IF Z_INFER_I
+                Z_OTHER_NOUN '= Z_REPLAY_NAME:Z_INFER_I
+            ELSE
+                IF Z_SP_ORPHAN_TEXT != ""
+                    CALL Z_SP_ORPHAN_PRINT
+                ELSEIF !Z_ORDER_ACTOR
+                    PRINTL To whom?
+                ENDIF
+                CALL Z_READ_REPLY
+                SIF Z_ABORT
+                    RETURN
+                Z_OTHER_NOUN '= Z_INPUT_REPLY
+                Z_COMMAND '= Z_COMMAND + " to " + Z_INPUT_REPLY
+            ENDIF
+        ENDIF
+    ENDIF
+ELSEIF Z_VERB == "take"
+    Z_P = STRFIND(Z_NOUN, " from ")
+    Z_Q = 6
+    IF Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " out ")
+        Z_Q = 5
+    ENDIF
+    IF Z_P < 0
+        Z_P = STRFIND(Z_NOUN, " off ")
+        Z_Q = 5
+    ENDIF
+    IF Z_P >= 0
+        Z_HISTORY_PREP = from
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_Q))
+        Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+    ENDIF
+ENDIF
+Z_NOUN '= Z_TRIM(Z_NOUN)
+; Accept ALL FROM container EXCEPT objects, as well as ALL EXCEPT ... FROM ... .
+Z_P = STRFIND(Z_OTHER_NOUN, " except ")
+IF Z_NOUN == "all" && Z_P >= 0
+    Z_NOUN '= "all except " + SUBSTRING(Z_OTHER_NOUN, Z_P + 8)
+    Z_OTHER_NOUN '= SUBSTRING(Z_OTHER_NOUN, 0, Z_P)
+ENDIF
+IF Z_SP_GWIM_I && Z_OTHER_NOUN == ""
+    ; r29: SYNTAX-CHECK's DRIVE2 GWIM already printed its parenthesis.
+    Z_INFER_I = Z_SP_GWIM_I
+    Z_HISTORY_PREP '= Z_SP_IPREP
+    Z_OTHER_NOUN '= Z_REPLAY_NAME:Z_INFER_I
+ENDIF
+IF !Z_SP_FOUND && !(Z_ORDER_ACTOR && Z_INFER_D && Z_VERB == "attack") && Z_OTHER_NOUN == "" && Z_HISTORY_PREP == "" && (Z_VERB == "melt" || Z_VERB == "oil" || Z_VERB == "attack" || Z_VERB == "cut" || Z_VERB == "burn" || Z_VERB == "dig" || Z_VERB == "break" || Z_VERB == "lock" || Z_VERB == "unlock" || Z_VERB == "plug")
+    Z_INFER_I = 0
+    SIF Z_SP_ORPHAN_TEXT == ""
+        CALL Z_INFER_INSTRUMENT
+    SIF Z_SP_ORPHAN_TEXT == ""
+        Z_INFER_I = RESULT
+    Z_HISTORY_PREP = with
+    IF Z_INFER_I
+        IF Z_INFER_I == O_HANDS
+            PRINTL (with your hands)
+        ELSE
+            PRINTFORML (with the %Z_OBJ_NAME:Z_INFER_I%)
+        ENDIF
+        Z_OTHER_NOUN '= Z_REPLAY_NAME:Z_INFER_I
+    ELSE
+        IF Z_SP_ORPHAN_TEXT != ""
+            CALL Z_SP_ORPHAN_PRINT
+        ELSEIF !Z_ORDER_ACTOR
+            PRINTFORML What do you want to %Z_FIRST_WORD(Z_COMMAND)% %Z_ORPHAN_OBJECT_TEXT(Z_NOUN)% with?
+        ENDIF
+        CALL Z_READ_REPLY
+        SIF Z_ABORT
+            RETURN
+        Z_OTHER_NOUN '= Z_INPUT_REPLY
+        Z_COMMAND '= Z_COMMAND + " with " + Z_INPUT_REPLY
+    ENDIF
+ENDIF
+IF Z_SP_ORPHAN_TEXT != "" && Z_SP_ORPHAN_PREP != "" && Z_NOUN != "" && Z_OTHER_NOUN == ""
+    ; r29: DRIVE2 ORPHAN for a verb without an r28 instrument prompt
+    ; (INFLATE ... WITH, SLIDE ... UNDER ...).
+    Z_HISTORY_PREP '= Z_SP_ORPHAN_PREP
+    CALL Z_SP_ORPHAN_PRINT
+    CALL Z_READ_REPLY
+    SIF Z_ABORT
+        RETURN
+    Z_OTHER_NOUN '= Z_INPUT_REPLY
+    Z_COMMAND '= Z_COMMAND + " " + Z_HISTORY_PREP + " " + Z_INPUT_REPLY
+ENDIF
+IF Z_HISTORY_PREP == "with" && Z_OTHER_NOUN == "" && (Z_VERB == "melt" || Z_VERB == "oil" || Z_VERB == "inflate" || Z_VERB == "open" || Z_VERB == "cut" || Z_VERB == "break" || Z_VERB == "brush" || Z_VERB == "pick" || Z_VERB == "lock" || Z_VERB == "unlock" || Z_VERB == "plug")
+    ; These forms do not reach source SYNTAX-CHECK when WITH ends the line.
+    PRINTL That sentence isn't one I recognize.
+    RETURN
+ENDIF
+IF Z_VERB == "throw_off" && Z_OTHER_NOUN == ""
+    ; gparser cannot complete this trailing-preposition clause via orphaning.
+    PRINTL That sentence isn't one I recognize.
+    RETURN
+ENDIF
+IF Z_HISTORY_PREP != "" && Z_OTHER_NOUN == ""
+    IF Z_SP_ORPHAN_TEXT != ""
+        CALL Z_SP_ORPHAN_PRINT
+    ELSEIF !Z_ORDER_ACTOR
+        PRINTFORML What do you want to use %Z_HISTORY_PREP%?
+    ENDIF
+    CALL Z_READ_REPLY
+    SIF Z_ABORT
+        RETURN
+    Z_OTHER_NOUN '= Z_INPUT_REPLY
+    Z_COMMAND '= Z_COMMAND + " " + Z_INPUT_REPLY
+ENDIF
+CALL Z_CHECK_WORDS, Z_COMMAND
+SIF !RESULT
+    RETURN
+IF Z_OTHER_NOUN != ""
+    Z_RESOLVE_ROLE = 2
+    IF Z_MULTI_INSTRUMENT_GRAMMAR()
+        CALL Z_RESOLVE_BRUSH_INSTRUMENT, Z_OTHER_NOUN
+        Z_BRUSH_I_COUNT = RESULT
+    ELSEIF Z_INFER_I
+        RESULT = Z_INFER_I
+    ELSE
+        CALL Z_RESOLVE, Z_OTHER_NOUN, 0
+    ENDIF
+    Z_RESOLVE_ROLE = 0
+    SIF !Z_MULTI_INSTRUMENT_GRAMMAR()
+        Z_IOBJ = RESULT
+    SIF (!Z_IOBJ && Z_BRUSH_I_COUNT < 2) || Z_ABORT
+        RETURN
+ENDIF
+IF Z_NOUN == "all" || SUBSTRING(Z_NOUN, 0, 11) == "all except " || SUBSTRING(Z_NOUN, 0, 4) == "all "
+    IF Z_MULTI_INSTRUMENT_GRAMMAR() || Z_VERB == "pick"
+        PRINTFORM You can't use multiple direct objects with "
+        PRINTS Z_FIRST_WORD(Z_COMMAND)
+        PRINTL ".
+        RETURN
+    ENDIF
+    IF Z_VERB == "examine" || Z_VERB == "inside"
+        CALL Z_PREPARE_EXAMINE_ALL
+        RETURN
+    ENDIF
+    IF Z_VERB != "take" && Z_VERB != "drop" && Z_VERB != "put" && Z_VERB != "give"
+        ; MANY-CHECK: the SYNTAX line has no MANY bit (the verb word as typed).
+        PRINTFORML You can't use multiple direct objects with "%Z_FIRST_WORD(Z_COMMAND)%".
+        RETURN
+    ENDIF
+    Z_ALL = 1
+    IF SUBSTRING(Z_NOUN, 0, 11) == "all except "
+        CALL Z_RESOLVE_LIST, SUBSTRING(Z_NOUN, 11), 1
+        SIF Z_ABORT || !RESULT
+            RETURN
+    ELSEIF SUBSTRING(Z_NOUN, 0, 4) == "all "
+        Z_ALL_FILTER '= Z_TRIM(SUBSTRING(Z_NOUN, 4))
+        ; gparser SNARFEM handles OF as a buzz word following ALL. It
+        ; must not turn "all of board" into a restrictive noun filter.
+        IF Z_ALL_FILTER == "of" || SUBSTRING(Z_ALL_FILTER, 0, 3) == "of "
+            Z_ALL_FILTER =
+        ELSEIF Z_ALL_FILTER == ""
+            PRINTL I couldn't understand that sentence.
+            RETURN
+        ENDIF
+    ENDIF
+    Z_DOBJ = 0
+    Z_VALID = 1
+    RETURN
+ENDIF
+IF Z_INFER_D
+    Z_LIST_COUNT = 1
+    Z_LIST:0 = Z_INFER_D
+    RESULT = 1
+ELSE
+    CALL Z_RESOLVE_LIST, Z_NOUN, 0
+ENDIF
+SIF Z_ABORT || !RESULT
+    RETURN
+IF (Z_LIST_COUNT > 1 || (Z_VERB == "brush" && (STRFIND(Z_NOUN, " and ") >= 0 || STRFIND(Z_NOUN, ",") >= 0))) && !Z_SOURCE_MANY()
+    PRINTFORM You can't use multiple direct objects with "
+    PRINTS Z_FIRST_WORD(Z_COMMAND)
+    PRINTL ".
+    Z_LIST_COUNT = 0
+    RETURN
+ENDIF
+IF Z_MULTI_INSTRUMENT_GRAMMAR() && Z_BRUSH_I_COUNT > 1
+    PRINTFORM You can't use multiple indirect objects with "
+    PRINTS Z_FIRST_WORD(Z_COMMAND)
+    PRINTL ".
+    Z_LIST_COUNT = 0
+    RETURN
+ENDIF
+Z_DOBJ = Z_LIST:0
+IF Z_SOURCE_VERB == "light" && Z_VERB == "on" && Z_IOBJ
+    Z_VERB = burn
+ENDIF
+SIF Z_VERB == "apply"
+    Z_VERB = put
+SIF Z_VERB == "spray" && Z_HISTORY_PREP == "with"
+    Z_VERB = sspray
+Z_VALID = 1
+RETURN
+
+@Z_WORD_MATCH(Z_O, Z_PHRASE, Z_ADJECTIVE_ONLY)
+#FUNCTION
+#DIM DYNAMIC Z_O
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_ADJECTIVE_ONLY
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_NOUN_SEEN
+#DIM DYNAMIC Z_WORDS
+#DIMS DYNAMIC Z_WORD
+#DIMS DYNAMIC Z_KEY
+WHILE Z_PHRASE != ""
+    Z_P = STRFIND(Z_PHRASE, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_PHRASE
+        Z_PHRASE =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_PHRASE, 0, Z_P)
+        Z_PHRASE '= SUBSTRING(Z_PHRASE, Z_P + 1)
+    ENDIF
+    SIF Z_WORD == "the" || Z_WORD == "a" || Z_WORD == "an" || Z_WORD == "of" || Z_WORD == "some"
+        CONTINUE
+    ; SNARFEM ignores every other pure buzz word (IS, HERE, YES ...).
+    SIF Z_PT_INFO(Z_DICTIONARY_KEY(Z_WORD)) == 4 * 65536 + (Z_PT_INFO(Z_DICTIONARY_KEY(Z_WORD)) % 65536)
+        CONTINUE
+    Z_WORD '= Z_DICTIONARY_KEY(Z_WORD)
+    Z_KEY '= "|" + Z_WORD + "|"
+    IF STRFIND(Z_NOUNS:Z_O, Z_KEY) >= 0
+        Z_NOUN_SEEN = 1
+    ELSEIF STRFIND(Z_ADJECTIVES:Z_O, Z_KEY) < 0
+        RETURNF 0
+    ENDIF
+    Z_WORDS += 1
+WEND
+RETURNF Z_WORDS > 0 && (Z_NOUN_SEEN || Z_ADJECTIVE_ONLY)
+
+; r14: source gsyntax.zil SOG(16)/SIR(32)/SC(64)/SH(128).
+; For a selected verb slot, produce its source location bits. Unmapped forms
+; deliberately use 240 (the r14 broad behaviour) and are NOT called complete.
+; Role 1 is direct; role 2 is indirect; role 0 is non-parser/testing use.
+@Z_SYNTAX_LOC_BITS(Z_ROLE)
+#FUNCTION
+#DIM DYNAMIC Z_ROLE
+SIF Z_ROLE != 1 && Z_ROLE != 2
+    RETURNF 240
+IF Z_ROLE == 1
+    SELECTCASE Z_VERB
+    CASE "take"
+        SIF Z_HISTORY_PREP == "from"
+            RETURNF ZS_SC | ZS_SIR
+        RETURNF ZS_SOG | ZS_SIR
+    CASE "drop"
+        SIF Z_SOURCE_VERB == "pour"
+            RETURNF ZS_SH | ZS_SC
+        RETURNF ZS_SH
+    CASE "give", "put", "throw", "throw_off"
+        RETURNF ZS_SH
+    CASE "wave"
+        SIF Z_HISTORY_HEAD == "wave at"
+            RETURNF 240
+        RETURNF ZS_SH | ZS_SC
+    CASE "attack", "stab", "dig", "kick", "move", "raise", "lower", "cross"
+        RETURNF ZS_SOG | ZS_SIR
+    CASE "drink_from"
+        RETURNF ZS_SH | ZS_SC
+    ENDSELECT
+ELSE
+    SELECTCASE Z_VERB
+    CASE "give", "throw"
+        RETURNF ZS_SOG
+    CASE "attack", "stab", "cut", "wave"
+        RETURNF ZS_SH | ZS_SC
+    CASE "on"
+        SIF Z_SOURCE_VERB == "light"
+            RETURNF ZS_SH | ZS_SC
+    ENDSELECT
+ENDIF
+RETURNF 240
+
+@Z_SYNTAX_ROOT_MODE(Z_BITS, Z_IS_PLAYER)
+#FUNCTION
+#DIM DYNAMIC Z_BITS
+#DIM DYNAMIC Z_IS_PLAYER
+#DIM DYNAMIC Z_TOP
+#DIM DYNAMIC Z_BOTTOM
+IF Z_IS_PLAYER
+    Z_TOP = (Z_BITS & ZS_SH) != 0
+    Z_BOTTOM = (Z_BITS & ZS_SC) != 0
+ELSE
+    Z_TOP = (Z_BITS & ZS_SOG) != 0
+    Z_BOTTOM = (Z_BITS & ZS_SIR) != 0
+ENDIF
+SIF Z_TOP && Z_BOTTOM
+    RETURNF 1
+SIF Z_TOP
+    RETURNF 0
+SIF Z_BOTTOM
+    RETURNF 2
+RETURNF -1
+
+@Z_RESOLVE(Z_PHRASE, Z_TOUCH)
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_TOUCH
+#DIM DYNAMIC Z_CAND, 256
+#DIM DYNAMIC Z_COUNT
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_LAST
+#DIM DYNAMIC Z_ORDER, 256
+#DIM DYNAMIC Z_ORDER_COUNT
+#DIM DYNAMIC Z_ORD
+#DIM DYNAMIC Z_FILTER
+#DIMS DYNAMIC Z_REPLY
+$Z_RESOLVE_RETRY
+VARSET Z_CAND
+VARSET Z_ORDER
+Z_COUNT = 0
+Z_LAST = 0
+IF Z_IS_ZNUMBER(Z_PHRASE)
+    ; gparser NUMBER? substitutes INTNUM in place of the lexical number; its
+    ; value is Z_P_NUMBER (Z_NUMBER_VALUE, 42_CommandStream.ERB).
+    RETURN O_INTNUM
+ENDIF
+IF Z_PHRASE == "it" || Z_PHRASE == "them" || Z_PHRASE == "him" || Z_PHRASE == "her"
+    ; ACCESSIBLE? for a pronoun requires touch, not mere transparency.
+    IF Z_IT && Z_PRONOUN_ACCESSIBLE(Z_IT)
+        RETURN Z_IT
+    ENDIF
+    ; Preserve IT as a parser object. TAKE-CHECK can reject it before the
+    ; action; otherwise PERFORM's RFATAL still consumes a clock tick.
+    RETURN O_IT_OBJECT
+ENDIF
+; CLAUSE drops one leading THE/A/AN from a noun clause. SNARFEM: a later A
+; or ONE (before any adjective) sets P-ONE for the rest of the clause; OF
+; after it is skipped. GET-OBJECT with P-ONE takes the first non-empty
+; match list (broad search, else GLOBAL-CHECK) without asking WHICH; with no
+; noun or adjective it reports the missing noun. Z_RESOLVE_LIST applies the
+; table effect for members after the first.
+Z_REPLY '= Z_PHRASE
+Z_P_ONE_LEN = 0
+SIF !Z_RESOLVE_MEMBER
+    Z_P_ONE = 0
+IF !Z_RESOLVE_MEMBER && (Z_FIRST_WORD(Z_REPLY) == "the" || Z_FIRST_WORD(Z_REPLY) == "a" || Z_FIRST_WORD(Z_REPLY) == "an")
+    Z_REPLY '= Z_TRIM(SUBSTRING(Z_REPLY, STRLENS(Z_FIRST_WORD(Z_REPLY))))
+ENDIF
+WHILE Z_FIRST_WORD(Z_REPLY) == "the" || Z_FIRST_WORD(Z_REPLY) == "an" || Z_FIRST_WORD(Z_REPLY) == "a" || Z_FIRST_WORD(Z_REPLY) == "one"
+    IF Z_FIRST_WORD(Z_REPLY) == "a" || Z_FIRST_WORD(Z_REPLY) == "one"
+        Z_P_ONE = 1
+        Z_REPLY '= Z_TRIM(SUBSTRING(Z_REPLY, STRLENS(Z_FIRST_WORD(Z_REPLY))))
+        SIF Z_FIRST_WORD(Z_REPLY) == "of"
+            Z_REPLY '= Z_TRIM(SUBSTRING(Z_REPLY, 2))
+    ELSE
+        Z_REPLY '= Z_TRIM(SUBSTRING(Z_REPLY, STRLENS(Z_FIRST_WORD(Z_REPLY))))
+    ENDIF
+WEND
+IF Z_P_ONE
+    IF Z_REPLY == ""
+        PRINTL There seems to be a noun missing in that sentence!
+        Z_ABORT = 1
+        RETURN 0
+    ENDIF
+    CALL Z_FIND_CANDIDATES, Z_REPLY, 0, 240, Z_TOUCH
+    IF Z_CANDIDATE_COUNT
+        ; A member after the first leaves the table effect to the list.
+        Z_P_ONE_LEN = Z_CANDIDATE_COUNT
+        SIF Z_RESOLVE_MEMBER
+            RETURN Z_CANDIDATES:0
+        IF Z_CANDIDATE_COUNT > 1
+            Z_I = Z_CANDIDATES:(Z_RANDOM(Z_CANDIDATE_COUNT) - 1)
+            PRINTFORML (How about the %Z_OBJ_NAME:Z_I%?)
+            RETURN Z_I
+        ENDIF
+        RETURN Z_CANDIDATES:0
+    ENDIF
+    Z_PHRASE '= Z_REPLY
+ENDIF
+CALL Z_FIND_CANDIDATES, Z_PHRASE, 0, Z_SYNTAX_LOC_BITS(Z_RESOLVE_ROLE), Z_TOUCH
+Z_COUNT = Z_CANDIDATE_COUNT
+Z_ORDER_COUNT = Z_CANDIDATE_COUNT
+FOR Z_ORD, 0, Z_CANDIDATE_COUNT
+    Z_I = Z_CANDIDATES:Z_ORD
+    Z_ORDER:Z_ORD = Z_I
+    Z_CAND:Z_I = 1
+    Z_LAST = Z_I
+NEXT
+IF !Z_COUNT
+    IF !Z_IS_LIT()
+        PRINTL It's too dark to see!
+        RETURN 0
+    ENDIF
+    ; GET-OBJECT returns NOT-HERE in light. It is an action failure, not a
+    ; parser failure. TAKE-CHECK (HAVE) can still reject it before the clock.
+    IF Z_RESOLVE_ROLE == 2
+        Z_NOTHERE_I '= Z_PHRASE
+    ELSE
+        Z_NOTHERE_D '= Z_PHRASE
+    ENDIF
+    RETURN O_NOT_HERE_OBJECT
+ENDIF
+IF Z_COUNT > 1 && Z_ORDER_ACTOR
+    CALL Z_ACTOR_CANT_ORPHAN
+    RETURN 0
+ENDIF
+WHILE Z_COUNT > 1
+    ; General WHICH-PRINT: retain the noun phrase and candidate order.
+    PRINTFORM Which %Z_WITHOUT_ARTICLES(Z_PHRASE)% do you mean, 
+    Z_FILTER = 0
+    FOR Z_ORD, 0, Z_ORDER_COUNT
+        Z_I = Z_ORDER:Z_ORD
+        IF Z_CAND:Z_I
+            IF Z_FILTER == Z_COUNT - 1
+                SIF Z_COUNT > 2
+                    PRINT ,
+                PRINT  or 
+            ELSEIF Z_FILTER
+                PRINT , 
+            ENDIF
+            PRINTFORM the %Z_OBJ_NAME:Z_I%
+            Z_FILTER += 1
+        ENDIF
+    NEXT
+    PRINTL ?
+    ; Original Z-machine emits the next input prompt even while an orphan
+    ; clarification is active. This also preserves command-level transcripts.
+    PRINTL >
+    INPUTS
+    Z_REPLY '= Z_NORMALIZE(Z_INPUT_LINE(RESULTS))
+    CALL Z_REMEMBER_LINE, Z_REPLY
+    WHILE Z_REPLY == "" || Z_FIRST_WORD(Z_REPLY) == "again" || Z_FIRST_WORD(Z_REPLY) == "g"
+        ; PARSER: P-LEN 0, or AGAIN while P-OFLAG: the orphan stays pending.
+        IF Z_REPLY == ""
+            PRINTL I beg your pardon?
+        ELSE
+            PRINTL It's difficult to repeat fragments.
+        ENDIF
+        PRINTL >
+        INPUTS
+        Z_REPLY '= Z_NORMALIZE(Z_INPUT_LINE(RESULTS))
+        CALL Z_REMEMBER_LINE, Z_REPLY
+    WEND
+    ; ORPHAN-MERGE after WHICH-PRINT: a new sentence with the orphan's verb
+    ; (or starting with an adjective) and no noun clause leaves P-ITBL with a
+    ; one-word NC1 holding that first word, so GET-OBJECT finds no noun.
+    CALL Z_SAME_VERB_NO_NOUN, Z_REPLY, Z_FIRST_WORD(Z_COMMAND)
+    IF RESULT
+        PRINTL There seems to be a noun missing in that sentence!
+        Z_ABORT = 1
+        RETURN 0
+    ENDIF
+    ; ORPHAN-MERGE: a first word with the adjective part of speech (even a
+    ; verb such as INFLAT) is merged into the orphaned clause (ACLAUSE-WIN).
+    Z_I = Z_PT_INFO(Z_DICTIONARY_KEY(Z_FIRST_WORD(Z_REPLY)))
+    IF Z_I >= 0 && ((Z_I / 65536) & 32) && ((Z_I / 65536) & 64)
+        Z_PHRASE '= Z_DICTIONARY_KEY(Z_FIRST_WORD(Z_REPLY)) + " " + Z_PHRASE_NOUN(Z_PHRASE)
+        IF Z_RESOLVE_ROLE == 2
+            Z_SP_NC2_START = -1
+        ELSE
+            Z_SP_NC1_START = -1
+        ENDIF
+        GOTO Z_RESOLVE_RETRY
+    ENDIF
+    IF Z_IS_COMMAND_START(Z_REPLY)
+        Z_PENDING '= Z_REPLY
+        Z_REPARSE = 1
+        Z_ABORT = 1
+        RETURN 0
+    ENDIF
+    CALL Z_CHECK_WORDS, Z_REPLY
+    SIF !RESULT
+        RETURN 0
+    ; A noun in the reply replaces the clause. A lone adjective is merged
+    ; with the old noun. Then search again: replies are not restricted to
+    ; the previous two candidates (e.g. BOTTLE may replace BLADE).
+    IF Z_PHRASE_HAS_NOUN(Z_REPLY) || Z_REPLY == "it" || Z_REPLY == "them" || Z_REPLY == "him" || Z_REPLY == "her"
+        Z_PHRASE '= Z_ORPHAN_WORDS(Z_REPLY)
+    ELSE
+        Z_PHRASE '= Z_ORPHAN_WORDS(Z_REPLY) + " " + Z_PHRASE_NOUN(Z_PHRASE)
+    ENDIF
+    ; The merged clause replaces the scanned one (NOT-HERE-PRINT prints it).
+    IF Z_RESOLVE_ROLE == 2
+        Z_SP_NC2_START = -1
+    ELSE
+        Z_SP_NC1_START = -1
+    ENDIF
+    GOTO Z_RESOLVE_RETRY
+
+WEND
+RETURN Z_LAST

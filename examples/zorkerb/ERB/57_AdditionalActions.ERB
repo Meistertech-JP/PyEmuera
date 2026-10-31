@@ -1,0 +1,200 @@
+﻿; Native ERB recovery of gsyntax/gverbs BLOW, SWIM, MELT, OIL, SPRAY, APPLY.
+; All state changes stay inside the usual PERFORM/clock/ownership pipeline.
+; No Python execution hook and no host state injection.
+@Z_ADDITIONAL_GRAMMAR
+#DIMS DYNAMIC Z_PREP
+#DIM DYNAMIC Z_P
+IF Z_VERB == "blow"
+    Z_PREP '= Z_FIRST_WORD(Z_NOUN)
+    IF Z_NOUN == ""
+        ; The first BLOW syntax is OUT, so orphan lookup uses that head.
+        Z_VERB = off
+        Z_HISTORY_HEAD = blow out
+        Z_COMMAND = blow out
+        RETURN 1
+    ENDIF
+    IF Z_PREP != "in" && Z_PREP != "up" && Z_PREP != "out"
+        PRINTL That sentence isn't one I recognize.
+        RETURN -1
+    ENDIF
+    IF (Z_PREP == "in" || Z_PREP == "out") && (STRFIND(Z_NOUN, " with ") >= 0 || (STRLENS(Z_NOUN) >= 5 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 5) == " with"))
+        PRINTL That sentence isn't one I recognize.
+        RETURN -1
+    ENDIF
+    Z_HISTORY_HEAD '= "blow " + Z_PREP
+    Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_PREP)))
+    IF Z_PREP == "in"
+        Z_VERB = breathe
+    ELSEIF Z_PREP == "out"
+        Z_VERB = off
+    ELSEIF STRFIND(Z_NOUN, " with ") >= 0 || (STRLENS(Z_NOUN) >= 5 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 5) == " with")
+        Z_VERB = inflate
+    ELSE
+        Z_VERB = blast_object
+    ENDIF
+ELSEIF Z_VERB == "swim"
+    SIF Z_NOUN == ""
+        RETURN 2
+    Z_PREP '= Z_FIRST_WORD(Z_NOUN)
+    IF Z_PREP != "in" && Z_PREP != "across"
+        PRINTL That sentence isn't one I recognize.
+        RETURN -1
+    ENDIF
+    Z_HISTORY_HEAD '= Z_FIRST_WORD(Z_COMMAND) + " " + Z_PREP
+    Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, STRLENS(Z_PREP)))
+ENDIF
+RETURN 0
+
+; A positive count from this grammar helper selects table-based PRSI
+; resolution and the same MANY-CHECK order used by BRUSH.
+@Z_MULTI_INSTRUMENT_GRAMMAR()
+#FUNCTION
+RETURNF Z_VERB == "brush" || Z_VERB == "melt" || Z_VERB == "oil" || Z_VERB == "spray" || Z_VERB == "apply" || (Z_VERB == "inflate" && Z_SOURCE_VERB == "blow")
+
+@Z_SPLIT_ADDITIONAL_PAIR
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_SKIP
+#DIMS DYNAMIC Z_PREP
+IF (Z_VERB == "spray" && STRFIND(Z_NOUN, " to ") >= 0) || (Z_VERB == "apply" && (STRFIND(Z_NOUN, " in ") >= 0 || STRFIND(Z_NOUN, " on ") >= 0 || STRFIND(Z_NOUN, " with ") >= 0))
+    PRINTL That sentence isn't one I recognize.
+    RETURN 0
+ENDIF
+Z_PREP = to
+SIF Z_VERB == "spray"
+    Z_PREP = on
+Z_P = STRFIND(Z_NOUN, " " + Z_PREP + " ")
+Z_SKIP = STRLENS(Z_PREP) + 2
+IF Z_VERB == "spray" && Z_P < 0
+    Z_P = STRFIND(Z_NOUN, " with ")
+    IF Z_P >= 0
+        Z_PREP = with
+        Z_SKIP = 6
+    ENDIF
+ENDIF
+IF Z_P < 0
+    ; A final preposition is a CLAUSE failure, not an empty orphan slot.
+    IF (STRLENS(Z_NOUN) >= 3 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 3) == " " + Z_PREP) || (Z_VERB == "spray" && STRLENS(Z_NOUN) >= 5 && SUBSTRING(Z_NOUN, STRLENS(Z_NOUN) - 5) == " with")
+        PRINTL That sentence isn't one I recognize.
+        RETURN 0
+    ENDIF
+    Z_HISTORY_PREP '= Z_PREP
+    SIF !Z_ORDER_ACTOR
+        PRINTFORML What do you want to %Z_FIRST_WORD(Z_COMMAND)% %Z_ORPHAN_OBJECT_TEXT(Z_NOUN)% %Z_PREP%?
+    CALL Z_READ_REPLY
+    SIF Z_ABORT
+        RETURN 0
+    Z_OTHER_NOUN '= Z_INPUT_REPLY
+    ; Orphan replies can repeat the pending preposition without adding
+    ; another argument; do not strip an arbitrary first word.
+    SIF SUBSTRING(Z_OTHER_NOUN, 0, STRLENS(Z_PREP) + 1) == Z_PREP + " "
+        Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_OTHER_NOUN, STRLENS(Z_PREP) + 1))
+    Z_COMMAND '= Z_COMMAND + " " + Z_PREP + " " + Z_OTHER_NOUN
+ELSE
+    Z_HISTORY_PREP '= Z_PREP
+    Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + Z_SKIP))
+    Z_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, 0, Z_P))
+ENDIF
+RETURN 1
+
+@Z_SWIM(Z_O)
+#DIM DYNAMIC Z_O
+IF Z_SCOPE:O_GLOBAL_WATER:Z_HERE
+    IF !Z_O
+        ; V-SWIM prints D ,PRSO with PRSO = 0. A V3 interpreter takes object
+        ; 0's property pointer (0) and decodes the header as its short name.
+        ; Byte 1 (Flags 1) is interpreter-set: with 0x20 (as the reference
+        ; dfrotz sets it) the text is "c  xufpIt's pds"; the unmodified story
+        ; byte gives "   xufpIt's pds". The port reproduces the reference
+        ; interpreter's output and spends the turn (see docs/R29_SOURCE_NOTES).
+        PRINTL Swimming isn't usually allowed in the c  xufpIt's pds.
+    ELSEIF Z_O == O_WATER || Z_O == O_GLOBAL_WATER
+        PRINTL Swimming isn't usually allowed in the dungeon.
+    ELSE
+        PRINTFORML Swimming isn't usually allowed in the %Z_OBJ_NAME:Z_O%.
+    ENDIF
+ELSE
+    PRINTL Go jump in a lake!
+ENDIF
+RETURN
+
+; Inserted orphan tokens come from the dictionary table, not the original
+; input buffer. Buffer-printing therefore uses the dictionary spelling.
+@Z_ORPHAN_DICTIONARY_WORDS(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_OUT
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_P
+WHILE Z_S != ""
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_S
+        Z_S =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= Z_TRIM(SUBSTRING(Z_S, Z_P + 1))
+    ENDIF
+    SIF Z_OUT != ""
+        Z_OUT += " "
+    Z_OUT += Z_DICTIONARY_KEY(Z_WORD)
+WEND
+RETURNF Z_OUT
+
+; CLAUSE consumes leading articles, ALL/ONE and OF. A completed noun
+; returns to SYNTAX-CHECK; a live noun list instead encounters the closing
+; quote as CANT-USE. Only this verb-free quantifier clause is handled here.
+@Z_QUANTIFIER_HEAD(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_W
+Z_S '= Z_TRIM(Z_S)
+Z_W '= Z_FIRST_WORD(Z_S)
+IF Z_W == "the" || Z_W == "a" || Z_W == "an"
+    Z_S '= Z_TRIM(SUBSTRING(Z_S, STRLENS(Z_W)))
+    Z_W '= Z_FIRST_WORD(Z_S)
+ENDIF
+RETURNF Z_W == "all" || Z_W == "one" || SUBSTRING(Z_W, 0, 4) == "all," || SUBSTRING(Z_W, 0, 4) == "one,"
+
+@Z_QUOTED_QUANTIFIER_ERROR(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_W
+#DIMS DYNAMIC Z_NEXT_WORD
+#DIM DYNAMIC Z_AND
+#DIM DYNAMIC Z_P
+SIF !Z_QUANTIFIER_HEAD(Z_S)
+    RETURNF ""
+Z_S '= Z_TRIM(REPLACE(Z_S, ",", " , "))
+Z_W '= Z_FIRST_WORD(Z_S)
+SIF Z_W == "the" || Z_W == "a" || Z_W == "an"
+    Z_S '= Z_TRIM(SUBSTRING(Z_S, STRLENS(Z_W)))
+WHILE Z_S != ""
+    ; FIRST_WORD deliberately stops before punctuation. Here a standalone
+    ; comma is a CLAUSE token, so split the space-normalised token stream.
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_W '= Z_S
+        Z_S =
+    ELSE
+        Z_W '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= Z_TRIM(SUBSTRING(Z_S, Z_P + 1))
+    ENDIF
+    Z_NEXT_WORD '= Z_FIRST_WORD(Z_S)
+    IF Z_W == "all" || Z_W == "one"
+        SIF Z_NEXT_WORD == "of"
+            Z_S '= Z_TRIM(SUBSTRING(Z_S, 2))
+    ELSEIF Z_W == "and" || Z_W == ","
+        Z_AND = 1
+    ELSEIF Z_W == "except" || Z_W == "but"
+        RETURNF Z_W
+    ELSEIF Z_PHRASE_HAS_NOUN(Z_W)
+        SIF !Z_AND && Z_NEXT_WORD != "and" && Z_NEXT_WORD != "," && Z_NEXT_WORD != "except" && Z_NEXT_WORD != "but"
+            RETURNF ""
+        Z_AND = 0
+    ELSE
+        ; Unknown words are reported by CHECK-WORDS, not replaced by a
+        ; delimiter error. Other unsupported grammar stays on its old path.
+        RETURNF ""
+    ENDIF
+WEND
+RETURNF "\""

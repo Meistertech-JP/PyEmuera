@@ -1,0 +1,20 @@
+﻿; Source: 1actions.zil FOREST-ROOM?, I-FOREST-ROOM, FOREST-ROOM and TREE-ROOM.
+; A room-entry callback, not a check on each LOOK and not ambient UI randomness.
+; Reuse Z_FOREST_ROOM from 85_EggEnd.ERB (same source predicate).
+@Z_FOREST_ENTER
+SIF Z_FOREST_ROOM()
+    CALL Z_SCHEDULE, ZE_FOREST, -1
+RETURN
+
+@Z_I_FOREST
+IF !Z_FOREST_ROOM()
+    CALL Z_ENABLE, ZE_FOREST, 0
+    RETURN 0
+ENDIF
+; PROB is strictly BASE > RANDOM 100 in this source version (14/100 here).
+; Leaving the region consumes no random number. A heard bird interrupts WAIT.
+IF Z_PROB(15)
+    PRINTL You hear in the distance the chirping of a song bird.
+    RETURN 1
+ENDIF
+RETURN 0

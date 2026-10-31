@@ -1,0 +1,115 @@
+﻿; Source-backed zero-object game verbs. No Python gameplay is used.
+; Each accepted verb consumes the ordinary end-of-command clock.
+@Z_SIMPLE_VERB(Z_V)
+#FUNCTION
+#DIMS DYNAMIC Z_V
+SELECTCASE Z_V
+CASE "advent", "answer", "back", "blast", "bug", "chomp", "curse", "frobozz", "incant", "mumble", "repent", "stay", "win", "wish", "yell", "zork", "skip", "treasure", "script", "unscript", "verify", "record", "unrecord", "commandfile", "walk_around"
+    RETURNF 1
+ENDSELECT
+RETURNF 0
+
+@Z_SIMPLE_ACTION
+CALL Z_SOURCE_VERB_SIMPLE
+SIF RESULT
+    RETURN 1
+SELECTCASE Z_VERB
+CASE "advent"
+    PRINTL A hollow voice says "Fool."
+    RETURN 1
+CASE "answer"
+    PRINTL Nobody seems to be awaiting your answer.
+    ; Both source routines clear P-CONT and QUOTE-FLAG.
+    Z_PENDING =
+    Z_ACTOR_PENDING =
+    Z_ACTOR = 0
+    RETURN 1
+CASE "back"
+    PRINTL Sorry, my memory is poor. Please give a direction.
+    RETURN 1
+CASE "blast"
+    PRINTL You can't blast anything by using words.
+    RETURN 1
+CASE "bug"
+    PRINTL Bug? Not in a flawless program like this! (Cough, cough).
+    RETURN 1
+CASE "chomp"
+    PRINTL Preposterous!
+    RETURN 1
+CASE "curse"
+    PRINTL Such language in a high-class establishment like this!
+    RETURN 1
+CASE "frobozz"
+    PRINTL The FROBOZZ Corporation created, owns, and operates this dungeon.
+    RETURN 1
+CASE "incant"
+    PRINTL The incantation echoes back faintly, but nothing else happens.
+    ; Both source routines clear P-CONT and QUOTE-FLAG.
+    Z_PENDING =
+    Z_ACTOR_PENDING =
+    Z_ACTOR = 0
+    RETURN 1
+CASE "mumble"
+    PRINTL You'll have to speak up if you expect me to hear you!
+    RETURN 1
+CASE "repent"
+    PRINTL It could very well be too late!
+    RETURN 1
+CASE "stay"
+    PRINTL You will be lost without me!
+    RETURN 1
+CASE "win"
+    PRINTL Naturally!
+    RETURN 1
+CASE "wish"
+    PRINTL With luck, your wish will come true.
+    RETURN 1
+CASE "yell"
+    PRINTL Aaaarrrrgggghhhh!
+    RETURN 1
+CASE "zork"
+    PRINTL At your service!
+    RETURN 1
+CASE "skip"
+    CALL Z_SKIP
+    RETURN 1
+ENDSELECT
+RETURN 0
+
+@Z_SKIP
+#DIM DYNAMIC Z_R
+#DIM DYNAMIC Z_M
+; Separate PICK-ONE table, never share order/counter with HELLOS.
+; RAND:1 is deliberately retained to preserve source RNG consumption.
+Z_R = Z_SKIP_COUNT + (Z_RANDOM(4 - Z_SKIP_COUNT) - 1)
+Z_M = Z_SKIP_ORDER:Z_R
+Z_SKIP_ORDER:Z_R = Z_SKIP_ORDER:Z_SKIP_COUNT
+Z_SKIP_ORDER:Z_SKIP_COUNT = Z_M
+Z_SKIP_COUNT = (Z_SKIP_COUNT + 1) % 4
+SELECTCASE Z_M
+CASE 0
+    PRINTL Very good. Now you can go to the second grade.
+CASE 1
+    PRINTL Are you enjoying yourself?
+CASE 2
+    PRINTL Wheeeeeeeeee!!!!!
+CASE 3
+    PRINTL Do you expect me to applaud?
+ENDSELECT
+RETURN
+
+@Z_SKIP_VALIDATE
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_V
+#DIM DYNAMIC Z_SEEN, 4
+SIF Z_SKIP_COUNT < 0 || Z_SKIP_COUNT >= 4
+    RETURN 0
+FOR Z_I, 0, 4
+    Z_V = Z_SKIP_ORDER:Z_I
+    SIF Z_V < 0 || Z_V >= 4
+        RETURN 0
+    SIF Z_SEEN:Z_V
+        RETURN 0
+    Z_SEEN:Z_V = 1
+NEXT
+RETURN 1

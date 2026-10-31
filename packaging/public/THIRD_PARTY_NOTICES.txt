@@ -1,4 +1,4 @@
-﻿PyEmuera - Third-party notices / 第三者の権利表示
+PyEmuera - Third-party notices / 第三者の権利表示
 ==============================================================
 
 PyEmuera is an independently written Python program. It is not Emuera,
@@ -85,9 +85,31 @@ are listed in the source ZIP in SOURCES.md and THIRD_PARTY_NOTICES.md.
 
 6. Not included / 同梱していないもの
 --------------------------------------------------------------
-This package does not include Emuera.exe, any game, game text, or save data.
+This package does not include Emuera.exe or save data. It includes the sample
+game in "sample" and ZORKERB r29 in "ZORKERB" (source ZIP: examples/zorkerb).
 The runtime ZIP contains no Emuera source code. The separate source ZIP
 contains only the five test files listed in section 1. The sample game in the "sample" folder was written for PyEmuera.
-本パッケージには、Emuera 本体・バリアント・バリアントの文章・セーブデータは含まれていません。
+本パッケージには散歩帳と ZORKERB r29 を含みます。Emuera.exe とセーブデータは含みません。
 実行用ZIPにEmueraのソースコードは含まれません。ソース用ZIPには1章の5ファイルを含みます。
 sample フォルダーのサンプルは PyEmuera 用に作成したものです。
+
+
+7. ZORKERB r29 / Zork I
+--------------------------------------------------------------
+ZORKERB is an unofficial ERB port of Zork I. Its adaptation is
+Copyright (c) 2026 Meistertech-JP, MIT License. Original Zork I text and
+source-derived material: Copyright (c) 2025 Microsoft, MIT License,
+https://github.com/historicalsource/zork1 . These licenses are separate
+from PyEmuera’s. Full notices and permission texts accompany the game:
+ZORKERB/LICENSE, ZORKERB/THIRD_PARTY_NOTICES.md, and
+ZORKERB/licenses/ZORK1-MIT.txt (source ZIP: examples/zorkerb/).
+https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29
+Zork and Infocom may be trademarks of their respective owners; use of their
+names identifies the work and does not imply endorsement.
+The retained upstream notice describes the original r29 distribution and its
+PyEmuera 3.0.0b2 pyz; this package uses the single engine at its root instead.
+
+ZORKERB は Zork I の非公式移植です。権利表示とライセンス本文は上記の
+ZORKERB フォルダー内にあります。Zork・Infocom 等は各権利者の商標である
+場合があり、名称の使用は公式の承認を意味しません。原版の権利表示にある
+同梱 PyEmuera 3.0.0b2 は r29 原版の説明で、本配布物のエンジンはルートの1個です。

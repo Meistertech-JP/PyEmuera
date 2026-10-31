@@ -1,0 +1,378 @@
+﻿@Z_LOOK(Z_FORCE)
+#DIM DYNAMIC Z_FORCE
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_LINK_CURSOR1
+IF !Z_IS_LIT()
+    PRINTL It is pitch black. You are likely to be eaten by a grue.
+    RETURN
+ENDIF
+; DESCRIBE-ROOM: D ,HERE, then ", in the <vehicle>" when the winner is in one.
+IF Z_IN_BOAT
+    PRINTFORML %Z_ROOM_NAME:Z_HERE%, in the %Z_OBJ_NAME:O_INFLATED_BOAT%
+ELSE
+    PRINTFORML %Z_ROOM_NAME:Z_HERE%
+ENDIF
+IF Z_FORCE || (Z_VERBOSE != 0 && (!Z_VISITED:Z_HERE || Z_VERBOSE == 2))
+    CALL Z_DESCRIBE_ROOM
+ENDIF
+Z_VISITED:Z_HERE = 1
+; DESCRIBE-ROOM clears TOUCHBIT again for MAZEBIT rooms.
+SIF Z_ROOM_MAZE:Z_HERE
+    Z_VISITED:Z_HERE = 0
+SIF !Z_FORCE && Z_VERBOSE == 0
+    RETURN
+; DESCRIBE-OBJECTS: PRINT-CONT of the room at level -1.
+SIF Z_FIRST_CHILD(Z_HERE)
+    CALL Z_PRINT_CONT, Z_HERE, -1
+RETURN
+
+@Z_OBJECT_DESCFCN(Z_O)
+#DIM DYNAMIC Z_O
+; Original Zork I BAT has DESCFCN BAT-D. Room descriptions do not own
+; the bat paragraph; object order remains governed by Z_FIRST/Z_NEXT.
+IF Z_O == O_BAT
+    CALL Z_BAT_DESCRIPTION
+    RETURN 1
+ENDIF
+RETURN 0
+
+; V-INVENTORY
+@Z_INVENTORY
+IF Z_FIRST_CHILD(Z_PLAYER)
+    CALL Z_PRINT_CONT, Z_PLAYER, 0
+ELSE
+    PRINTL You are empty-handed.
+ENDIF
+RETURN
+
+@Z_DESCRIBE_ROOM
+CALL Z_DESCRIBE_REGIONS
+SIF RESULT
+    RETURN
+CALL Z_DESCRIBE_EAST
+SIF RESULT
+    RETURN
+SELECTCASE Z_HERE
+CASE R_WEST_OF_HOUSE
+    PRINTL You are standing in an open field west of a white house, with a boarded
+    PRINT front door.
+    SIF Z_WON
+        PRINT  A secret path leads southwest into the forest.
+    PRINTL
+CASE R_EAST_OF_HOUSE
+    PRINTL You are behind the white house. A path leads into the forest
+    PRINTL to the east. In one corner of the house there is a small window
+    PRINT which is 
+    IF Z_HAS(O_KITCHEN_WINDOW, ZF_OPEN)
+        PRINTL open.
+    ELSE
+        PRINTL slightly ajar.
+    ENDIF
+CASE R_KITCHEN
+    PRINTL You are in the kitchen of the white house. A table seems to
+    PRINTL have been used recently for the preparation of food. A passage
+    PRINTL leads to the west and a dark staircase can be seen leading
+    PRINTL upward. A dark chimney leads down and to the east is a small
+    PRINT window which is 
+    IF Z_HAS(O_KITCHEN_WINDOW, ZF_OPEN)
+        PRINTL open.
+    ELSE
+        PRINTL slightly ajar.
+    ENDIF
+CASE R_LIVING_ROOM
+    PRINT You are in the living room. There is a doorway to the east
+    IF Z_MAGIC_FLAG
+        PRINTL . To the
+        PRINTL west is a cyclops-shaped opening in an old wooden door, above which is
+        PRINT some strange gothic lettering, 
+    ELSE
+        PRINTL , a wooden
+        PRINTL door with strange gothic lettering to the west, which appears to be
+        PRINT nailed shut, 
+    ENDIF
+    PRINT a trophy case, 
+    IF Z_RUG_MOVED && Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+        PRINTL and a rug lying beside an open trap door.
+    ELSEIF Z_RUG_MOVED
+        PRINTL and a closed trap door at your feet.
+    ELSEIF Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+        PRINTL and an open trap door at your feet.
+    ELSE
+        PRINTL and a large oriental rug in the center of the room.
+    ENDIF
+CASE R_GRATING_CLEARING
+    PRINTL You are in a clearing, with a forest surrounding you on all sides. A
+    PRINTL path leads south.
+    IF Z_HAS(O_GRATE, ZF_OPEN)
+        PRINTL There is an open grating, descending into darkness.
+    ELSEIF Z_GRATE_REVEALED
+        PRINTL There is a grating securely fastened into the ground.
+    ENDIF
+CASE R_GRATING_ROOM
+    PRINTL You are in a small room near the maze. There are twisty passages
+    PRINTL in the immediate vicinity.
+    IF Z_HAS(O_GRATE, ZF_OPEN)
+        PRINTL Above you is an open grating with sunlight pouring in.
+    ELSEIF Z_GRATE_UNLOCKED
+        PRINTL Above you is a grating.
+    ELSE
+        PRINTL Above you is a grating locked with a skull-and-crossbones lock.
+    ENDIF
+CASE R_CYCLOPS_ROOM
+    PRINTL This room has an exit on the northwest, and a staircase leading up.
+    IF Z_MAGIC_FLAG
+        PRINTL The east wall, previously solid, now has a cyclops-sized opening in it.
+    ELSEIF Z_CYCLOPS_SLEEP
+        PRINTL The cyclops is sleeping blissfully at the foot of the stairs.
+    ELSEIF Z_CYCLOPS_HUNGER == 0
+        PRINTL A cyclops, who looks prepared to eat horses (much less mere
+        PRINTL adventurers), blocks the staircase. From his state of health, and
+        PRINTL the bloodstains on the walls, you gather that he is not very
+        PRINTL friendly, though he likes people.
+    ELSEIF Z_CYCLOPS_HUNGER > 0
+        PRINTL The cyclops is standing in the corner, eyeing you closely. I don't
+        PRINTL think he likes you very much. He looks extremely hungry, even for a
+        PRINTL cyclops.
+    ELSE
+        PRINTL The cyclops, having eaten the hot peppers, appears to be gasping.
+        PRINTL His enflamed tongue protrudes from his man-sized mouth.
+    ENDIF
+CASE R_UP_A_TREE
+    PRINTL You are about 10 feet above the ground nestled among some large
+    PRINTL branches. The nearest branch above you is above your reach.
+    ; TREE-ROOM M-LOOK: PATH with at least two children
+    IF Z_FIRST_CHILD(R_PATH) && Z_NEXT:(Z_FIRST_CHILD(R_PATH))
+        PRINT On the ground below you can see:  
+        CALL Z_PRINT_CONTENTS, R_PATH
+        PRINTL .
+    ENDIF
+CASEELSE
+    PRINTVL Z_ROOM_DESC:Z_HERE
+ENDSELECT
+RETURN
+
+; The SCORE verb: DEAD-FUNCTION answers it while dead.
+@Z_SCORE
+IF Z_DEAD
+    PRINTL You're dead! How can you think of your score?
+    RETURN
+ENDIF
+CALL Z_V_SCORE
+RETURN
+
+; V-SCORE itself, also called directly by FINISH, V-QUIT and V-RESTART.
+@Z_V_SCORE
+#DIM DYNAMIC Z_S
+Z_S = Z_TOTAL_SCORE()
+PRINTFORM Your score is {Z_S} (total of 350 points), in {Z_MOVES}
+IF Z_MOVES == 1
+    PRINTL  move.
+ELSE
+    PRINTL  moves.
+ENDIF
+PRINT This gives you the rank of 
+IF Z_S == 350
+    PRINT Master Adventurer
+ELSEIF Z_S > 330
+    PRINT Wizard
+ELSEIF Z_S > 300
+    PRINT Master
+ELSEIF Z_S > 200
+    PRINT Adventurer
+ELSEIF Z_S > 100
+    PRINT Junior Adventurer
+ELSEIF Z_S > 50
+    PRINT Novice Adventurer
+ELSEIF Z_S > 25
+    PRINT Amateur Adventurer
+ELSE
+    PRINT Beginner
+ENDIF
+PRINTL .
+RETURN
+
+@Z_PORT_STATE
+#DIM DYNAMIC Z_I
+; Read-only development observation. This command does not consume a turn.
+PRINTFORML @@STATE|{Z_HERE}|{Z_MOVES}|{Z_TOTAL_SCORE()}|{Z_BASE_SCORE}|{Z_IT}|{Z_RUG_MOVED}|{Z_GRATE_REVEALED}|{Z_LAMP_TICKS}|{Z_VERBOSE}
+FOR Z_I, 1, Z_OBJECT_COUNT + 1
+    PRINTFORML @@OBJ|{Z_I}|{Z_PARENT:Z_I}|{Z_FLAGS:Z_I}|{Z_TOUCHED:Z_I}|{Z_VALUE_AWARDED:Z_I}
+NEXT
+PRINTFORML @@EXT|{Z_TROLL_STRENGTH}|{Z_TROLL_PASS}|{Z_TROLL_FIGHT}|{Z_TROLL_STAGGER}|{Z_TROLL_WAKE}|{Z_HERO_WOUND}|{Z_HERO_STAGGER}|{Z_CURE_TIMER}|{Z_LOAD_LIMIT}|{Z_GRATE_UNLOCKED}|{Z_CYCLOPS_HUNGER}|{Z_CYCLOPS_SLEEP}|{Z_MAGIC_FLAG}|{Z_GAME_OVER}|{Z_SWORD_GLOW}|{Z_CYCLOPS_ACTIVE}
+PRINTFORML @@EAST|{Z_GATE_ENABLED}|{Z_GATES_OPEN}|{Z_LOW_TIDE}|{Z_DAM_TIMER}|{Z_WATER_LEVEL}|{Z_MAINT_LIGHT}|{Z_LOUD_SOLVED}|{Z_DOME_TIED}|{Z_MIRROR_BROKEN}|{Z_MATCH_COUNT}|{Z_MATCH_TIMER}|{Z_CANDLE_TICKS}|{Z_CANDLE_ACTIVE}|{Z_EXORCISM_BELL}|{Z_EXORCISM_CANDLES}|{Z_XB_TIMER}|{Z_XC_TIMER}|{Z_HOTBELL_TIMER}|{Z_LLD_OPEN}
+PRINTFORML @@REGION|{Z_IN_BOAT}|{Z_RIVER_TIMER}|{Z_RAINBOW}|{Z_BUOY_HINT}|{Z_BEACH_DIG}|{Z_CAGE_TOP}|{Z_SHAFT_SCORED}|{Z_BAT_COUNT}
+PRINTFORML @@BAT|{Z_BAT_ORDER:0}|{Z_BAT_ORDER:1}|{Z_BAT_ORDER:2}|{Z_BAT_ORDER:3}|{Z_BAT_ORDER:4}|{Z_BAT_ORDER:5}|{Z_BAT_ORDER:6}|{Z_BAT_ORDER:7}
+PRINTFORML @@LATE|{Z_THIEF_STRENGTH}|{Z_THIEF_ACTIVE}|{Z_THIEF_HERE}|{Z_THIEF_FIGHT}|{Z_THIEF_STAGGER}|{Z_THIEF_WAKE}|{Z_THIEF_ENGROSSED}|{Z_EGG_SOLVED}|{Z_EGG_ATTEMPT}|{Z_SING_SONG}|{Z_DEATHS}|{Z_DEAD}|{Z_WON}|{Z_FINISHED}|{Z_LAMP_ENABLED}|{Z_SWORD_ENABLED}
+PRINTFORML @@SCORECACHE|{Z_CASE_SCORE}|{Z_CASE_TOTAL()}
+PRINTFORML @@CONVERSATION|{Z_ACTOR}|{Z_HELLO_COUNT}|{Z_HELLO_ORDER:0}|{Z_HELLO_ORDER:1}|{Z_HELLO_ORDER:2}|{Z_HELLO_ORDER:3}
+PRINTFORML @@HOHUM|{Z_HOHUM_COUNT}|{Z_HOHUM_ORDER:0}|{Z_HOHUM_ORDER:1}|{Z_HOHUM_ORDER:2}
+PRINTFORML @@SKIP|{Z_SKIP_COUNT}|{Z_SKIP_ORDER:0}|{Z_SKIP_ORDER:1}|{Z_SKIP_ORDER:2}|{Z_SKIP_ORDER:3}
+FOR Z_I, 1, Z_OBJECT_COUNT + 1
+    PRINTFORML @@TVALUE|{Z_I}|{Z_CURRENT_TVALUE:Z_I}
+NEXT
+PRINTFORML @@CLOCK|{Z_Q_FIRST}|{Z_Q_DEMONS}|{Z_CLOCK_WAIT}|{Z_LAMP_STAGE}|{Z_CANDLE_STAGE}
+FOR LOCAL, Z_Q_FIRST, 30
+    PRINTFORML @@EVENT|{LOCAL}|{Z_Q_ROUTINE:LOCAL}|{Z_Q_ENABLED:LOCAL}|{Z_Q_TICK:LOCAL}
+NEXT
+FOR Z_I, 1, Z_OBJECT_COUNT + 1
+    PRINTFORML @@LINK|{Z_I}|{Z_NEXT:Z_I}
+NEXT
+FOR Z_I, 0, 513
+    SIF Z_FIRST:Z_I
+        PRINTFORML @@HEAD|{Z_I}|{Z_FIRST:Z_I}
+NEXT
+PRINTL @@END
+
+RETURN
+
+; ---------------------------------------------------------------------------
+; r29: gverbs.zil PRINT-CONT, FIRSTER, DESCRIBE-OBJECT and SEE-INSIDE?,
+; transcribed branch for branch (including the commented-out 1ST? update that
+; makes a level-0 "There is a ... here." follow an FDESC-described sibling).
+; INVISIBLE is ZF_HIDDEN, TOUCHBIT is Z_TOUCHED, the player is Z_PLAYER and is
+; never a child; a vehicle the player is in is the inflated boat (Z_IN_BOAT).
+
+@Z_SEE_INSIDE(Z_O)
+#FUNCTION
+#DIM DYNAMIC Z_O
+RETURNF !Z_HAS(Z_O, ZF_HIDDEN) && (Z_HAS(Z_O, ZF_TRANSPARENT) || Z_HAS(Z_O, ZF_OPEN))
+
+@Z_INDENT(Z_LEVEL)
+#DIM DYNAMIC Z_LEVEL
+#DIM DYNAMIC Z_I
+FOR Z_I, 0, Z_LEVEL
+    PRINT   
+NEXT
+RETURN
+
+@Z_PRINT_CONT(Z_OBJ, Z_LEVEL)
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_LEVEL
+#DIM DYNAMIC Z_Y
+#DIM DYNAMIC Z_AV
+#DIM DYNAMIC Z_1ST
+#DIM DYNAMIC Z_SHIT
+#DIM DYNAMIC Z_PV
+#DIM DYNAMIC Z_INV
+SIF !Z_FIRST_CHILD(Z_OBJ)
+    RETURN 1
+Z_AV = 0
+SIF Z_IN_BOAT
+    Z_AV = O_INFLATED_BOAT
+Z_1ST = 1
+Z_SHIT = 1
+IF Z_OBJ == Z_PLAYER || (Z_OBJ > 0 && Z_OBJ < 256 && Z_PARENT:Z_OBJ == Z_PLAYER)
+    Z_INV = 1
+ELSE
+    Z_Y = Z_FIRST_CHILD(Z_OBJ)
+    WHILE Z_Y
+        IF Z_Y == Z_AV
+            Z_PV = 1
+        ELSEIF !Z_HAS(Z_Y, ZF_HIDDEN) && !Z_TOUCHED:Z_Y && Z_FDESC:Z_Y != ""
+            IF !Z_HAS(Z_Y, ZF_NDESC)
+                PRINTVL Z_FDESC:Z_Y
+                Z_SHIT = 0
+            ENDIF
+            IF Z_SEE_INSIDE(Z_Y) && Z_Y != O_BAT && Z_FIRST_CHILD(Z_Y)
+                CALL Z_PRINT_CONT, Z_Y, 0
+                SIF RESULT
+                    Z_1ST = 0
+            ENDIF
+        ENDIF
+        Z_Y = Z_NEXT:Z_Y
+    WEND
+ENDIF
+Z_Y = Z_FIRST_CHILD(Z_OBJ)
+WHILE Z_Y
+    IF Z_Y == Z_AV
+    ELSEIF !Z_HAS(Z_Y, ZF_HIDDEN) && (Z_INV || Z_TOUCHED:Z_Y || Z_FDESC:Z_Y == "")
+        IF !Z_HAS(Z_Y, ZF_NDESC)
+            IF Z_1ST
+                CALL Z_FIRSTER, Z_OBJ, Z_LEVEL
+                SIF RESULT && Z_LEVEL < 0
+                    Z_LEVEL = 0
+                Z_LEVEL += 1
+                Z_1ST = 0
+            ENDIF
+            SIF Z_LEVEL < 0
+                Z_LEVEL = 0
+            CALL Z_DESCRIBE_OBJECT, Z_Y, Z_LEVEL
+        ELSEIF Z_FIRST_CHILD(Z_Y) && Z_SEE_INSIDE(Z_Y)
+            Z_LEVEL += 1
+            CALL Z_PRINT_CONT, Z_Y, Z_LEVEL
+            Z_LEVEL -= 1
+        ENDIF
+    ENDIF
+    Z_Y = Z_NEXT:Z_Y
+WEND
+IF Z_PV && Z_AV && Z_FIRST_CHILD(Z_AV)
+    Z_LEVEL += 1
+    CALL Z_PRINT_CONT, Z_AV, Z_LEVEL
+ENDIF
+SIF Z_1ST && Z_SHIT
+    RETURN 0
+RETURN 1
+
+; FIRSTER: the heading; returns whether one was printed (TELL is true).
+@Z_FIRSTER(Z_OBJ, Z_LEVEL)
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_LEVEL
+IF Z_OBJ == O_TROPHY_CASE
+    PRINTL Your collection of treasures consists of:
+    RETURN 1
+ELSEIF Z_OBJ == Z_PLAYER
+    PRINTL You are carrying:
+    RETURN 1
+ELSEIF Z_OBJ > 0 && Z_OBJ < 256
+    SIF Z_LEVEL > 0
+        CALL Z_INDENT, Z_LEVEL
+    IF Z_HAS(Z_OBJ, ZF_SURFACE)
+        PRINTFORML Sitting on the %Z_OBJ_NAME:Z_OBJ% is: 
+    ELSEIF Z_HAS(Z_OBJ, ZF_ACTOR)
+        PRINTFORML The %Z_OBJ_NAME:Z_OBJ% is holding: 
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_OBJ% contains:
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_DESCRIBE_OBJECT(Z_OBJ, Z_LEVEL)
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_LEVEL
+IF Z_LEVEL == 0
+    ; DESCFCN BAT-D and the LDESC that 1actions.zil rewrites with PUTP.
+    CALL Z_OBJECT_DESCFCN, Z_OBJ
+    SIF RESULT
+        RETURN
+    IF Z_OBJ == O_TROLL
+        CALL Z_TROLL_DESCRIPTION
+    ELSEIF Z_OBJ == O_THIEF
+        CALL Z_THIEF_DESCRIPTION
+    ELSE
+        IF !Z_TOUCHED:Z_OBJ && Z_FDESC:Z_OBJ != ""
+            PRINTV Z_FDESC:Z_OBJ
+        ELSEIF Z_OBJ == O_PAINTING && Z_CURRENT_TVALUE:O_PAINTING == 0
+            PRINT There is a worthless piece of canvas here.
+        ELSEIF Z_LDESC:Z_OBJ != ""
+            PRINTV Z_LDESC:Z_OBJ
+        ELSE
+            PRINTFORM There is a %Z_OBJ_NAME:Z_OBJ% here
+            SIF Z_HAS(Z_OBJ, ZF_ON)
+                PRINT  (providing light)
+            PRINT .
+        ENDIF
+        SIF Z_IN_BOAT
+            PRINTFORM  (outside the %Z_OBJ_NAME:O_INFLATED_BOAT%)
+        PRINTL
+    ENDIF
+ELSE
+    CALL Z_INDENT, Z_LEVEL
+    PRINTFORM A %Z_OBJ_NAME:Z_OBJ%
+    SIF Z_HAS(Z_OBJ, ZF_ON)
+        PRINT  (providing light)
+    PRINTL
+ENDIF
+SIF Z_SEE_INSIDE(Z_OBJ) && Z_FIRST_CHILD(Z_OBJ)
+    CALL Z_PRINT_CONT, Z_OBJ, Z_LEVEL
+RETURN

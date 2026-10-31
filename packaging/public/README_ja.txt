@@ -1,6 +1,6 @@
 ==============================================================
- PyEmuera 3.0.0 Beta 2（ぱみゅーら）
- 技術バージョン 3.0.0b2
+ PyEmuera 3.0.0 Beta 3（ぱみゅーら）
+ 技術バージョン 3.0.0b3
 ==============================================================
 
 PyEmuera は、Emuera 用のバリアント（ERB・CSV で作られたゲーム）を
@@ -62,7 +62,7 @@ PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアン�
 ■ 動作を確認したバリアント
 
   開発の過程で、次のバリアントで起動・進行・保存・読み込みなどを確認しています
-  （確認した版は項目ごとに異なります。バリアント本体は同梱していません）。
+  （確認した版は項目ごとに異なります。以下のバリアント本体は同梱していません）。
 
   ・東方触手宮 Ver1.18.2修正版
       Windows 実機で、新規開始から17日目の脱出エンディングまで到達し、
@@ -90,6 +90,7 @@ PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアン�
   Check_PyEmuera.bat      バリアントを始めずに、読み込めるかを確認する
   Diagnose_PyEmuera.bat   不具合報告用の記録を取りながら起動する
   sample\                 動作確認用のサンプルバリアント（独自作成・非成人向け）
+  ZORKERB\               Zork I の非公式 ERB 移植 ZORKERB r29
   README_ja.txt           この文書
   HOW_TO_USE_ja.txt       使い方ガイド
   KNOWN_ISSUES_ja.txt     既知の制限
@@ -99,6 +100,15 @@ PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアン�
   licenses\               第三者のライセンス文書
   SHA256SUMS.txt          同梱ファイルのチェックサム（SHA-256）
 
+
+■ ZORKERB を遊ぶ
+
+  ZORKERB は1970年代の大型計算機で生まれた Zork を起源とする Zork I の
+  ERB 移植です。独立プロジェクトは I・II・III の移植を目指し、r29 は I に対応します。
+  入力は英語です。Z-machine や Frotz は必要ありません。
+  Windows では ZORKERB フォルダーを Start_PyEmuera.bat にドラッグ＆ドロップします。
+  コマンドでは「python PyEmuera.pyz ZORKERB」（Linux 等では python3）を使います。
+  https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29
 
 ■ バリアントのファイルとセーブデータ
 
@@ -124,4 +134,6 @@ PyEmuera は Emuera の公式版ではなく、Emuera の作者やバリアン�
   5点（無改変）含まれ、それらは Emuera のライセンスに従います。
   詳しくは THIRD_PARTY_NOTICES.txt と licenses フォルダーを見てください。
 
-  バリアント本体、Emuera 本体（Emuera.exe）は含んでいません。
+  ZORKERB は別途 MIT License に従い、Zork I の文章等には Microsoft の MIT License が
+  適用されます。ZORKERB/LICENSE、ZORKERB/THIRD_PARTY_NOTICES.md、
+  ZORKERB/licenses を参照してください。Emuera.exe は含みません。

@@ -1,0 +1,81 @@
+﻿; gverbs V-LEAP/PICK-ONE(JUMPLOSS), 1dungeon CANYON-VIEW-F.
+; The DOWN property TYPE matters: blocked functional exits are not NEXIT.
+; Conditional properties in this source are KITCHEN(FALSE), DOME(DOME-FLAG),
+; and SOUTH-TEMPLE(COFFIN-CURE). Do not infer lethality from printed exits.
+@Z_LEAP(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_UNSAFE
+IF Z_O
+    IF Z_PARENT:Z_O == Z_HERE
+        IF Z_HAS(Z_O, ZF_ACTOR)
+            PRINTFORML The %Z_OBJ_NAME:Z_O% is too big to jump over.
+        ELSE
+            CALL Z_SKIP
+        ENDIF
+    ELSE
+        PRINTL That would be a good trick.
+    ENDIF
+    RETURN
+ENDIF
+IF Z_HERE == R_CANYON_VIEW
+    PRINTL Nice view, lousy place to jump.
+    CALL Z_FATAL_BOUNDARY
+    RETURN
+ENDIF
+SELECTCASE Z_HERE
+CASE R_KITCHEN, R_EAST_OF_CHASM, R_CHASM_ROOM, R_RESERVOIR, R_ARAGAIN_FALLS, R_SHAFT_ROOM
+    Z_UNSAFE = 1
+CASE R_DOME_ROOM
+    Z_UNSAFE = !Z_DOME_TIED
+CASE R_SOUTH_TEMPLE
+    ; The room's M-BEG action computes COFFIN-CURE from direct ownership.
+    Z_UNSAFE = Z_PARENT:O_COFFIN == Z_PLAYER
+ENDSELECT
+IF Z_UNSAFE
+    PRINTL This was not a very safe place to try jumping.
+    CALL Z_JUMP_LOSS
+    CALL Z_FATAL_BOUNDARY
+ELSEIF Z_HERE == R_UP_A_TREE
+    PRINTL In a feat of unaccustomed daring, you manage to land on your feet without
+    PRINTL killing yourself.
+    PRINTL
+    CALL Z_WALK, 9
+ELSE
+    CALL Z_SKIP
+ENDIF
+RETURN
+
+@Z_JUMP_LOSS
+#DIM DYNAMIC Z_R
+#DIM DYNAMIC Z_M
+; Keep a separate saved permutation and the final RAND:1, as PICK-ONE does.
+Z_R = Z_JUMP_COUNT + (Z_RANDOM(3 - Z_JUMP_COUNT) - 1)
+Z_M = Z_JUMP_ORDER:Z_R
+Z_JUMP_ORDER:Z_R = Z_JUMP_ORDER:Z_JUMP_COUNT
+Z_JUMP_ORDER:Z_JUMP_COUNT = Z_M
+Z_JUMP_COUNT = (Z_JUMP_COUNT + 1) % 3
+SELECTCASE Z_M
+CASE 0
+    PRINTL You should have looked before you leaped.
+CASE 1
+    PRINTL In the movies, your life would be passing before your eyes.
+CASE 2
+    PRINTL Geronimo...
+ENDSELECT
+RETURN
+
+@Z_JUMP_VALIDATE
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_LEAP_ENTRY
+#DIM DYNAMIC Z_MASK
+SIF Z_JUMP_COUNT < 0 || Z_JUMP_COUNT >= 3
+    RETURN 0
+FOR Z_I, 0, 3
+    Z_LEAP_ENTRY = Z_JUMP_ORDER:Z_I
+    SIF Z_LEAP_ENTRY < 0 || Z_LEAP_ENTRY >= 3
+        RETURN 0
+    SIF Z_MASK & (1 << Z_LEAP_ENTRY)
+        RETURN 0
+    Z_MASK |= 1 << Z_LEAP_ENTRY
+NEXT
+RETURN Z_MASK == 7

@@ -1,0 +1,73 @@
+﻿; V3 dictionary words have SIX Z-characters, not six source characters.
+; ASCII A0 letters use one; A2 punctuation two; a ZSCII escape uses four.
+; A dangling final A2 shift (5) is indistinguishable from padding. An incomplete
+; escape is kept as a nonmatching marker, never collapsed to a valid word.
+@Z_DICTIONARY_KEY(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_C
+#DIMS DYNAMIC Z_OUT
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_USED
+#DIM DYNAMIC Z_COST
+FOR Z_I, 0, STRLENS(Z_S)
+    SIF Z_USED >= 6
+        BREAK
+    Z_C '= SUBSTRING(Z_S, Z_I, 1)
+    IF STRFIND("abcdefghijklmnopqrstuvwxyz", Z_C) >= 0
+        Z_COST = 1
+    ELSEIF STRFIND("0123456789.,!?_#'\"/\\-:()", Z_C) >= 0
+        Z_COST = 2
+    ELSE
+        Z_COST = 4
+    ENDIF
+    IF Z_USED + Z_COST > 6
+        SIF Z_USED == 5
+            BREAK
+        RETURNF Z_OUT + Z_C
+    ENDIF
+    Z_OUT += Z_C
+    Z_USED += Z_COST
+NEXT
+RETURNF Z_OUT
+
+; A second verb in a noun clause is CANT-USE, not an absent scenery noun.
+; Dual-role dictionary words keep their noun meaning in this position.
+@Z_CHECK_NOUN_VERBS(Z_PHRASE)
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_I
+#DIMS DYNAMIC Z_WORD
+#DIMS DYNAMIC Z_C
+FOR Z_I, 0, STRLENS(Z_PHRASE) + 1
+    Z_C '= SUBSTRING(Z_PHRASE, Z_I, 1)
+    IF Z_C == " " || Z_C == "," || Z_C == ""
+        IF Z_WORD != ""
+            IF Z_VERB_ID(Z_WORD) != "" && !Z_WORD_IS_NOMINAL(Z_WORD) && STRFIND("|in|on|at|out|off|up|down|from|to|with|under|over|about|for|", "|" + Z_WORD + "|") < 0
+                IF Z_AFTER_SAY
+                    PRINTL Nothing happens.
+                ELSE
+                    PRINTFORML You used the word "%Z_WORD%" in a way that I don't understand.
+                ENDIF
+                RETURN 0
+            ENDIF
+            Z_WORD =
+        ENDIF
+    ELSE
+        Z_WORD += Z_C
+    ENDIF
+NEXT
+RETURN 1
+
+; The ordinary noun-only sentence reaches SYNTAX-CHECK with P-VERB=0.
+; OF is deliberately not a buzz word (gparser CANT-USE).
+@Z_NO_VERB_INPUT
+IF Z_FIRST_WORD(Z_COMMAND) == "of" || (Z_WORD_IS_NOMINAL(Z_FIRST_WORD(Z_COMMAND)) && !Z_PHRASE_HAS_NOUN(Z_FIRST_WORD(Z_COMMAND)))
+    IF Z_AFTER_SAY
+        PRINTL Nothing happens.
+    ELSE
+        PRINTFORML You used the word "%Z_FIRST_WORD(Z_COMMAND)%" in a way that I don't understand.
+    ENDIF
+ELSE
+    PRINTL There was no verb in that sentence!
+ENDIF
+RETURN

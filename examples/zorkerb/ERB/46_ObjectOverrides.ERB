@@ -1,0 +1,330 @@
+﻿; Source-specific ACTIONs must run before generic verb fallbacks.
+; Source pin: historicalsource/zork1 97b7b3d, 1actions.zil / gverbs.zil.
+; These routines return handled/not-handled, and never INPUT, BEGIN or LOADDATA.
+@Z_INDIRECT_OVERRIDES(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+SIF !Z_TARGET
+    RETURN 0
+IF Z_TARGET == O_PSEUDO_OBJECT
+    CALL Z_PSEUDO_DISPATCH, Z_O, Z_TARGET
+    SIF RESULT
+        RETURN 1
+ENDIF
+IF Z_VERB == "oil" && Z_TARGET == O_PUTTY
+    PRINTL The all-purpose gunk isn't a lubricant.
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_LAMP
+    CALL Z_LANTERN_ACTION
+    SIF RESULT
+        RETURN 1
+ENDIF
+CALL Z_R20_GLOBAL_ACTION, Z_TARGET, Z_O, Z_TARGET
+SIF RESULT
+    RETURN 1
+CALL Z_R20_SCENERY_ACTION, Z_TARGET, Z_O, Z_TARGET
+SIF RESULT
+    RETURN 1
+; PERFORM runs PRSI's ACTION before PRSO's ACTION. CRETIN-FCN is shared
+; by the indirect and direct positions, rather than a direct-only shortcut.
+IF Z_TARGET == O_ME
+    CALL Z_ME_ACTION, Z_O, Z_TARGET
+    SIF RESULT
+        RETURN 1
+ENDIF
+IF Z_TARGET == O_WATER || Z_TARGET == O_GLOBAL_WATER
+    CALL Z_WATER_ACTION, Z_O, Z_TARGET
+    RETURN RESULT
+ENDIF
+IF Z_TARGET == O_GUNK
+    CALL Z_REMOVE_CAREFULLY, O_GUNK
+    PRINTL The slag was rather insubstantial, and crumbles into dust at your touch.
+    RETURN 1
+ENDIF
+IF Z_VERB == "pour_on"
+    IF Z_TARGET == O_TORCH
+        PRINTL The water evaporates before it gets close.
+        RETURN 1
+    ELSEIF Z_TARGET == O_HOT_BELL
+        ; HOT-BELL-F does not check that PRSO really is WATER. Preserve it.
+        CALL Z_REMOVE_CAREFULLY, Z_O
+        PRINTL The water cools the bell and is evaporated.
+        CALL Z_QUEUE, ZE_XBH, 0
+        CALL Z_REMOVE_CAREFULLY, O_HOT_BELL
+        CALL Z_MOVE_OBJECT, O_BELL, R_ENTRANCE_TO_HADES
+        SIF Z_HERE == R_ENTRANCE_TO_HADES
+            PRINTL The bell appears to have cooled down.
+        RETURN 1
+    ENDIF
+ENDIF
+RETURN 0
+
+@Z_OBJECT_OVERRIDES(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_EMPTY_WATER
+CALL Z_R20_GLOBAL_ACTION, Z_O, Z_O, Z_TARGET
+SIF RESULT
+    RETURN 1
+CALL Z_R20_SCENERY_ACTION, Z_O, Z_O, Z_TARGET
+SIF RESULT
+    RETURN 1
+IF Z_TARGET == O_GROUND && Z_VERB == "put"
+    CALL Z_DROP, Z_O
+    RETURN 1
+ENDIF
+IF Z_O == O_GRUE
+    SELECTCASE Z_VERB
+    CASE "examine"
+        PRINTL The grue is a sinister, lurking presence in the dark places of the
+        PRINTL earth. Its favorite diet is adventurers, but its insatiable
+        PRINTL appetite is tempered by its fear of light. No grue has ever
+        PRINTL been seen by the light of day, and few have survived its fearsome
+        PRINTL jaws to tell the tale.
+        RETURN 1
+    CASE "find"
+        PRINTL There is no grue here, but I'm sure there is at least one lurking
+        PRINTL in the darkness nearby. I wouldn't let my light go out if I were you!
+        RETURN 1
+    CASE "listen"
+        PRINTL It makes no sound but is always lurking in the darkness nearby.
+        RETURN 1
+    ENDSELECT
+ENDIF
+IF Z_O == O_SAILOR
+    SELECTCASE Z_VERB
+    CASE "examine"
+        PRINTL There is no sailor to be seen.
+        RETURN 1
+    CASE "hello"
+        Z_SAILOR_HELLO_COUNT += 1
+        IF Z_SAILOR_HELLO_COUNT % 20 == 0
+            PRINTL You seem to be repeating yourself.
+        ELSEIF Z_SAILOR_HELLO_COUNT % 10 == 0
+            PRINTL I think that phrase is getting a bit worn out.
+        ELSE
+            PRINTL Nothing happens here.
+        ENDIF
+        RETURN 1
+    ENDSELECT
+ENDIF
+IF Z_O == O_ME
+    CALL Z_ME_ACTION, Z_O, Z_TARGET
+    SIF RESULT
+        RETURN 1
+ENDIF
+IF Z_O == O_PATHOBJ
+    SELECTCASE Z_VERB
+    CASE "take", "follow"
+        PRINTL You must specify a direction to go.
+        RETURN 1
+    CASE "find"
+        PRINTL I can't help you there....
+        RETURN 1
+    CASE "dig"
+        PRINTL Not a chance.
+        RETURN 1
+    ENDSELECT
+ENDIF
+IF Z_O == O_GROUND && Z_VERB == "dig"
+    PRINTL The ground is too hard for digging here.
+    RETURN 1
+ENDIF
+; Original 1actions.zil GRANITE-WALL-F. It is a distinct GLOBAL object
+; from WALL, including in rooms that have no physical granite wall.
+IF Z_O == O_GRANITE_WALL
+    IF Z_HERE == R_NORTH_TEMPLE
+        IF Z_VERB == "find"
+            PRINTL The west wall is solid granite here.
+            RETURN 1
+        ELSEIF Z_VERB == "take" || Z_VERB == "raise" || Z_VERB == "lower"
+            PRINTL It's solid granite.
+            RETURN 1
+        ENDIF
+    ELSEIF Z_HERE == R_TREASURE_ROOM
+        IF Z_VERB == "find"
+            PRINTL The east wall is solid granite here.
+            RETURN 1
+        ELSEIF Z_VERB == "take" || Z_VERB == "raise" || Z_VERB == "lower"
+            PRINTL It's solid granite.
+            RETURN 1
+        ENDIF
+    ELSEIF Z_HERE == R_SLIDE_ROOM
+        IF Z_VERB == "find" || Z_VERB == "read"
+            PRINTL It only SAYS "Granite Wall".
+        ELSE
+            PRINTL The wall isn't granite.
+        ENDIF
+        RETURN 1
+    ELSE
+        PRINTL There is no granite wall here.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_MAILBOX && Z_VERB == "take"
+    PRINTL It is securely anchored.
+    RETURN 1
+ENDIF
+IF Z_O == O_PAINTING && Z_VERB == "break"
+    Z_CURRENT_TVALUE:O_PAINTING = 0
+    PRINTL Congratulations! Unlike the other vandals, who merely stole the
+    PRINTL artist's masterpieces, you have destroyed one.
+    RETURN 1
+ENDIF
+IF Z_O == O_LAMP
+    CALL Z_LANTERN_ACTION
+    SIF RESULT
+        RETURN 1
+ENDIF
+IF Z_O == O_BOTTLE
+    SELECTCASE Z_VERB
+    CASE "throw"
+        CALL Z_REMOVE_CAREFULLY, O_BOTTLE
+        Z_EMPTY_WATER = 1
+        PRINTL The bottle hits the far wall and shatters.
+    CASE "break"
+        CALL Z_REMOVE_CAREFULLY, O_BOTTLE
+        Z_EMPTY_WATER = 1
+        PRINTL A brilliant maneuver destroys the bottle.
+    CASE "shake"
+        SIF Z_HAS(O_BOTTLE, ZF_OPEN) && Z_PARENT:O_WATER == O_BOTTLE
+            Z_EMPTY_WATER = 1
+    ENDSELECT
+    IF Z_EMPTY_WATER
+        IF Z_PARENT:O_WATER == O_BOTTLE
+            PRINTL The water spills to the floor and evaporates.
+            CALL Z_REMOVE_CAREFULLY, O_WATER
+        ENDIF
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_BOOK
+    SELECTCASE Z_VERB
+    CASE "open"
+        PRINTL The book is already open to page 569.
+        RETURN 1
+    CASE "close"
+        PRINTL As hard as you try, the book cannot be closed.
+        RETURN 1
+    CASE "turn", "read_page"
+        ; BLACK-BOOK: TURN, or READ-PAGE with a number other than 569
+        SIF Z_VERB == "read_page" && (Z_TARGET != O_INTNUM || Z_P_NUMBER == 569)
+            RETURN 0
+        PRINTL Beside page 569, there is only one other page with any legible printing on
+        PRINTL it. Most of it is unreadable, but the subject seems to be the banishment of
+        PRINTL evil. Apparently, certain noises, lights, and prayers are efficacious in this
+        PRINTL regard.
+        RETURN 1
+    ENDSELECT
+ENDIF
+IF Z_O == O_GARLIC && Z_VERB == "eat"
+    CALL Z_REMOVE_CAREFULLY, O_GARLIC
+    PRINTL What the heck! You won't make friends this way, but nobody around
+    PRINTL here is too friendly anyhow. Gulp!
+    RETURN 1
+ENDIF
+IF Z_O == O_SANDWICH_BAG && Z_VERB == "smell" && Z_PARENT:O_LUNCH == O_SANDWICH_BAG
+    PRINTL It smells of hot peppers.
+    RETURN 1
+ENDIF
+IF Z_O == O_FOREST && Z_VERB == "find"
+    PRINTL You cannot see the forest for the trees.
+    RETURN 1
+ENDIF
+IF Z_O == O_WHITE_HOUSE && Z_VERB == "find"
+    IF Z_HERE == R_KITCHEN || Z_HERE == R_LIVING_ROOM || Z_HERE == R_ATTIC
+        PRINTL Why not find your brains?
+    ELSEIF Z_HERE == R_WEST_OF_HOUSE || Z_HERE == R_NORTH_OF_HOUSE || Z_HERE == R_SOUTH_OF_HOUSE || Z_HERE == R_EAST_OF_HOUSE
+        PRINTL It's right here! Are you blind or something?
+    ELSEIF Z_HERE == R_CLEARING
+        PRINTL It seems to be to the west.
+    ELSE
+        PRINTL It was here just a minute ago....
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_SONGBIRD
+    SELECTCASE Z_VERB
+    CASE "find", "take"
+        PRINTL The songbird is not here but is probably nearby.
+    CASE "listen"
+        PRINTL You can't hear the songbird now.
+    CASE "follow"
+        PRINTL It can't be followed.
+    CASEELSE
+        PRINTL You can't see any songbird here.
+    ENDSELECT
+    RETURN 1
+ENDIF
+IF Z_O == O_LEAVES && Z_VERB == "cut"
+    PRINTL You rustle the leaves around, making quite a mess.
+    CALL Z_REVEAL_GRATE
+    RETURN 1
+ENDIF
+IF Z_O == O_BOARDED_WINDOW && Z_VERB == "break"
+    PRINTL You can't break the windows open.
+    RETURN 1
+ENDIF
+IF (Z_O == O_FRONT_DOOR || Z_O == O_WOODEN_DOOR) && Z_VERB == "break"
+    PRINTL You can't seem to damage the door.
+    RETURN 1
+ENDIF
+IF Z_O == O_KNIFE && Z_VERB == "take"
+    ; KNIFE-F's side effect survives a later generic ITAKE refusal.
+    Z_FLAGS:O_ATTIC_TABLE &= ~ZF_NDESC
+    RETURN 0
+ENDIF
+IF Z_O == O_BAG_OF_COINS || Z_O == O_TRUNK
+    IF Z_VERB == "open" || Z_VERB == "close"
+        IF Z_O == O_BAG_OF_COINS
+            PRINTL The coins are safely inside; there's no need to do that.
+        ELSE
+            PRINTL The jewels are safely inside; there's no need to do that.
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "inside" || Z_VERB == "examine"
+        IF Z_O == O_BAG_OF_COINS
+            PRINTL There are lots of coins in there.
+        ELSE
+            PRINTL There are lots of jewels in there.
+        ENDIF
+        RETURN 1
+    ENDIF
+ENDIF
+IF (Z_TARGET == O_BAG_OF_COINS || Z_TARGET == O_TRUNK) && Z_VERB == "put"
+    PRINTFORML Don't be silly. It wouldn't be a %Z_OBJ_NAME:Z_TARGET% anymore.
+    RETURN 1
+ENDIF
+IF Z_SCOPE_CLASS:Z_O == 3 && Z_VERB == "take" && !Z_HAS(Z_O, ZF_TAKE)
+    CALL Z_YUKS_RESPONSE
+    RETURN 1
+ENDIF
+RETURN 0
+@Z_CUT(Z_O, Z_TOOL)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TOOL
+#DIMS DYNAMIC Z_OLD_VERB
+IF Z_HAS(Z_O, ZF_ACTOR)
+    ; PERFORM of ATTACK must re-enter special ACTIONs, not skip them.
+    Z_OLD_VERB '= Z_VERB
+    Z_VERB = attack
+    CALL Z_OBJECT_ACTION, Z_O, Z_TOOL
+    Z_VERB '= Z_OLD_VERB
+ELSEIF Z_BURNABLE:Z_O && Z_HAS(Z_TOOL, ZF_WEAPON)
+    IF Z_IN_BOAT && Z_O == O_INFLATED_BOAT
+        PRINTL Not a bright idea, especially since you're in it.
+    ELSE
+        CALL Z_REMOVE_CAREFULLY, Z_O
+        PRINTFORML Your skillful %Z_OBJ_NAME:Z_TOOL%smanship slices the %Z_OBJ_NAME:Z_O% into innumerable slivers which blow away.
+    ENDIF
+ELSEIF !Z_HAS(Z_TOOL, ZF_WEAPON)
+    IF Z_TOOL
+        PRINTFORML The "cutting edge" of a %Z_OBJ_NAME:Z_TOOL% is hardly adequate.
+    ELSE
+        PRINTL You didn't say with what!
+    ENDIF
+ELSE
+    PRINTFORML Strange concept, cutting the %Z_OBJ_NAME:Z_O%....
+ENDIF
+RETURN

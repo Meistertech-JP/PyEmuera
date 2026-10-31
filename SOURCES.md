@@ -2,7 +2,12 @@
 
 PyEmuera is a new Python implementation. This file lists the references that were consulted and what each one was used for. It distinguishes public documentation, inspected Emuera source code, and measurements of the original program. A reference listed here does not certify that PyEmuera is correct for every variant. Licensing and attribution are described in `THIRD_PARTY_NOTICES.md`.
 
-No third-party variant, variant text, save file, Emuera executable or complete Emuera source tree is distributed with PyEmuera. An independently created sample variant is included. The only Emuera source files in the source distribution are five unmodified test fixtures; see `THIRD_PARTY_NOTICES.md`.
+The distributions include the independently created Pamyura Walkbook sample and ZORKERB r29, an ERB port containing Zork I game text. No save file, Emuera executable or complete Emuera source tree is distributed. The only Emuera source files in the source distribution are five unmodified test fixtures; see `THIRD_PARTY_NOTICES.md`.
+
+## Bundled game: ZORKERB r29
+
+- [ZORKERB r29 release](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29), commit `6fd90111133ec1a9b95ed0e92b42e937abc1c6b1`; release asset `ZORKERB-r29.zip`, SHA-256 `05a42aebd87c7959f78f4cd859e9b1db946d71949a3bc41310ebd9edfbced677`.
+- ZORKERB adapts Zork I Release 119 / Serial 880429. Its original source is [historicalsource/zork1](https://github.com/historicalsource/zork1), commit `97b7b3d68c075dd9af7da499c3e9690ada3471fd`. See the bundled game notices for attribution and licenses.
 
 ## 1. Primary reference: Emuera1824+v24
 

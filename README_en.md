@@ -1,6 +1,6 @@
 # PyEmuera (Pamyura)
 
-**PyEmuera 3.0.0 Beta 2 (`3.0.0b2`)** · [日本語](README.md)
+**PyEmuera 3.0.0 Beta 3 (`3.0.0b3`)** · [日本語](README.md)
 
 PyEmuera is an independent Python implementation for running Emuera game variants (ERB, ERH, and CSV files) in a text-only terminal, generally without changing the game's files. Its compatibility reference is **Emuera1824+v24**; it is not an official Emuera distribution.
 
@@ -8,15 +8,18 @@ Images, audio, mouse input, and rendering by Emuera's original GUI are out of sc
 
 ## Download and run
 
-Download **`PyEmuera-3.0.0b2-runtime.zip`** from [Releases](https://github.com/Meistertech-JP/PyEmuera/releases) and extract it. The separate **`PyEmuera-3.0.0b2-source.zip`** contains source code and tests. GitHub's automatically generated `Source code` archives are not the runtime distribution.
+Download **`PyEmuera-3.0.0b3-runtime.zip`** from [Releases](https://github.com/Meistertech-JP/PyEmuera/releases) and extract it. The separate **`PyEmuera-3.0.0b3-source.zip`** contains source code and tests. GitHub's automatically generated `Source code` archives are not the runtime distribution.
 
 Install Python 3.10 or later separately. On Windows, drag a game variant folder onto `Start_PyEmuera.bat`. You can also use the terminal:
 
 ```console
 python PyEmuera.pyz --help
 python PyEmuera.pyz "path/to/variant"
+python PyEmuera.pyz ZORKERB
 python PyEmuera.pyz sample --inputs sample/replay.txt --no-wait
 ```
+
+The runtime ZIP includes Pamyura Walkbook (`sample/`) and [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29) (`ZORKERB/`). ZORKERB is an unofficial ERB port of Zork I, descended from the text adventure Zork created on mainframes in the 1970s. The independent [ZORKERB project](https://github.com/Meistertech-JP/ZORKERB) aims to port Zork I, II, and III; r29 covers I. Input is in English; neither a Z-machine nor Frotz is needed. On Windows, drag the `ZORKERB` folder onto `Start_PyEmuera.bat`. For rights and license terms, see `ZORKERB/LICENSE`, `ZORKERB/THIRD_PARTY_NOTICES.md`, and `ZORKERB/licenses/`.
 
 Use `python3` when appropriate. A variant folder normally contains `ERB` and `CSV` directories. The runtime ZIP includes `HOW_TO_USE_ja.txt` (Japanese usage guide); the [detailed reference](README_ja.md) is also in Japanese.
 

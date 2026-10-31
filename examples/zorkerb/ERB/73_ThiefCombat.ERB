@@ -1,0 +1,322 @@
+﻿; Shared MELEE probability tables; thief-specific strength, wake and loot hooks.
+@Z_THIEF_STRENGTH_VALUE()
+#FUNCTION
+#DIM DYNAMIC Z_DEF
+Z_DEF = Z_THIEF_STRENGTH
+IF Z_DEF >= 0
+    IF Z_THIEF_ENGROSSED
+        Z_DEF = MIN(Z_DEF, 2)
+        Z_THIEF_ENGROSSED = 0
+    ENDIF
+    SIF Z_IOBJ == O_KNIFE
+        Z_DEF = MAX(1, Z_DEF - 1)
+ENDIF
+RETURNF Z_DEF
+
+@Z_THIEF_REMARK(Z_HERO, Z_RES, Z_WEP)
+#DIM DYNAMIC Z_HERO
+#DIM DYNAMIC Z_RES
+#DIM DYNAMIC Z_WEP
+#DIM DYNAMIC Z_N
+#DIMS DYNAMIC Z_LINE
+IF Z_HERO
+    Z_N = Z_HERO_REMARK_COUNT:Z_RES
+    Z_LINE '= Z_HERO_REMARKS:Z_RES:((Z_RANDOM(Z_N) - 1))
+ELSE
+    Z_N = Z_THIEF_REMARK_COUNT:Z_RES
+    Z_LINE '= Z_THIEF_REMARKS:Z_RES:((Z_RANDOM(Z_N) - 1))
+ENDIF
+Z_LINE '= REPLACE(Z_LINE, "@DEF@", "thief")
+IF Z_WEP > 0
+    Z_LINE '= REPLACE(Z_LINE, "@WEP@", Z_OBJ_NAME:Z_WEP)
+ELSE
+    Z_LINE '= REPLACE(Z_LINE, "@WEP@", "weapon")
+ENDIF
+PRINTVL Z_LINE
+RETURN
+
+@Z_THIEF_RESULT(Z_DEF, Z_RES)
+#DIM DYNAMIC Z_DEF
+#DIM DYNAMIC Z_RES
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_BOOTY
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_THIEF_STRENGTH = Z_DEF
+IF Z_DEF == 0
+    Z_THIEF_FIGHT = 0
+    PRINTL Almost as soon as the thief breathes his last breath, a cloud
+    PRINTL of sinister black fog envelops him, and when the fog lifts, the
+    PRINTL carcass has disappeared.
+    CALL Z_MOVE_OBJECT, O_THIEF, 0
+    CALL Z_MOVE_OBJECT, O_STILETTO, Z_HERE
+    Z_FLAGS:O_STILETTO &= ~ZF_NDESC
+    CALL Z_DEPOSIT_BOOTY, Z_HERE
+    Z_BOOTY = RESULT
+    IF Z_HERE == R_TREASURE_ROOM
+        Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_HERE)
+        WHILE Z_LINK_CURSOR1
+            Z_O = Z_LINK_CURSOR1
+            Z_LINK_CURSOR1 = Z_NEXT:Z_O
+            IF Z_PARENT:Z_O == Z_HERE && Z_O != O_CHALICE && Z_O != O_THIEF
+                Z_FLAGS:Z_O &= ~ZF_HIDDEN
+                IF !Z_BOOTY
+                    PRINTL As the thief dies, the power of his magic decreases, and his
+                    PRINTL treasures reappear:
+                    Z_BOOTY = 1
+                ENDIF
+                PRINTFORML   A %Z_OBJ_NAME:Z_O%
+            ENDIF
+        WEND
+        PRINTL The chalice is now safe to take.
+    ELSEIF Z_BOOTY
+        PRINTL His booty remains.
+    ENDIF
+    CALL Z_ENABLE, ZE_THIEF, 0
+ELSEIF Z_RES == 2
+    CALL Z_ENABLE, ZE_THIEF, 0
+    Z_THIEF_FIGHT = 0
+    CALL Z_MOVE_OBJECT, O_STILETTO, Z_HERE
+    Z_FLAGS:O_STILETTO &= ~ZF_NDESC
+ENDIF
+RETURN
+
+@Z_AWAKEN_THIEF
+SIF Z_THIEF_STRENGTH >= 0
+    RETURN
+Z_THIEF_STRENGTH = -Z_THIEF_STRENGTH
+IF Z_PARENT:O_THIEF == Z_HERE
+    Z_THIEF_FIGHT = 1
+    PRINTL The robber revives, briefly feigning continued unconsciousness, and,
+    PRINTL when he sees his moment, scrambles away from you.
+ENDIF
+CALL Z_ENABLE, ZE_THIEF, 1
+CALL Z_RECOVER_STILETTO
+RETURN
+
+@Z_THIEF_BUSY
+SIF Z_PARENT:O_STILETTO == O_THIEF
+    RETURN 0
+IF Z_PARENT:O_STILETTO == Z_PARENT:O_THIEF && Z_PARENT:O_THIEF
+    CALL Z_MOVE_OBJECT, O_STILETTO, O_THIEF
+    Z_FLAGS:O_STILETTO |= ZF_NDESC
+    IF Z_PARENT:O_THIEF == Z_HERE
+        PRINTL The robber, somewhat surprised at this turn of events, nimbly
+        PRINTL retrieves his stiletto.
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_ATTACK_THIEF(Z_WEP)
+#DIM DYNAMIC Z_WEP
+#DIM DYNAMIC Z_DEF
+#DIM DYNAMIC Z_RES
+#DIM DYNAMIC Z_DWEP
+#DIM DYNAMIC Z_ATT
+; V-ATTACK (gverbs.zil): bare hands, not held, not a weapon, then HERO-BLOW.
+IF !Z_WEP || Z_WEP == O_HANDS
+    PRINTL Trying to attack a thief with your bare hands is suicidal.
+    RETURN
+ENDIF
+IF Z_PARENT:Z_WEP != Z_PLAYER
+    PRINTFORML You aren't even holding the %Z_OBJ_NAME:Z_WEP%.
+    RETURN
+ENDIF
+IF Z_WEP == O_RUSTY_KNIFE
+    CALL Z_MOVE_OBJECT, O_RUSTY_KNIFE, 0
+    PRINTL As the knife approaches its victim, your mind is submerged by an
+    PRINTL overmastering will. Slowly, your hand turns, until the rusty blade
+    PRINTL is an inch from your neck. The knife seems to sing as it savagely
+    PRINTL slits your throat.
+    CALL Z_FATAL_BOUNDARY
+    RETURN
+ENDIF
+IF !Z_HAS(Z_WEP, ZF_WEAPON)
+    PRINTFORML Trying to attack the thief with a %Z_OBJ_NAME:Z_WEP% is suicidal.
+    RETURN
+ENDIF
+Z_IOBJ = Z_WEP
+Z_THIEF_FIGHT = 1
+IF Z_HERO_STAGGER
+    PRINTL You are still recovering from that last blow, so your attack is
+    PRINTL ineffective.
+    Z_HERO_STAGGER = 0
+    RETURN
+ENDIF
+Z_ATT = MAX(1, Z_HERO_STRENGTH(1))
+Z_DEF = Z_THIEF_STRENGTH_VALUE()
+Z_DWEP = Z_WEAPON(O_THIEF)
+IF !Z_DWEP || Z_DEF < 0
+    IF Z_DEF < 0
+        PRINTL The unconscious thief cannot defend himself: He dies.
+    ELSE
+        PRINTL The unarmed thief cannot defend himself: He dies.
+    ENDIF
+    Z_RES = 3
+ELSE
+    Z_RES = Z_BLOW_RESULT(Z_ATT, Z_DEF)
+    SIF Z_RES == 6 && Z_PROB(25)
+        Z_RES = 7
+    CALL Z_THIEF_REMARK, 1, Z_RES, Z_WEP
+ENDIF
+SELECTCASE Z_RES
+CASE 2
+    Z_DEF = -Z_DEF
+CASE 3
+    Z_DEF = 0
+CASE 4
+    Z_DEF = MAX(0, Z_DEF - 1)
+CASE 5
+    Z_DEF = MAX(0, Z_DEF - 2)
+CASE 6
+    Z_THIEF_STAGGER = 1
+CASE 7
+    CALL Z_MOVE_OBJECT, Z_DWEP, Z_HERE
+    Z_FLAGS:Z_DWEP &= ~ZF_NDESC
+    Z_FLAGS:Z_DWEP |= ZF_WEAPON
+    Z_IT = Z_DWEP
+ENDSELECT
+CALL Z_THIEF_RESULT, Z_DEF, Z_RES
+RETURN
+
+@Z_THIEF_BLOW(Z_OUT)
+#DIM DYNAMIC Z_OUT
+#DIM DYNAMIC Z_ATT
+#DIM DYNAMIC Z_DEF
+#DIM DYNAMIC Z_BASE
+#DIM DYNAMIC Z_WEP
+#DIM DYNAMIC Z_RES
+Z_HERO_STAGGER = 0
+IF Z_THIEF_STAGGER
+    Z_THIEF_STAGGER = 0
+    PRINTL The thief slowly regains his feet.
+    RETURN 1
+ENDIF
+Z_ATT = Z_THIEF_STRENGTH_VALUE()
+Z_DEF = Z_HERO_STRENGTH(1)
+Z_BASE = Z_HERO_STRENGTH(0)
+SIF Z_DEF <= 0
+    RETURN 1
+Z_WEP = Z_WEAPON(Z_PLAYER)
+Z_RES = Z_BLOW_RESULT(Z_ATT, Z_DEF)
+IF Z_OUT
+    IF Z_RES == 6
+        Z_RES = 8
+    ELSE
+        Z_RES = 9
+    ENDIF
+ENDIF
+SIF Z_RES == 6 && Z_WEP && Z_PROB(25, 1)
+    Z_RES = 7
+CALL Z_THIEF_REMARK, 0, Z_RES, Z_WEP
+SELECTCASE Z_RES
+CASE 3, 9
+    Z_DEF = 0
+CASE 4
+    Z_DEF = MAX(0, Z_DEF - 1)
+    SIF Z_LOAD_LIMIT > 50
+        Z_LOAD_LIMIT -= 10
+CASE 5
+    Z_DEF = MAX(0, Z_DEF - 2)
+    SIF Z_LOAD_LIMIT > 50
+        Z_LOAD_LIMIT -= 20
+CASE 6
+    Z_HERO_STAGGER = 1
+CASE 7
+    CALL Z_MOVE_OBJECT, Z_WEP, Z_HERE
+    Z_WEP = Z_WEAPON(Z_PLAYER)
+    SIF Z_WEP
+        PRINTFORML Fortunately, you still have a %Z_OBJ_NAME:Z_WEP%.
+ENDSELECT
+Z_HERO_WOUND = Z_DEF - Z_BASE
+SIF Z_HERO_WOUND < 0
+    CALL Z_SCHEDULE, ZE_CURE, 30
+IF Z_DEF <= 0
+    Z_HERO_WOUND = 1 - Z_BASE
+    PRINTL It appears that that last blow was too much for you. I'm afraid you
+    PRINTL are dead.
+    CALL Z_FATAL_BOUNDARY
+    RETURN 0
+ENDIF
+RETURN Z_RES
+
+@Z_FIGHT_CLOCK
+#DIM DYNAMIC Z_OUT
+#DIM DYNAMIC Z_RESULT
+#DIM DYNAMIC Z_FIGHT
+SIF Z_GAME_OVER || Z_DEAD || Z_DEATH_THIS_TURN
+    RETURN 0
+; I-FIGHT first prepares every villain, then DO-FIGHT delivers the blows.
+IF Z_PARENT:O_TROLL == Z_HERE
+    IF Z_TROLL_STRENGTH < 0
+        IF Z_TROLL_WAKE && Z_PROB(Z_TROLL_WAKE)
+            Z_TROLL_WAKE = 0
+            CALL Z_AWAKEN_TROLL
+        ELSE
+            Z_TROLL_WAKE += 25
+        ENDIF
+    ELSEIF Z_TROLL_FIGHT || Z_PROB(33)
+        Z_TROLL_FIGHT = 1
+        Z_FIGHT = 1
+    ENDIF
+ELSE
+    SIF Z_TROLL_FIGHT
+        CALL Z_TROLL_BUSY
+    Z_HERO_STAGGER = 0
+    Z_TROLL_STAGGER = 0
+    Z_TROLL_FIGHT = 0
+    CALL Z_AWAKEN_TROLL
+ENDIF
+IF Z_PARENT:O_THIEF == Z_HERE && !Z_HAS(O_THIEF, ZF_HIDDEN)
+    IF Z_THIEF_ENGROSSED
+        Z_THIEF_ENGROSSED = 0
+    ELSEIF Z_THIEF_STRENGTH < 0
+        IF Z_THIEF_WAKE && Z_PROB(Z_THIEF_WAKE)
+            Z_THIEF_WAKE = 0
+            CALL Z_AWAKEN_THIEF
+        ELSE
+            Z_THIEF_WAKE += 25
+        ENDIF
+    ELSEIF Z_THIEF_FIGHT || (Z_THIEF_HERE && Z_PROB(20))
+        Z_THIEF_FIGHT = 1
+        Z_FIGHT = 1
+    ENDIF
+ELSE
+    SIF Z_THIEF_FIGHT
+        CALL Z_THIEF_BUSY
+    Z_THIEF_ENGROSSED = 0
+    Z_HERO_STAGGER = 0
+    Z_THIEF_STAGGER = 0
+    Z_THIEF_FIGHT = 0
+    CALL Z_AWAKEN_THIEF
+ENDIF
+SIF !Z_FIGHT
+    RETURN 0
+DO
+    IF Z_TROLL_FIGHT
+        CALL Z_TROLL_BUSY
+        IF !RESULT
+            CALL Z_TROLL_BLOW, Z_OUT
+            Z_RESULT = RESULT
+            SIF Z_RESULT == 2
+                Z_OUT = 2 + (Z_RANDOM(3) - 1)
+            SIF !Z_RESULT
+                RETURN 1
+        ENDIF
+    ENDIF
+    IF Z_THIEF_FIGHT
+        CALL Z_THIEF_BUSY
+        IF !RESULT
+            CALL Z_THIEF_BLOW, Z_OUT
+            Z_RESULT = RESULT
+            SIF Z_RESULT == 2
+                Z_OUT = 2 + (Z_RANDOM(3) - 1)
+            SIF !Z_RESULT
+                RETURN 1
+        ENDIF
+    ENDIF
+    SIF !Z_OUT
+        RETURN 1
+    Z_OUT -= 1
+LOOP Z_OUT > 0
+RETURN 1

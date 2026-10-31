@@ -1,0 +1,578 @@
+﻿; Zork I conversations: TELL is not an action performed by the player on behalf
+; of a creature. Rejected TELL clears continuation without ticking CLOCKER.
+; Accepted cyclops orders run in a separate, persisted continuation buffer.
+; Source: gparser PARSER; gverbs V-TELL/V-SAY; 1actions CYCLOPS-FCN.
+@Z_PREPARE_SPEECH
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_Q
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_OFFSET
+#DIM DYNAMIC Z_QUOTED
+#DIMS DYNAMIC Z_RECIPIENT
+#DIMS DYNAMIC Z_BODY
+#DIMS DYNAMIC Z_TAIL
+#DIMS DYNAMIC Z_TOPIC
+#DIM DYNAMIC Z_TOPIC_OBJ
+#DIM DYNAMIC Z_ABOUT_START
+IF Z_VERB == "say"
+    Z_BODY '= Z_TRIM(Z_NOUN)
+    IF SUBSTRING(Z_BODY, 0, 1) == "\""
+        Z_QUOTED = 1
+        Z_BODY '= SUBSTRING(Z_BODY, 1)
+
+    ENDIF
+    ; A numeric lexical token is W?INTNUM, not an unknown speech word.
+    IF !Z_QUOTED && Z_IS_ZNUMBER(Z_BODY)
+        PRINTL That sentence isn't one I recognize.
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+    ; Source gsyntax declares SAY without an object, so unquoted words go
+    ; through the ordinary scan: unknown words, CANT-USE for a second verb,
+    ; "That sentence isn't one I recognize." for a noun. What survives (buzz
+    ; words) reaches V-SAY with no P-CONT: "Say what?".
+    IF !Z_QUOTED && Z_BODY != ""
+        CALL Z_SOURCE_SYNTAX_GATE
+        SIF RESULT
+            CALL Z_CHECK_WORDS, Z_COMMAND
+        IF !RESULT
+            Z_PENDING =
+            Z_LAST_VALID = 0
+            RETURN 1
+        ENDIF
+        Z_BODY =
+    ENDIF
+    Z_SPEECH_BODY '= Z_BODY
+    Z_NOUN =
+    RETURN 0
+ENDIF
+IF Z_VERB == "tell" || Z_VERB == "talk"
+    CALL Z_TELL_VERB_WORD
+    IF RESULT
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+    Z_RECIPIENT '= Z_NOUN
+    Z_OFFSET = STRFIND(Z_COMMAND, " ") + 1
+    IF Z_VERB == "talk" && SUBSTRING(Z_RECIPIENT, 0, 3) == "to "
+        Z_RECIPIENT '= SUBSTRING(Z_RECIPIENT, 3)
+        Z_OFFSET += 3
+    ENDIF
+    Z_P = STRFIND(Z_RECIPIENT, " to ")
+    Z_Q = STRFIND(Z_RECIPIENT, "\"")
+    IF STRLENS(Z_RECIPIENT) >= 3 && SUBSTRING(Z_RECIPIENT, STRLENS(Z_RECIPIENT) - 3) == " to"
+        Z_RECIPIENT '= SUBSTRING(Z_RECIPIENT, 0, STRLENS(Z_RECIPIENT) - 3)
+    ENDIF
+    IF Z_Q >= 0 && (Z_P < 0 || Z_Q < Z_P)
+        Z_BODY '= SUBSTRING(Z_RECIPIENT, Z_Q)
+        Z_RECIPIENT '= Z_TRIM(SUBSTRING(Z_RECIPIENT, 0, Z_Q))
+    ELSEIF Z_P >= 0
+        Z_BODY '= SUBSTRING(Z_RECIPIENT, Z_P + 4)
+        Z_RECIPIENT '= SUBSTRING(Z_RECIPIENT, 0, Z_P)
+    ELSE
+        Z_P = STRFIND(Z_RECIPIENT, ",")
+        IF Z_P >= 0
+            Z_BODY '= SUBSTRING(Z_RECIPIENT, Z_P + 1)
+            Z_RECIPIENT '= SUBSTRING(Z_RECIPIENT, 0, Z_P)
+        ELSE
+            Z_P = STRFIND(Z_RECIPIENT, " about ")
+            IF Z_P >= 0
+                Z_TOPIC '= Z_TRIM(SUBSTRING(Z_RECIPIENT, Z_P + 7))
+                Z_ABOUT_START = STRFIND(Z_COMMAND, " about ") + 7
+                Z_RECIPIENT '= SUBSTRING(Z_RECIPIENT, 0, Z_P)
+            ENDIF
+        ENDIF
+    ENDIF
+ELSEIF Z_VERB == "" && STRFIND(Z_COMMAND, ",") >= 0
+    Z_P = STRFIND(Z_COMMAND, ",")
+    Z_RECIPIENT '= Z_TRIM(SUBSTRING(Z_COMMAND, 0, Z_P))
+    Z_BODY '= SUBSTRING(Z_COMMAND, Z_P + 1)
+    IF Z_TRIM(Z_BODY) == ""
+        PRINTL There was no verb in that sentence!
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+ELSE
+    RETURN 0
+ENDIF
+Z_BODY '= Z_TRIM(Z_BODY)
+IF SUBSTRING(Z_BODY, 0, 1) == "\""
+    ; Only the opening delimiter belongs to TELL. Preserve the closing
+    ; quote and the rest of the lexical stream for the actor parser.
+    Z_BODY '= SUBSTRING(Z_BODY, 1)
+ENDIF
+Z_RECIPIENT '= Z_TRIM(Z_RECIPIENT)
+IF Z_RECIPIENT == ""
+    ; TELL OBJECT (FIND ACTORBIT) (IN-ROOM): GWIM names a single actor; the
+    ; GLOBAL-CHECK fallback finds ME. Otherwise SYNTAX-CHECK orphans.
+    CALL Z_GWIM, ZF_ACTOR, ZS_SIR
+    IF RESULT
+        PRINTFORML (%Z_OBJ_NAME:RESULT%)
+        Z_RECIPIENT '= Z_REPLAY_NAME:RESULT
+    ELSE
+        PRINTL What do you want to tell?
+        CALL Z_READ_REPLY
+        SIF Z_ABORT
+            RETURN 1
+        Z_RECIPIENT '= Z_INPUT_REPLY
+    ENDIF
+ENDIF
+; The source resolves the ABOUT phrase before the action callback.
+; Unknown vocabulary in PRSI is rejected even if PRSO is yourself or a
+; non-actor, and without mutating the IT referent.
+IF Z_TOPIC != ""
+    CALL Z_CHECK_WORDS, Z_TOPIC
+    IF !RESULT
+        Z_OOPS_START += Z_ABOUT_START
+        Z_OOPS_COMMAND '= Z_COMMAND
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+ENDIF
+CALL Z_CHECK_WORDS, Z_RECIPIENT
+IF !RESULT
+    Z_OOPS_COMMAND '= Z_COMMAND
+    Z_OOPS_START += Z_OFFSET
+    Z_PENDING =
+    Z_LAST_VALID = 0
+    RETURN 1
+ENDIF
+CALL Z_RESOLVE, Z_RECIPIENT, 0
+Z_O = RESULT
+; TELL is exempt from CLOCKER, but its PERFORM still sets the referent.
+; Keep failed, syntactically valid orders repeatable without running the body.
+IF Z_O == O_IT_OBJECT
+    Z_AFTER_SAY = 0
+    PRINTL I don't see what you are referring to.
+    Z_PENDING =
+    Z_LAST_COMMAND '= Z_COMMAND
+    Z_LAST_VALID = 1
+    RETURN 1
+ENDIF
+IF Z_O == O_NOT_HERE_OBJECT
+    Z_AFTER_SAY = 0
+    Z_IT = Z_O
+    ; NOT-HERE-OBJECT-F: both PRSO and PRSI unresolved.
+    Z_P = 0
+    IF Z_TOPIC != ""
+        CALL Z_RESOLVE, Z_TOPIC, 0
+        Z_P = RESULT == O_NOT_HERE_OBJECT
+    ENDIF
+    IF Z_P
+        PRINTL Those things aren't here!
+    ELSE
+        CALL Z_MISSING_OBJECT, Z_RECIPIENT
+    ENDIF
+    Z_PENDING =
+    Z_LAST_COMMAND '= Z_COMMAND
+    Z_LAST_VALID = 1
+    RETURN 1
+ENDIF
+IF !Z_O || Z_ABORT
+    SIF !Z_REPARSE
+        Z_PENDING =
+    Z_LAST_VALID = 0
+    RETURN 1
+ENDIF
+IF Z_O == O_BAT && Z_VERB == "" && Z_BODY != "" && STRFIND(Z_BODY, "\"") < 0 && STRFIND(Z_BODY, ".") < 0
+    CALL Z_CHECK_WORDS, Z_BODY
+    IF !RESULT
+        Z_OOPS_START += STRFIND(Z_COMMAND, Z_BODY)
+        Z_OOPS_COMMAND '= Z_COMMAND
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+ENDIF
+Z_AFTER_SAY = 0
+Z_IT = Z_O
+IF Z_TOPIC != ""
+    ; ABOUT OBJECT is an indirect object in the original syntax.
+    Z_RESOLVE_ROLE = 2
+    CALL Z_RESOLVE, Z_TOPIC, 0
+    Z_TOPIC_OBJ = RESULT
+    Z_RESOLVE_ROLE = 0
+    IF !Z_TOPIC_OBJ || Z_ABORT
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+    IF Z_TOPIC_OBJ == O_NOT_HERE_OBJECT
+        CALL Z_MISSING_OBJECT, Z_TOPIC
+        Z_PENDING =
+        Z_LAST_VALID = 0
+        RETURN 1
+    ENDIF
+    ; CRETIN-FCN on the indirect object fires before V-TELL, while the
+    ; pronoun still refers to the direct object (original parser order).
+    IF Z_TOPIC_OBJ == O_ME
+        PRINTL Talking to yourself is said to be a sign of impending mental collapse.
+        Z_PENDING =
+        Z_LAST_COMMAND '= Z_COMMAND
+        Z_LAST_VALID = 1
+        RETURN 1
+    ENDIF
+ENDIF
+Z_LAST_COMMAND '= "tell " + Z_REPLAY_NAME:Z_O
+SIF Z_BODY != ""
+    Z_LAST_COMMAND '= Z_LAST_COMMAND + " \"" + Z_BODY + "\""
+Z_LAST_VALID = 1
+IF Z_O == O_ME
+    PRINTL Talking to yourself is said to be a sign of impending mental collapse.
+    Z_PENDING =
+    Z_ACTOR_PENDING =
+    Z_ACTOR = 0
+ELSEIF Z_O == O_TROLL
+    PRINTL The troll isn't much of a conversationalist.
+    Z_PENDING =
+ELSEIF Z_O == O_THIEF
+    PRINTL The thief is a strong, silent type.
+    Z_PENDING =
+ELSEIF Z_O == O_GHOSTS
+    PRINTL The spirits jeer loudly and ignore you.
+    Z_PENDING =
+ELSEIF Z_O == O_BAT
+    CALL Z_BAT_TELL
+    Z_PENDING =
+ELSEIF Z_O == O_SAILOR
+    PRINTL You can't talk to the sailor that way.
+    Z_PENDING =
+ELSEIF !Z_HAS(Z_O, ZF_ACTOR)
+    PRINTFORML You can't talk to the %Z_OBJ_NAME:Z_O%!
+    Z_PENDING =
+ELSEIF Z_BODY == ""
+    PRINTFORML The %Z_OBJ_NAME:Z_O% pauses for a moment, perhaps thinking that you should reread
+    PRINTL the manual.
+ELSEIF Z_O == O_CYCLOPS
+    Z_ACTOR = Z_O
+    Z_QUOTE_STREAM = 1
+    Z_ACTOR_PENDING '= Z_BODY
+    IF Z_PENDING != ""
+        Z_ACTOR_PENDING '= Z_ACTOR_PENDING + ". " + Z_PENDING
+        Z_PENDING =
+    ENDIF
+ELSE
+    ; Every ACTORBIT object of Zork I (ME, TROLL, THIEF, GHOSTS, BAT, CYCLOPS)
+    ; is answered above; ADVENTURER is INVISIBLE and cannot be named.
+    THROW Zork invariant: TELL reached an actor without an ACTION.
+ENDIF
+RETURN 1
+
+@Z_SPEECH_KNOWN(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+#DIM DYNAMIC Z_I
+#DIMS DYNAMIC Z_W
+#DIMS DYNAMIC Z_C
+; A pure lexical check. It neither executes the quoted verbs nor consumes RAND.
+FOR Z_I, 0, STRLENS(Z_S) + 1
+    Z_C '= SUBSTRING(Z_S, Z_I, 1)
+    IF Z_C == "" || Z_C == " " || Z_C == "." || Z_C == "," || Z_C == "\""
+        IF Z_W != ""
+            SIF !Z_IN_VOCABULARY(Z_W)
+                RETURNF 0
+            Z_W =
+        ENDIF
+    ELSE
+        Z_W '= Z_W + Z_C
+    ENDIF
+NEXT
+RETURNF 1
+
+@Z_SAY
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_LINK_CURSOR1
+IF Z_SPEECH_BODY == ""
+    PRINTL Say what?
+    RETURN
+ENDIF
+; FIND-IN checks ACTORBIT, not INVISIBLE. Keep that original distinction.
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_HERE)
+WHILE Z_LINK_CURSOR1
+    Z_O = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_O
+    IF Z_PARENT:Z_O == Z_HERE && Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML You must address the %Z_OBJ_NAME:Z_O% directly.
+        Z_PENDING =
+        RETURN
+    ENDIF
+WEND
+; V-SAY checks W?HELLO, not the synonym's action (HI does not qualify).
+IF Z_DICTIONARY_KEY(Z_FIRST_WORD(Z_SPEECH_BODY)) != "hello"
+    PRINTL Talking to yourself is a sign of impending mental collapse.
+    Z_PENDING =
+ELSE
+    Z_QUOTE_STREAM = 1
+    IF Z_PENDING == ""
+        Z_PENDING '= Z_SPEECH_BODY
+    ELSE
+        Z_PENDING '= Z_SPEECH_BODY + ". " + Z_PENDING
+    ENDIF
+ENDIF
+RETURN
+
+@Z_PROCESS_ACTOR_ORDER
+#DIM DYNAMIC Z_SKIP_CLOCK
+#DIM DYNAMIC Z_P
+#DIMS DYNAMIC Z_ORDER_TEXT
+#DIMS DYNAMIC Z_BAD_WORD
+Z_ORDER_TEXT '= Z_COMMAND
+CALL Z_CHECK_WORDS, Z_COMMAND
+IF !RESULT
+    Z_ACTOR_PENDING =
+    Z_PENDING =
+    Z_LAST_VALID = 0
+    RETURN
+ENDIF
+Z_DIRECTION = Z_DIRECTION_ID(Z_COMMAND)
+IF Z_DIRECTION >= 0
+    Z_VERB = walk
+    Z_VALID = 1
+ELSE
+    ; A verb after a comma in a nounless clause is CANT-USE, not a second
+    ; order. Named lists continue through the normal MANY grammar.
+    Z_P = STRFIND(Z_COMMAND, ",")
+    SIF Z_P < 0
+        Z_P = STRFIND(Z_COMMAND, " and ")
+    IF Z_P >= 0 && !Z_PHRASE_HAS_NOUN(SUBSTRING(Z_COMMAND, 0, Z_P))
+        IF SUBSTRING(Z_COMMAND, Z_P, 5) == " and "
+            Z_BAD_WORD '= Z_FIRST_WORD(SUBSTRING(Z_COMMAND, Z_P + 5))
+        ELSE
+            Z_BAD_WORD '= Z_FIRST_WORD(SUBSTRING(Z_COMMAND, Z_P + 1))
+        ENDIF
+        IF Z_BAD_WORD != "" && !Z_WORD_IS_NOMINAL(Z_BAD_WORD)
+            PRINTFORML You used the word "%Z_BAD_WORD%" in a way that I don't understand.
+            Z_ACTOR_PENDING =
+            Z_PENDING =
+            Z_LAST_VALID = 0
+            RETURN
+        ENDIF
+    ENDIF
+    SELECTCASE Z_VERB
+    CASE "save", "restore", "quit", "restart", "brief", "verbose", "superbrief", "score", "version"
+        ; Recognized actions, not permission to execute player's controls.
+        Z_VALID = Z_NOUN == ""
+        Z_SKIP_CLOCK = 1
+    CASE "say"
+        IF Z_NOUN != ""
+            IF Z_IS_ZNUMBER(Z_NOUN)
+                PRINTL That sentence isn't one I recognize.
+            ELSE
+                PRINTFORML You used the word "%Z_FIRST_WORD(Z_NOUN)%" in a way that I don't understand.
+            ENDIF
+        ELSE
+            Z_VALID = 1
+        ENDIF
+    CASE "tell", "talk"
+        ; Nested TELL is syntactically parsed but intercepted by the actor
+        ; before V-TELL or the indirect/direct objects' ACTIONs can run.
+        IF Z_NOUN == ""
+            CALL Z_ACTOR_CANT_ORPHAN
+        ELSE
+            Z_P = STRFIND(Z_NOUN, " about ")
+            IF Z_P >= 0
+                Z_OTHER_NOUN '= Z_TRIM(SUBSTRING(Z_NOUN, Z_P + 7))
+                Z_NOUN '= SUBSTRING(Z_NOUN, 0, Z_P)
+                Z_RESOLVE_ROLE = 2
+                CALL Z_RESOLVE, Z_OTHER_NOUN, 0
+                Z_IOBJ = RESULT
+                Z_RESOLVE_ROLE = 0
+                SIF Z_ABORT || !Z_IOBJ
+                    RETURN
+            ENDIF
+            CALL Z_RESOLVE, Z_NOUN, 0
+            Z_DOBJ = RESULT
+            Z_VALID = Z_DOBJ != 0 && !Z_ABORT
+        ENDIF
+        Z_SKIP_CLOCK = 1
+    CASEELSE
+        CALL Z_PARSE_ACTION
+    ENDSELECT
+ENDIF
+IF !Z_VALID || Z_ABORT
+    Z_ACTOR_PENDING =
+    Z_PENDING =
+    Z_LAST_VALID = 0
+    RETURN
+ENDIF
+CALL Z_PREPARE_REQUIRED_OBJECTS
+IF !RESULT
+    Z_PENDING =
+    Z_ACTOR_PENDING =
+    Z_LAST_VALID = 0
+    RETURN
+ENDIF
+Z_AFTER_SAY = Z_VERB == "say"
+Z_LAST_COMMAND '= "tell " + Z_REPLAY_NAME:Z_ORDER_ACTOR + " \"" + Z_ORDER_TEXT + "\""
+Z_LAST_VALID = 1
+Z_TIME = 1
+; ITAKE-CHECK validates the IT placeholder before exempting the actor
+; from implicit TAKE/HAVE. PERFORM then updates the direct referent.
+CALL Z_PERFORM
+IF !Z_SKIP_CLOCK
+    CALL Z_CASE_END_TURN
+    CALL Z_TEMPLE_END_TURN
+    CALL Z_REGION_END
+    CALL Z_TICK
+ENDIF
+IF Z_ABORT || Z_DEATH_THIS_TURN || Z_GAME_OVER || !Z_IS_LIT()
+    Z_PENDING =
+    Z_ACTOR_PENDING =
+ENDIF
+SIF Z_ACTOR_PENDING == ""
+    Z_ACTOR = 0
+RETURN
+
+; The actor callback precedes room, preaction, indirect and direct ACTIONs.
+; This routine neither reads input nor consumes a turn by itself.
+@Z_ACTOR_RESPONSE
+IF Z_ORDER_ACTOR == O_CYCLOPS
+    IF Z_CYCLOPS_SLEEP
+        PRINTL No use talking to him. He's fast asleep.
+    ELSEIF Z_VERB == "odysseus"
+        CALL Z_ODYSSEUS
+        ; CYCLOPS-FCN restores WINNER=ADVENTURER, even if the quotation
+        ; has not ended. Preserve the exact remaining delimiter sequence.
+        IF Z_ACTOR_PENDING != ""
+            IF Z_PENDING == ""
+                Z_PENDING '= Z_ACTOR_PENDING
+            ELSE
+                Z_PENDING '= Z_ACTOR_PENDING + ". " + Z_PENDING
+            ENDIF
+            Z_ACTOR_PENDING =
+        ENDIF
+        Z_ACTOR = 0
+    ELSE
+        PRINTL The cyclops prefers eating to making conversation.
+    ENDIF
+ENDIF
+RETURN
+
+@Z_ACTOR_CANT_ORPHAN
+PRINTL "I don't understand! What are you referring to?"
+RETURN
+
+@Z_HELLO
+#DIM DYNAMIC Z_R
+#DIM DYNAMIC Z_M
+; PICK-ONE: shuffle the unused suffix, including RAND:1 on its final item.
+Z_R = Z_HELLO_COUNT + (Z_RANDOM(4 - Z_HELLO_COUNT) - 1)
+Z_M = Z_HELLO_ORDER:Z_R
+Z_HELLO_ORDER:Z_R = Z_HELLO_ORDER:Z_HELLO_COUNT
+Z_HELLO_ORDER:Z_HELLO_COUNT = Z_M
+Z_HELLO_COUNT = (Z_HELLO_COUNT + 1) % 4
+SELECTCASE Z_M
+CASE 0
+    PRINTL Hello.
+CASE 1
+    PRINTL Good day.
+CASE 2
+    PRINTL Nice weather we've been having lately.
+CASE 3
+    PRINTL Goodbye.
+ENDSELECT
+RETURN
+
+; gparser CANT-USE and gsyntax HELLO [OBJECT].  These errors occur before
+; PERFORM, so neither IT nor the clock changes. UNKNOWN-WORD is checked by
+; the common lexical pass and uses the same persisted prior-action context.
+@Z_CHECK_GREETING_SYNTAX
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_START
+#DIM DYNAMIC Z_PREPOSITION
+#DIMS DYNAMIC Z_WORD
+#DIMS DYNAMIC Z_C
+FOR Z_I, 0, STRLENS(Z_NOUN) + 1
+    Z_C '= SUBSTRING(Z_NOUN, Z_I, 1)
+    IF Z_C == " " || Z_C == "," || Z_C == ""
+        IF Z_WORD != ""
+            IF STRFIND("|to|at|with|in|on|from|under|over|about|for|", "|" + Z_WORD + "|") >= 0
+                Z_PREPOSITION = 1
+            ELSEIF STRFIND("|the|a|an|and|all|except|but|of|one|it|him|her|them|", "|" + Z_WORD + "|") < 0 && !Z_WORD_IS_NOMINAL(Z_WORD) && !Z_IS_ZNUMBER(Z_WORD)
+                IF Z_AFTER_SAY
+                    PRINTL Nothing happens.
+                ELSE
+                    PRINTFORML You used the word "%Z_WORD%" in a way that I don't understand.
+                ENDIF
+                RETURN 0
+            ENDIF
+            Z_WORD =
+        ENDIF
+    ELSE
+        Z_WORD '= Z_WORD + Z_C
+    ENDIF
+NEXT
+IF Z_PREPOSITION
+    PRINTL That sentence isn't one I recognize.
+    RETURN 0
+ENDIF
+RETURN 1
+
+; ALL still resolves the source's noun table before MANY-CHECK. It is not
+; equivalent to forbidding the spelling ALL: one remaining object is legal.
+@Z_PREPARE_GREETING_ALL
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_O
+#DIMS DYNAMIC Z_FILTER
+Z_ALL = 1
+IF SUBSTRING(Z_NOUN, 0, 11) == "all except "
+    CALL Z_RESOLVE_LIST, SUBSTRING(Z_NOUN, 11), 1
+    SIF Z_ABORT || !RESULT
+        RETURN
+ELSEIF SUBSTRING(Z_NOUN, 0, 4) == "all "
+    Z_FILTER '= Z_TRIM(SUBSTRING(Z_NOUN, 4))
+    SIF Z_FILTER == "of" || SUBSTRING(Z_FILTER, 0, 3) == "of "
+        Z_FILTER =
+ENDIF
+Z_ALL_FILTER '= Z_FILTER
+Z_LIST_COUNT = 0
+; HELLO has no TAKE/HAVE bit; fixed room objects are not filtered out.
+CALL Z_SEARCH_DEPTH, 1, 1
+FOR Z_I, 0, Z_SCAN_COUNT
+    Z_O = Z_SCAN:Z_I
+    SIF Z_EXCLUDED:Z_O || !Z_ACCESS(Z_O, 0)
+        CONTINUE
+    SIF Z_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_FILTER, !Z_PHRASE_HAS_NOUN(Z_FILTER))
+        CONTINUE
+    Z_LIST:Z_LIST_COUNT = Z_O
+    Z_LIST_COUNT += 1
+NEXT
+IF Z_LIST_COUNT > 1
+    PRINTFORM You can't use multiple direct objects with "
+    PRINTS Z_FIRST_WORD(Z_COMMAND)
+    PRINTL ".
+    Z_LIST_COUNT = 0
+    RETURN
+ENDIF
+SIF Z_LIST_COUNT == 1
+    Z_DOBJ = Z_LIST:0
+Z_VALID = 1
+RETURN
+
+; PARSER word loop under ACT?TELL: a word that is only a verb, met outside a
+; noun clause before any TO/quote/comma, is refused.
+@Z_TELL_VERB_WORD
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_F
+SIF Z_ORDER_ACTOR || Z_VERB != "tell"
+    RETURN 0
+CALL Z_SP_TOKENIZE, Z_COMMAND
+FOR Z_I, 1, Z_SP_N
+    SIF Z_SP_KEY:Z_I == "to" || Z_SP_WORD:Z_I == "\"" || Z_SP_WORD:Z_I == "," || Z_SP_WORD:Z_I == "." || Z_SP_KEY:Z_I == "then" || Z_SP_KEY:Z_I == "and"
+        RETURN 0
+    SIF Z_SP_INFO:Z_I < 0
+        RETURN 0
+    Z_F = Z_SP_INFO:Z_I / 65536
+    SIF Z_F & (128 | 32 | 8 | 4)
+        CONTINUE
+    IF Z_F & 64
+        PRINTL Please consult your manual for the correct way to talk to other people
+        PRINTL or creatures.
+        RETURN 1
+    ENDIF
+    RETURN 0
+NEXT
+RETURN 0

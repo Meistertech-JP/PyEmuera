@@ -1,0 +1,209 @@
+﻿; WATER-F, PRE-FILL, V-POUR-ON, V-EAT/HIT-SPOT. Pure ERB state transitions.
+; There is one movable WATER object and one scoped GLOBAL-WATER reference.
+@Z_WATER_REACH_HANDLED(Z_O)
+#FUNCTION
+#DIM DYNAMIC Z_O
+IF Z_O == O_WATER || Z_O == O_GLOBAL_WATER
+    RETURNF Z_VERB == "take" || Z_VERB == "drop" || Z_VERB == "put" || Z_VERB == "drink" || Z_VERB == "eat" || Z_VERB == "throw" || Z_VERB == "pour_on"
+ENDIF
+RETURNF 0
+
+@Z_GLOBAL_WATER_HERE()
+#FUNCTION
+RETURNF Z_SCOPE:O_GLOBAL_WATER:Z_HERE != 0
+
+@Z_CONTAINER_EMPTY(Z_CONTAINER)
+#FUNCTION
+#DIM DYNAMIC Z_CONTAINER
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_CONTAINER)
+WHILE Z_LINK_CURSOR1
+    Z_I = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_I
+    SIF Z_PARENT:Z_I == Z_CONTAINER
+        RETURNF 0
+WEND
+RETURNF 1
+
+@Z_WATER_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_FROM
+#DIM DYNAMIC Z_IS_GLOBAL
+IF Z_VERB == "fill"
+    CALL Z_FILL, Z_O, Z_TARGET
+    RETURN 1
+ENDIF
+; When water is the indirect object, WATER-F acts before the direct ACTION.
+IF Z_TARGET == O_WATER || Z_TARGET == O_GLOBAL_WATER
+    IF Z_VERB == "put" && Z_SCOPE:O_RIVER:Z_HERE
+        CALL Z_RIVER_ACTION, Z_O, O_RIVER
+        SIF RESULT
+            RETURN 1
+    ENDIF
+    PRINTL Nice try.
+    RETURN 1
+ENDIF
+SIF Z_O != O_WATER && Z_O != O_GLOBAL_WATER
+    RETURN 0
+Z_IS_GLOBAL = Z_O == O_GLOBAL_WATER
+SELECTCASE Z_VERB
+CASE "take"
+    ; PRE-TAKE checks a specified FROM and closed immediate container first.
+    Z_FROM = Z_PARENT:O_WATER
+    IF !Z_IS_GLOBAL && Z_FROM > 0 && Z_FROM < 256 && Z_HAS(Z_FROM, ZF_CONTAINER) && !Z_HAS(Z_FROM, ZF_OPEN)
+        PRINTL You can't reach something that's inside a closed container.
+        RETURN 1
+    ENDIF
+    IF Z_TARGET
+        IF Z_IS_GLOBAL || Z_FROM != Z_TARGET
+            PRINTFORML The %Z_OBJ_NAME:Z_O% isn't in the %Z_OBJ_NAME:Z_TARGET%.
+            RETURN 1
+        ENDIF
+        Z_TARGET = 0
+    ENDIF
+    CALL Z_WATER_PUT, Z_IS_GLOBAL, 0
+    RETURN 1
+CASE "put"
+    CALL Z_WATER_PUT, Z_IS_GLOBAL, Z_TARGET
+    RETURN 1
+CASE "drop", "give"
+    IF Z_VERB == "drop" && Z_PARENT:O_WATER == O_BOTTLE && !Z_HAS(O_BOTTLE, ZF_OPEN)
+        PRINTL The bottle is closed.
+        RETURN 1
+    ENDIF
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+    IF Z_IN_BOAT
+        PRINTL There is now a puddle in the bottom of the magic boat.
+        CALL Z_MOVE_OBJECT, O_WATER, O_INFLATED_BOAT
+    ELSE
+        PRINTL The water spills to the floor and evaporates immediately.
+    ENDIF
+    RETURN 1
+CASE "throw"
+    PRINTL The water splashes on the walls and evaporates immediately.
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+    RETURN 1
+CASE "drink", "eat"
+    CALL Z_DRINK_WATER
+    RETURN 1
+CASE "board", "enter"
+    ; SWIMYUKS has a one-element PICK-ONE; it still consumes RANDOM 1.
+    Z_FROM = (Z_RANDOM(1) - 1)
+    PRINTL You can't swim in the dungeon.
+    RETURN 1
+ENDSELECT
+RETURN 0
+
+@Z_WATER_PUT(Z_GLOBAL, Z_TO)
+#DIM DYNAMIC Z_GLOBAL
+#DIM DYNAMIC Z_TO
+; WATER-F remaps GLOBAL-WATER to the singleton WATER, removing its old parent.
+SIF Z_GLOBAL
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+IF Z_IN_BOAT && (Z_TO == O_INFLATED_BOAT || (!Z_TO && Z_PARENT:O_WATER != O_INFLATED_BOAT))
+    PRINTL There is now a puddle in the bottom of the magic boat.
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+    CALL Z_MOVE_OBJECT, O_WATER, O_INFLATED_BOAT
+ELSEIF Z_TO && Z_TO != O_BOTTLE
+    PRINTFORML The water leaks out of the %Z_OBJ_NAME:Z_TO% and evaporates immediately.
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+ELSEIF Z_PARENT:O_BOTTLE == Z_PLAYER
+    IF !Z_HAS(O_BOTTLE, ZF_OPEN)
+        PRINTL The bottle is closed.
+        Z_IT = O_BOTTLE
+    ELSEIF Z_CONTAINER_EMPTY(O_BOTTLE)
+        CALL Z_MOVE_OBJECT, O_WATER, O_BOTTLE
+        PRINTL The bottle is now full of water.
+    ELSE
+        PRINTL The water slips through your fingers.
+    ENDIF
+ELSEIF Z_PARENT:O_WATER == O_BOTTLE && Z_VERB == "take" && !Z_TO
+    PRINTL It's in the bottle. Perhaps you should take that instead.
+ELSE
+    PRINTL The water slips through your fingers.
+ENDIF
+RETURN
+
+@Z_FILL(Z_CONTAINER, Z_CONTENT)
+#DIM DYNAMIC Z_CONTAINER
+#DIM DYNAMIC Z_CONTENT
+#DIMS DYNAMIC Z_OLD_VERB
+#DIMS DYNAMIC Z_OLD_PREP
+IF !Z_CONTENT
+    IF Z_GLOBAL_WATER_HERE()
+        Z_CONTENT = O_GLOBAL_WATER
+    ELSEIF (Z_IN_BOAT && Z_PARENT:O_WATER == O_INFLATED_BOAT) || (!Z_IN_BOAT && Z_PARENT:O_WATER == Z_HERE)
+        Z_CONTENT = O_WATER
+    ELSE
+        PRINTL There is nothing to fill it with.
+        RETURN
+    ENDIF
+ENDIF
+IF Z_CONTENT == O_WATER || Z_CONTENT == O_GLOBAL_WATER
+    ; WATER-F rewrites PRSA to PUT internally without PRE-PUT's HAVE gate.
+    Z_OLD_VERB '= Z_VERB
+    Z_VERB = put
+    CALL Z_WATER_PUT, Z_CONTENT == O_GLOBAL_WATER, Z_CONTAINER
+    Z_VERB '= Z_OLD_VERB
+ELSE
+    ; PRE-FILL dispatches a real PUT, including its ownership precondition.
+    IF !Z_WITHIN(Z_CONTENT, Z_PLAYER)
+        PRINTFORML That's easy for you to say since you don't even have the %Z_OBJ_NAME:Z_CONTENT%.
+        RETURN
+    ENDIF
+    Z_OLD_VERB '= Z_VERB
+    Z_OLD_PREP '= Z_HISTORY_PREP
+    Z_VERB = put
+    Z_HISTORY_PREP = in
+    Z_IT = Z_CONTENT
+    CALL Z_OBJECT_ACTION, Z_CONTENT, Z_CONTAINER
+    Z_VERB '= Z_OLD_VERB
+    Z_HISTORY_PREP '= Z_OLD_PREP
+ENDIF
+RETURN
+
+@Z_DRINK_WATER
+#DIM DYNAMIC Z_P
+Z_P = Z_PARENT:O_WATER
+IF !Z_GLOBAL_WATER_HERE()
+    IF Z_P <= 0 || Z_P > Z_OBJECT_COUNT || !Z_ACCESS(Z_P, 1)
+        PRINTL There isn't any water here.
+        RETURN
+    ELSEIF Z_PARENT:Z_P != Z_PLAYER
+        PRINTFORML You have to be holding the %Z_OBJ_NAME:Z_P% first.
+        RETURN
+    ELSEIF !Z_HAS(Z_P, ZF_OPEN)
+        PRINTFORML You'll have to open the %Z_OBJ_NAME:Z_P% first.
+        RETURN
+    ENDIF
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+ENDIF
+PRINTL Thank you very much. I was rather thirsty (from all this talking,
+PRINTL probably).
+RETURN
+
+@Z_POUR_ON(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIMS DYNAMIC Z_OLD_VERB
+SIF !Z_TARGET
+    RETURN
+IF Z_O == O_WATER || Z_O == O_GLOBAL_WATER
+    CALL Z_REMOVE_CAREFULLY, O_WATER
+    IF Z_HAS(Z_TARGET, ZF_FLAME) && Z_HAS(Z_TARGET, ZF_ON)
+        PRINTFORML The %Z_OBJ_NAME:Z_TARGET% is extinguished.
+        Z_FLAGS:Z_TARGET &= ~(ZF_ON | ZF_FLAME)
+    ELSE
+        PRINTFORML The water spills over the %Z_OBJ_NAME:Z_TARGET%, to the floor, and evaporates.
+    ENDIF
+ELSEIF Z_O == O_PUTTY
+    Z_OLD_VERB '= Z_VERB
+    Z_VERB = put
+    CALL Z_OBJECT_ACTION, Z_O, Z_TARGET
+    Z_VERB '= Z_OLD_VERB
+ELSE
+    PRINTL You can't pour that.
+ENDIF
+RETURN

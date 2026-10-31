@@ -1,0 +1,139 @@
+﻿; Source: pinned gverbs.zil generic action routines and 1actions LANTERN/BAT-F.
+; Run only after the preaction and BOTH objects' special ACTIONs declined.
+; Generic rejection is an executed command: leave Z_TIME and IT intact.
+@Z_GENERIC_OBJECT_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+SELECTCASE Z_VERB
+CASE "blast_object"
+    PRINTL You can't blast anything by using words.
+CASE "breathe"
+    CALL Z_GENERIC_REPERFORM, "inflate", Z_O, O_LUNGS
+CASE "swim"
+    CALL Z_SWIM, Z_O
+CASE "melt"
+    PRINTFORML It's not clear that a %Z_OBJ_NAME:Z_O% can be melted.
+CASE "oil"
+    PRINTL You probably put spinach in your gas tank, too.
+CASE "spray"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML The %Z_OBJ_NAME:Z_O% does not understand this.
+    ELSE
+        PRINTL How singularly useless.
+    ENDIF
+CASE "sspray"
+    CALL Z_GENERIC_REPERFORM, "spray", Z_TARGET, Z_O
+CASE "leap"
+    CALL Z_LEAP, Z_O
+CASE "kick"
+    CALL Z_HACK_HACK, "Kicking the ", Z_O
+CASE "kiss"
+    PRINTL I'd sooner kiss a pig.
+CASE "break"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        ; V-MUNG deliberately drops the instrument when it PERFORMs ATTACK.
+        CALL Z_GENERIC_REPERFORM, "attack", Z_O, 0
+    ELSE
+        PRINTL Nice try.
+    ENDIF
+CASE "turn", "plug"
+    PRINTL This has no effect.
+CASE "ring"
+    PRINTL How, exactly, can you ring that?
+CASE "wave"
+    CALL Z_HACK_HACK, "Waving the ", Z_O
+CASE "lower"
+    CALL Z_HACK_HACK, "Playing in this way with the ", Z_O
+CASE "untie"
+    PRINTL This cannot be tied, so it cannot be untied!
+CASE "tie"
+    IF Z_SP_ACTION == "V-TIE-UP"
+        PRINTL You could certainly never tie it with that!
+    ELSEIF Z_ORDER_ACTOR && Z_TARGET == Z_ORDER_ACTOR
+        ; V-TIE compares PRSI with WINNER (ME is a different object).
+        PRINTL You can't tie anything to yourself.
+    ELSE
+        PRINTFORML You can't tie the %Z_OBJ_NAME:Z_O% to that.
+    ENDIF
+CASE "squeeze"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML The %Z_OBJ_NAME:Z_O% does not understand this.
+    ELSE
+        PRINTL How singularly useless.
+    ENDIF
+CASE "inflate"
+    PRINTL How can you inflate that?
+CASE "deflate"
+    PRINTL Come on, now!
+CASE "wind"
+    PRINTFORML You cannot wind up a %Z_OBJ_NAME:Z_O%.
+CASE "cross"
+    PRINTL You can't cross that!
+CASE "throw_off"
+    PRINTL You can't throw anything off of that!
+CASE "wake"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTL He's wide awake, or haven't you noticed...
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_O% isn't sleeping.
+    ENDIF
+CASE "swing"
+    IF Z_TARGET
+        CALL Z_GENERIC_REPERFORM, "attack", Z_TARGET, Z_O
+    ELSE
+        PRINTL Whoosh!
+    ENDIF
+CASEELSE
+    CALL Z_SOURCE_VERB_OBJECT, Z_O, Z_TARGET
+    RETURN RESULT
+ENDSELECT
+RETURN 1
+
+; gmain PERFORM sets P-IT-OBJECT to the redirected direct object. Do not
+; reparse player text or run TAKE-CHECK, and do not tick the clock here.
+@Z_GENERIC_REPERFORM(Z_ACTION, Z_O, Z_TARGET)
+#DIMS DYNAMIC Z_ACTION
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIMS DYNAMIC Z_OLD_VERB
+#DIM DYNAMIC Z_OLD_DOBJ
+#DIM DYNAMIC Z_OLD_IOBJ
+Z_OLD_VERB '= Z_VERB
+Z_OLD_DOBJ = Z_DOBJ
+Z_OLD_IOBJ = Z_IOBJ
+Z_VERB '= Z_ACTION
+Z_DOBJ = Z_O
+Z_IOBJ = Z_TARGET
+Z_IT = Z_O
+CALL Z_OBJECT_ACTION, Z_O, Z_TARGET
+Z_VERB '= Z_OLD_VERB
+Z_DOBJ = Z_OLD_DOBJ
+Z_IOBJ = Z_OLD_IOBJ
+RETURN
+
+@Z_LANTERN_ACTION
+; LANTERN has no PRSO==LAMP guard: THROW SWORD AT LAMP breaks LAMP,
+; leaving the sword untouched. PRSI ACTION must precede PRSO ACTION.
+SELECTCASE Z_VERB
+CASE "throw"
+    PRINTL The lamp has smashed into the floor, and the light has gone out.
+    CALL Z_ENABLE, ZE_LANTERN, 0
+    CALL Z_REMOVE_CAREFULLY, O_LAMP
+    CALL Z_MOVE_OBJECT, O_BROKEN_LAMP, Z_HERE
+    RETURN 1
+CASE "examine"
+    CALL Z_EXAMINE, O_LAMP
+    RETURN 1
+ENDSELECT
+RETURN 0
+
+@Z_BAT_TELL
+#DIM DYNAMIC Z_I
+; FWEEP(6) decrements before testing: five cries, then one blank line.
+FOR Z_I, 0, 5
+    PRINTL     Fweep!
+NEXT
+PRINTL
+; BAT-F returns false after clearing P-CONT, so PERFORM also calls V-TELL.
+PRINTL The bat pauses for a moment, perhaps thinking that you should reread the manual.
+RETURN

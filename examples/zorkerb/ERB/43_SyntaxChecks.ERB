@@ -1,0 +1,379 @@
+﻿; gsyntax.zil argument flags / gparser.zil TAKE-CHECK and ITAKE-CHECK.
+; TAKE (8) may acquire an object without spending a turn; HAVE (2) rejects
+; an unheld object. TRYTAKE objects bypass the low-level automatic ITAKE.
+; This is native ERB, not a Python gameplay callback.
+@Z_LOAD_SYNTAX_METADATA
+VARSET Z_TRYTAKE
+VARSET Z_BURNABLE
+Z_BURNABLE:O_ADVERTISEMENT = 1
+Z_BURNABLE:O_SANDWICH_BAG = 1
+Z_BURNABLE:O_PAINTING = 1
+Z_BURNABLE:O_BOOK = 1
+Z_BURNABLE:O_LEAVES = 1
+Z_BURNABLE:O_INFLATED_BOAT = 1
+Z_BURNABLE:O_INFLATABLE_BOAT = 1
+Z_BURNABLE:O_PUNCTURED_BOAT = 1
+Z_BURNABLE:O_BOAT_LABEL = 1
+Z_BURNABLE:O_NEST = 1
+Z_BURNABLE:O_COAL = 1
+Z_BURNABLE:O_GUIDE = 1
+Z_TRYTAKE:O_WATER = 1
+Z_TRYTAKE:O_LOWERED_BASKET = 1
+Z_TRYTAKE:O_RAISED_BASKET = 1
+Z_TRYTAKE:O_BAT = 1
+Z_TRYTAKE:O_HOT_BELL = 1
+Z_TRYTAKE:O_AXE = 1
+Z_TRYTAKE:O_BOLT = 1
+Z_TRYTAKE:O_BUBBLE = 1
+Z_TRYTAKE:O_TOOL_CHEST = 1
+Z_TRYTAKE:O_TROPHY_CASE = 1
+Z_TRYTAKE:O_RUG = 1
+Z_TRYTAKE:O_CHALICE = 1
+Z_TRYTAKE:O_CYCLOPS = 1
+Z_TRYTAKE:O_DAM = 1
+Z_TRYTAKE:O_BONES = 1
+Z_TRYTAKE:O_KNIFE = 1
+Z_TRYTAKE:O_MACHINE = 1
+Z_TRYTAKE:O_MAILBOX = 1
+Z_TRYTAKE:O_MIRROR_1 = 1
+Z_TRYTAKE:O_MIRROR_2 = 1
+Z_TRYTAKE:O_GUNK = 1
+Z_TRYTAKE:O_LEAVES = 1
+Z_TRYTAKE:O_ROPE = 1
+Z_TRYTAKE:O_RUSTY_KNIFE = 1
+Z_TRYTAKE:O_LARGE_BAG = 1
+Z_TRYTAKE:O_STILETTO = 1
+Z_TRYTAKE:O_SWORD = 1
+Z_TRYTAKE:O_THIEF = 1
+Z_TRYTAKE:O_TROLL = 1
+Z_TRYTAKE:O_BODIES = 1
+RETURN
+
+@Z_BARE_RECIPIENT_SPLIT(Z_PHRASE)
+#FUNCTION
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_O
+#DIMS DYNAMIC Z_LEFT
+; The left clause must contain a noun, not just an adjective. No world writes
+; and no clarification INPUT occur while looking for this grammar boundary.
+FOR Z_P, 1, STRLENS(Z_PHRASE) - 1
+    SIF SUBSTRING(Z_PHRASE, Z_P, 1) != " "
+        CONTINUE
+    Z_LEFT '= SUBSTRING(Z_PHRASE, 0, Z_P)
+    SIF STRFIND(Z_LEFT, " and ") >= 0 || STRFIND(Z_LEFT, ",") >= 0
+        RETURNF -1
+    FOR Z_O, 1, Z_OBJECT_COUNT + 1
+        SIF Z_ACCESS(Z_O, 0) && Z_WORD_MATCH(Z_O, Z_LEFT, 0)
+            RETURNF Z_P
+    NEXT
+NEXT
+RETURNF -1
+
+@Z_SET_REQUIREMENTS
+Z_REQUIRE_D = 0
+Z_REQUIRE_I = 0
+; r29: the SYNTAX-FOUND line supplies the source STAKE(8)/SHAVE(2) bits.
+; The hand-written table below remains only for orphan-driven sentences
+; whose final syntax line is chosen after the reply.
+IF Z_SP_FOUND
+    Z_REQUIRE_D = Z_SP_LOC1 & 10
+    Z_REQUIRE_I = Z_SP_LOC2 & 10
+    ; SGIVE's clauses are stored already reversed (Z_BARE_RECIPIENT_SPLIT).
+    IF Z_SP_ACTION == "V-SGIVE"
+        Z_REQUIRE_D = Z_SP_LOC2 & 10
+        Z_REQUIRE_I = Z_SP_LOC1 & 10
+    ENDIF
+    RETURN
+ENDIF
+SELECTCASE Z_VERB
+CASE "read", "eat", "ring"
+    Z_REQUIRE_D = 8
+CASE "give", "drop", "put", "throw", "throw_off", "shake", "swing"
+    Z_REQUIRE_D = 2
+CASE "wave"
+    SIF Z_HISTORY_HEAD != "wave at"
+        Z_REQUIRE_D = 10
+CASE "on"
+    IF Z_SOURCE_VERB == "light"
+        IF Z_IOBJ
+            Z_REQUIRE_I = 10
+        ELSE
+            Z_REQUIRE_D = 10
+        ENDIF
+    ELSEIF Z_SOURCE_VERB == "turn" && Z_IOBJ
+        Z_REQUIRE_I = 2
+    ENDIF
+CASE "off"
+    Z_REQUIRE_D = 10
+CASE "break"
+    Z_REQUIRE_I = 8
+CASE "unlock", "lock"
+    Z_REQUIRE_I = 8
+CASE "attack", "dig", "burn", "open", "stab"
+    Z_REQUIRE_I = 2
+CASE "brush"
+    ; Both BRUSH object slots lack HAVE and TAKE in gsyntax.zil.
+    ; TEETH-F separately tests direct ownership of PUTTY at action time.
+    Z_REQUIRE_D = 0
+    Z_REQUIRE_I = 0
+ENDSELECT
+SIF Z_SOURCE_VERB == "light" && Z_VERB == "burn"
+    Z_REQUIRE_I = 10
+IF Z_SOURCE_VERB == "blow" || Z_SOURCE_VERB == "apply"
+    Z_REQUIRE_D = 0
+    Z_REQUIRE_I = 0
+ENDIF
+SIF Z_HISTORY_HEAD == "put down" || Z_SOURCE_VERB == "pour"
+    Z_REQUIRE_D = 0
+RETURN
+
+; Original gparser GLOBAL-CHECK + TAKE-CHECK fallback for an empty
+; DROP ALL selection. Use the room's original P?GLOBAL property order rather
+; than the unordered Z_SCOPE set. Explicit exclusions/noun filters are applied
+; before selecting the reverse-order SHAVE failure. No game-time passes here.
+@Z_EMPTY_DROP_ALL_GLOBS
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_J
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_FOUND_HELD
+#DIM DYNAMIC Z_FOUND_GLOBAL
+IF !Z_ALL || Z_VERB != "drop" || Z_ORDER_ACTOR
+    RETURN 1
+ENDIF
+; A real inventory item takes precedence over GLOBAL-CHECK rejections.
+CALL Z_SEARCH_DEPTH, 0, 1
+FOR Z_I, 0, Z_SCAN_COUNT
+    Z_O = Z_SCAN:Z_I
+    SIF Z_PARENT:Z_O != Z_PLAYER || !Z_HAS(Z_O, ZF_TAKE) || Z_EXCLUDED:Z_O
+        CONTINUE
+    SIF Z_ALL_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_ALL_FILTER, !Z_PHRASE_HAS_NOUN(Z_ALL_FILTER))
+        CONTINUE
+    Z_FOUND_HELD = 1
+    BREAK
+NEXT
+SIF Z_FOUND_HELD
+    RETURN 1
+; This is deliberately a 0-based, ordered property; SHAVE checks backwards.
+Z_I = Z_ROOM_GLOBAL_COUNT:Z_HERE - 1
+WHILE Z_I >= 0
+    Z_O = Z_ROOM_GLOBALS:Z_HERE:Z_I
+    Z_I -= 1
+    SIF Z_EXCLUDED:Z_O || !Z_ACCESS(Z_O, 0)
+        CONTINUE
+    SIF Z_ALL_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_ALL_FILTER, !Z_PHRASE_HAS_NOUN(Z_ALL_FILTER))
+        CONTINUE
+    PRINTFORML You don't have the %Z_OBJ_NAME:Z_O%.
+    RETURN 0
+WEND
+; Named but unresolvable ALL is a failure before the turn clock. It is
+; distinct from the zero-candidate TAKE-ALL response at action time.
+IF Z_ALL_FILTER != ""
+    PRINTL You don't have that!
+    RETURN 0
+ENDIF
+; If the whole room GLOBAL property was explicitly excluded, the parser
+; cannot infer any referent. Do not consume a turn in this case either.
+IF Z_ROOM_GLOBAL_COUNT:Z_HERE > 0
+    FOR Z_J, 0, Z_ROOM_GLOBAL_COUNT:Z_HERE
+        Z_O = Z_ROOM_GLOBALS:Z_HERE:Z_J
+        SIF !Z_EXCLUDED:Z_O
+            RETURN 1
+    NEXT
+    ; The exhausted exclusion list belongs to ACTION, so a clock tick
+    ; still occurs (unlike the pre-action SHAVE failure above).
+    RETURN 1
+ENDIF
+RETURN 1
+
+@Z_PREPARE_REQUIRED_OBJECTS
+#DIM DYNAMIC Z_I
+CALL Z_SET_REQUIREMENTS
+CALL Z_EMPTY_DROP_ALL_GLOBS
+SIF !RESULT
+    RETURN 0
+; TAKE-CHECK checks the direct table first, then the indirect table, and
+; ITAKE-CHECK walks each table backwards. Implicit ITAKE bypasses ACTION.
+Z_I = Z_LIST_COUNT - 1
+WHILE Z_I >= 0
+    CALL Z_REQUIRE_OBJECT, Z_LIST:Z_I, Z_REQUIRE_D
+    SIF !RESULT
+        RETURN 0
+    Z_I -= 1
+WEND
+SIF Z_IOBJ
+    CALL Z_REQUIRE_OBJECT, Z_IOBJ, Z_REQUIRE_I
+SIF Z_IOBJ && !RESULT
+    RETURN 0
+RETURN 1
+
+@Z_REQUIRE_OBJECT(Z_O, Z_BITS)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_BITS
+#DIM DYNAMIC Z_TAKEN
+SIF !Z_O || !Z_BITS
+    RETURN 1
+IF Z_O == O_IT_OBJECT
+    PRINTL I don't see what you're referring to.
+    RETURN 0
+ENDIF
+; The actor exemption follows, rather than bypasses, IT accessibility.
+SIF Z_ORDER_ACTOR
+    RETURN 1
+; ITAKE-CHECK exempts these GLOBAL body/self objects from both SHAVE and
+; STAKE. This is only a parser exception; PRE-GIVE must still check HELD?.
+SIF Z_O == O_ME || Z_O == O_HANDS
+    RETURN 1
+SIF Z_WITHIN(Z_O, Z_PLAYER)
+    RETURN 1
+Z_TAKEN = 0
+IF !Z_TRYTAKE:Z_O && (Z_BITS & 8)
+    CALL Z_IMPLICIT_TAKE, Z_O
+    Z_TAKEN = RESULT == 1
+ENDIF
+IF !Z_TAKEN && (Z_BITS & 2)
+    IF Z_O == O_NOT_HERE_OBJECT
+        PRINTL You don't have that!
+    ELSE
+        PRINTFORML You don't have the %Z_OBJ_NAME:Z_O%.
+    ENDIF
+    RETURN 0
+ENDIF
+SIF Z_TAKEN
+    PRINTL (Taken)
+RETURN 1
+
+@Z_IMPLICIT_TAKE(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_P
+; ITAKE(VB=false): no object special handler, no fumble RAND (PRSA != TAKE),
+; no clock and no change to IT. In particular, READ must not bypass a closed
+; transparent container, nor implicitly reveal the grate by taking its leaves.
+SIF Z_DEAD || !Z_HAS(Z_O, ZF_TAKE) || !Z_ACCESS(Z_O, 1)
+    RETURN 0
+Z_P = Z_PARENT:Z_O
+SIF Z_P > 0 && Z_P < 256 && Z_HAS(Z_P, ZF_CONTAINER) && !Z_HAS(Z_P, ZF_OPEN)
+    RETURN 0
+SIF Z_LOAD_WEIGHT(Z_PLAYER) + Z_OBJECT_WEIGHT(Z_O) > Z_LOAD_LIMIT
+    RETURN 0
+CALL Z_MOVE_OBJECT, Z_O, Z_PLAYER
+Z_TOUCHED:Z_O = 1
+Z_FLAGS:Z_O &= ~ZF_NDESC
+CALL Z_AWARD_TAKE, Z_O
+RETURN 1
+
+; BRUSH's two source syntax entries have one direct object and an optional
+; WITH object. No FIND flag requests a guessed brush or a guessed tool.
+@Z_CHECK_BRUSH_SYNTAX
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_WORD
+#DIMS DYNAMIC Z_CANON
+#DIMS DYNAMIC Z_NEXT_WORD
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_PREPS
+#DIM DYNAMIC Z_INVALID
+#DIM DYNAMIC Z_CLAUSES
+#DIM DYNAMIC Z_IN_CLAUSE
+#DIM DYNAMIC Z_IS_PREP
+#DIM DYNAMIC Z_IS_NOUN
+Z_S '= REPLACE(Z_NOUN, ",", " , ")
+WHILE Z_S != ""
+    Z_S '= Z_TRIM(Z_S)
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_S
+        Z_S =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= SUBSTRING(Z_S, Z_P + 1)
+    ENDIF
+    Z_IS_PREP = 0
+    IF Z_WORD == "with" || Z_WORD == "using" || Z_WORD == "through" || Z_WORD == "thru"
+        Z_WORD = with
+        Z_PREPS += 1
+        Z_IS_PREP = 1
+        SIF Z_CANON == "" || Z_S == ""
+            Z_INVALID = 1
+    ELSEIF Z_WORD == "in" || Z_WORD == "on" || Z_WORD == "at" || Z_WORD == "to" || Z_WORD == "from" || Z_WORD == "for" || Z_WORD == "under" || Z_WORD == "behind" || Z_WORD == "around" || Z_WORD == "over" || Z_WORD == "out" || Z_WORD == "off" || Z_WORD == "up" || Z_WORD == "down"
+        Z_PREPS += 1
+        Z_IS_PREP = 1
+        Z_INVALID = 1
+    ENDIF
+    ; gparser CLAUSE ends after an ordinary noun. An adjacent second
+    ; noun is another clause, not a single unresolved object name. Keep
+    ; noun/adjective lookahead and OF/AND list continuations intact.
+    Z_NEXT_WORD '= Z_FIRST_WORD(Z_TRIM(Z_S))
+    Z_IS_NOUN = Z_PHRASE_HAS_NOUN(Z_WORD) || Z_WORD == "it" || Z_WORD == "them" || Z_WORD == "him" || Z_WORD == "her"
+    IF Z_IS_PREP
+        Z_IN_CLAUSE = 0
+    ELSEIF Z_WORD_IS_NOMINAL(Z_WORD) || Z_IS_NOUN || Z_WORD == "all" || Z_WORD == "one"
+        IF !Z_IN_CLAUSE
+            Z_CLAUSES += 1
+            Z_IN_CLAUSE = 1
+        ENDIF
+        IF Z_IS_NOUN && Z_NEXT_WORD != "of" && Z_NEXT_WORD != "and" && Z_NEXT_WORD != "," && Z_NEXT_WORD != "but" && Z_NEXT_WORD != "except"
+            SIF !Z_BRUSH_WORD_IS_ADJECTIVE(Z_WORD) || !Z_PHRASE_HAS_NOUN(Z_NEXT_WORD)
+                Z_IN_CLAUSE = 0
+        ENDIF
+    ENDIF
+    SIF Z_CANON != ""
+        Z_CANON += " "
+    Z_CANON += Z_WORD
+WEND
+IF Z_PREPS > 1 || Z_CLAUSES > 2
+    PRINTL There were too many nouns in that sentence.
+    RETURN 0
+ENDIF
+IF Z_INVALID || (Z_CLAUSES > 1 && !Z_PREPS)
+    PRINTL That sentence isn't one I recognize.
+    RETURN 0
+ENDIF
+Z_NOUN '= Z_CANON
+RETURN 1
+
+@Z_BRUSH_WORD_IS_ADJECTIVE(Z_WORD)
+#FUNCTION
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_O
+Z_WORD '= "|" + SUBSTRING(Z_WORD, 0, 6) + "|"
+FOR Z_O, 1, Z_OBJECT_COUNT + 1
+    SIF STRFIND(Z_ADJECTIVES:Z_O, Z_WORD) >= 0
+        RETURNF 1
+NEXT
+RETURNF 0
+
+; SNARF-OBJECTS resolves PRSI before PRSO; MANY-CHECK rejects the completed
+; tables afterwards, checking PRSO first. Keep this order for BRUSH lists.
+@Z_RESOLVE_BRUSH_INSTRUMENT(Z_PHRASE)
+#DIMS DYNAMIC Z_PHRASE
+#DIMS DYNAMIC Z_PART
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_Q
+#DIM DYNAMIC Z_SKIP
+#DIM DYNAMIC Z_COUNT
+IF Z_PHRASE == "all" || SUBSTRING(Z_PHRASE, 0, 11) == "all except "
+    RETURN 2
+ENDIF
+WHILE Z_PHRASE != ""
+    Z_P = STRFIND(Z_PHRASE, " and ")
+    Z_Q = STRFIND(Z_PHRASE, ",")
+    Z_SKIP = 5
+    IF Z_Q >= 0 && (Z_P < 0 || Z_Q < Z_P)
+        Z_P = Z_Q
+        Z_SKIP = 1
+    ENDIF
+    IF Z_P < 0
+        Z_PART '= Z_TRIM(Z_PHRASE)
+        Z_PHRASE =
+    ELSE
+        Z_PART '= Z_TRIM(SUBSTRING(Z_PHRASE, 0, Z_P))
+        Z_PHRASE '= Z_TRIM(SUBSTRING(Z_PHRASE, Z_P + Z_SKIP))
+    ENDIF
+    CALL Z_RESOLVE, Z_PART, 0
+    SIF !RESULT || Z_ABORT
+        RETURN 0
+    SIF !Z_COUNT
+        Z_IOBJ = RESULT
+    Z_COUNT += 1
+WEND
+RETURN Z_COUNT

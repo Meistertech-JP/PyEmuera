@@ -1,0 +1,432 @@
+﻿; r16: shared GET-OBJECT/GWIM candidate engine for the supported grammar.
+; This module only searches. It must not consume RAND, change IT/TOUCH, move
+; an object, advance a clock, perform implicit TAKE, or read player input.
+; Scope: current room/player and the port's existing GLOBAL metadata. It is
+; not a claim that every original SYNTAX, PSEUDO or actor context is complete.
+@Z_CANDIDATE_MATCH(Z_O, Z_PHRASE, Z_FIND, Z_TOUCH, Z_ADJECTIVE_ONLY)
+#FUNCTION
+#DIM DYNAMIC Z_O
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_FIND
+#DIM DYNAMIC Z_TOUCH
+#DIM DYNAMIC Z_ADJECTIVE_ONLY
+SIF !Z_PARSER_REACH(Z_O, Z_TOUCH)
+    RETURNF 0
+SIF Z_PHRASE != "" && !Z_WORD_MATCH(Z_O, Z_PHRASE, Z_ADJECTIVE_ONLY)
+    RETURNF 0
+SIF Z_PHRASE == "" && !Z_FIND
+    RETURNF 0
+IF Z_FIND > ZG_SOURCE_ATTR && Z_FIND < ZG_SOURCE_ATTR + 32
+    ; r29: a FIND flag from the story's static attributes.
+    RETURNF (Z_SRC_ATTR:Z_O & (1 << (Z_FIND - ZG_SOURCE_ATTR))) != 0
+ELSEIF Z_FIND == ZG_DRINK
+    RETURNF Z_O == O_WATER || Z_O == O_GLOBAL_WATER
+ELSEIF Z_FIND == ZG_BURN
+    RETURNF Z_BURNABLE:Z_O
+ELSEIF Z_FIND
+    RETURNF Z_HAS(Z_O, Z_FIND)
+ENDIF
+RETURNF 1
+
+@Z_COLLECT_PHYSICAL(Z_PHRASE, Z_FIND, Z_BITS, Z_TOUCH)
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_FIND
+#DIM DYNAMIC Z_BITS
+#DIM DYNAMIC Z_TOUCH
+#DIM DYNAMIC Z_ROOM_MODE
+#DIM DYNAMIC Z_PLAYER_MODE
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_ADJECTIVE_ONLY
+Z_ADJECTIVE_ONLY = !Z_PHRASE_HAS_NOUN(Z_PHRASE)
+Z_CANDIDATE_COUNT = 0
+VARSET Z_CANDIDATES
+Z_ROOM_MODE = Z_SYNTAX_ROOT_MODE(Z_BITS, 0)
+Z_PLAYER_MODE = Z_SYNTAX_ROOT_MODE(Z_BITS, 1)
+; A dark room is not searched; held/carried objects still can be searched.
+SIF !Z_IS_LIT()
+    Z_ROOM_MODE = -1
+CALL Z_SEARCH_DEPTH, Z_ROOM_MODE, Z_PLAYER_MODE
+FOR Z_INDEX, 0, Z_SCAN_COUNT
+    Z_O = Z_SCAN:Z_INDEX
+    IF Z_CANDIDATE_MATCH(Z_O, Z_PHRASE, Z_FIND, Z_TOUCH, Z_ADJECTIVE_ONLY)
+        Z_CANDIDATES:Z_CANDIDATE_COUNT = Z_O
+        Z_CANDIDATE_COUNT += 1
+    ENDIF
+NEXT
+RETURN
+
+@Z_FIND_CANDIDATES(Z_PHRASE, Z_FIND, Z_BITS, Z_TOUCH)
+#DIMS DYNAMIC Z_PHRASE
+#DIM DYNAMIC Z_FIND
+#DIM DYNAMIC Z_BITS
+#DIM DYNAMIC Z_TOUCH
+#DIM DYNAMIC Z_BROAD, 256
+#DIM DYNAMIC Z_BROAD_COUNT
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_PASS
+#DIM DYNAMIC Z_ADJECTIVE_ONLY
+; Ordinary named input and GWIM start with the broad -1 search in GET-OBJECT.
+; A unique broad match wins even outside the preferred syntax locations.
+CALL Z_COLLECT_PHYSICAL, Z_PHRASE, Z_FIND, 240, Z_TOUCH
+IF Z_CANDIDATE_COUNT > 1 && Z_BITS != 240
+    Z_BROAD_COUNT = Z_CANDIDATE_COUNT
+    FOR Z_INDEX, 0, Z_BROAD_COUNT
+        Z_BROAD:Z_INDEX = Z_CANDIDATES:Z_INDEX
+    NEXT
+    CALL Z_COLLECT_PHYSICAL, Z_PHRASE, Z_FIND, Z_BITS, Z_TOUCH
+    ; When narrowing finds no candidate, retain the earlier ambiguity.
+    IF !Z_CANDIDATE_COUNT
+        Z_CANDIDATE_COUNT = Z_BROAD_COUNT
+        FOR Z_INDEX, 0, Z_BROAD_COUNT
+            Z_CANDIDATES:Z_INDEX = Z_BROAD:Z_INDEX
+        NEXT
+    ENDIF
+ENDIF
+SIF Z_CANDIDATE_COUNT
+    RETURN
+Z_ADJECTIVE_ONLY = !Z_PHRASE_HAS_NOUN(Z_PHRASE)
+CALL Z_SEARCH_ORDER
+; GLOBAL-CHECK combines room GLOBAL and PSEUDO candidates before the
+; GLOBAL-OBJECTS fallback. It never adds globals to successful physical hits.
+FOR Z_PASS, 1, 3
+    FOR Z_INDEX, 0, Z_SCAN_COUNT
+        Z_O = Z_SCAN:Z_INDEX
+        SIF Z_WITHIN(Z_O, Z_HERE) || Z_WITHIN(Z_O, Z_PLAYER)
+            CONTINUE
+        SIF !Z_SCOPE:Z_O:Z_HERE && Z_SCOPE_CLASS:Z_O != 3
+            CONTINUE
+        IF Z_PASS == 1
+            SIF Z_SCOPE_CLASS:Z_O != 1 && Z_SCOPE_CLASS:Z_O != 2
+                CONTINUE
+        ELSE
+            SIF Z_SCOPE_CLASS:Z_O != 3
+                CONTINUE
+        ENDIF
+        IF Z_CANDIDATE_MATCH(Z_O, Z_PHRASE, Z_FIND, Z_TOUCH, Z_ADJECTIVE_ONLY)
+            Z_CANDIDATES:Z_CANDIDATE_COUNT = Z_O
+            Z_CANDIDATE_COUNT += 1
+        ENDIF
+    NEXT
+    IF Z_PASS == 1 && Z_PHRASE != ""
+        CALL Z_SELECT_PSEUDO, Z_PHRASE
+        IF RESULT
+            Z_CANDIDATES:Z_CANDIDATE_COUNT = O_PSEUDO_OBJECT
+            Z_CANDIDATE_COUNT += 1
+        ENDIF
+    ENDIF
+    SIF Z_CANDIDATE_COUNT
+        RETURN
+NEXT
+RETURN
+
+@Z_GWIM(Z_FIND, Z_BITS)
+#DIM DYNAMIC Z_FIND
+#DIM DYNAMIC Z_BITS
+SIF !Z_FIND
+    RETURN 0
+CALL Z_FIND_CANDIDATES, "", Z_FIND, Z_BITS, 0
+IF Z_CANDIDATE_COUNT != 1
+    SIF Z_ORDER_ACTOR && Z_CANDIDATE_COUNT > 1
+        CALL Z_ACTOR_CANT_ORPHAN
+    RETURN 0
+ENDIF
+RETURN Z_CANDIDATES:0
+
+@Z_INFER_DIRECT
+#DIM DYNAMIC Z_FIND
+#DIM DYNAMIC Z_BITS
+Z_BITS = 240
+SELECTCASE Z_VERB
+CASE "open", "close"
+    Z_FIND = ZF_DOOR
+CASE "take"
+    Z_FIND = ZF_TAKE
+    Z_BITS = ZS_SOG | ZS_SIR
+CASE "attack"
+    Z_FIND = ZF_ACTOR
+    Z_BITS = ZS_SOG | ZS_SIR
+CASE "read"
+    Z_FIND = ZF_READ
+CASE "eat"
+    Z_FIND = ZF_FOOD
+CASE "drink"
+    Z_FIND = ZG_DRINK
+CASE "on"
+    Z_FIND = ZF_LIGHT
+CASE "off"
+    Z_FIND = ZF_ON
+CASE "fill"
+    Z_FIND = ZF_CONTAINER
+CASEELSE
+    RETURN 0
+ENDSELECT
+CALL Z_GWIM, Z_FIND, Z_BITS
+RETURN RESULT
+
+@Z_INFER_INSTRUMENT
+#DIM DYNAMIC Z_FIND
+#DIM DYNAMIC Z_BITS
+Z_BITS = ZS_SH | ZS_SC
+SELECTCASE Z_VERB
+CASE "attack", "cut"
+    Z_FIND = ZF_WEAPON
+CASE "dig", "lock", "unlock"
+    Z_FIND = ZF_TOOL
+    SIF Z_VERB == "lock" || Z_VERB == "unlock"
+        Z_BITS = 240
+CASE "burn", "melt"
+    Z_FIND = ZF_FLAME
+    Z_BITS = 240
+CASEELSE
+    RETURN 0
+ENDSELECT
+CALL Z_GWIM, Z_FIND, Z_BITS
+RETURN RESULT
+
+@Z_WITHOUT_ARTICLES(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_OUT
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_P
+WHILE Z_S != ""
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_S
+        Z_S =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= SUBSTRING(Z_S, Z_P + 1)
+    ENDIF
+    SIF Z_WORD == "the" || Z_WORD == "a" || Z_WORD == "an" || Z_WORD == "some"
+        CONTINUE
+    SIF Z_OUT != ""
+        Z_OUT += " "
+    Z_OUT += Z_WORD
+WEND
+RETURNF Z_OUT
+
+@Z_ORPHAN_OBJECT_TEXT(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_OUT
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_FIRST_TOKEN
+#DIM DYNAMIC Z_PRONOUN
+; gparser BUFFER-PRINT: only the literal ME token prints DESC(ME).
+; MYSELF/SELF/CRETIN remain ordinary words; accessible IT prints its referent.
+; This display-only helper does not resolve candidates or change P-IT-OBJECT.
+Z_S '= Z_WITHOUT_ARTICLES(Z_S)
+Z_FIRST_TOKEN = 1
+WHILE Z_S != ""
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_S
+        Z_S =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= SUBSTRING(Z_S, Z_P + 1)
+    ENDIF
+    SIF Z_OUT != ""
+        Z_OUT += " "
+    IF Z_WORD == "me"
+        Z_OUT += Z_OBJ_NAME:O_ME
+        Z_PRONOUN = 1
+    ELSE
+        SIF Z_FIRST_TOKEN && !Z_PRONOUN
+            Z_OUT += "the "
+        IF Z_WORD == "it" && Z_IT && Z_ACCESS(Z_IT, 1) && !Z_WAS_AGAIN
+            Z_OUT += Z_OBJ_NAME:Z_IT
+        ELSE
+            Z_OUT += Z_WORD
+        ENDIF
+        Z_FIRST_TOKEN = 0
+    ENDIF
+WEND
+RETURNF Z_OUT
+
+@Z_ORPHAN_WORDS(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_OUT
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_P
+Z_S '= Z_WITHOUT_ARTICLES(Z_S)
+WHILE Z_S != ""
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_S
+        Z_S =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= SUBSTRING(Z_S, Z_P + 1)
+    ENDIF
+    SIF Z_OUT != ""
+        Z_OUT += " "
+    Z_OUT += Z_DICTIONARY_KEY(Z_WORD)
+WEND
+RETURNF Z_OUT
+
+@Z_PHRASE_NOUN(Z_S)
+#FUNCTIONS
+#DIMS DYNAMIC Z_S
+#DIMS DYNAMIC Z_WORD
+#DIMS DYNAMIC Z_LAST
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_O
+WHILE Z_S != ""
+    Z_P = STRFIND(Z_S, " ")
+    IF Z_P < 0
+        Z_WORD '= Z_S
+        Z_S =
+    ELSE
+        Z_WORD '= SUBSTRING(Z_S, 0, Z_P)
+        Z_S '= SUBSTRING(Z_S, Z_P + 1)
+    ENDIF
+    Z_WORD '= Z_DICTIONARY_KEY(Z_WORD)
+    FOR Z_O, 1, Z_OBJECT_COUNT + 1
+        IF STRFIND(Z_NOUNS:Z_O, "|" + Z_WORD + "|") >= 0
+            Z_LAST '= Z_WORD
+            BREAK
+        ENDIF
+    NEXT
+WEND
+RETURNF Z_LAST
+
+@Z_PHRASE_HAS_NOUN(Z_S)
+#FUNCTION
+#DIMS DYNAMIC Z_S
+RETURNF Z_PHRASE_NOUN(Z_S) != ""
+
+@Z_WORD_IS_NOMINAL(Z_WORD)
+#FUNCTION
+#DIMS DYNAMIC Z_WORD
+#DIM DYNAMIC Z_O
+Z_WORD '= "|" + Z_DICTIONARY_KEY(Z_WORD) + "|"
+FOR Z_O, 1, Z_OBJECT_COUNT + 1
+    SIF STRFIND(Z_NOUNS:Z_O, Z_WORD) >= 0 || STRFIND(Z_ADJECTIVES:Z_O, Z_WORD) >= 0
+        RETURNF 1
+NEXT
+RETURNF 0
+
+; ACCESSIBLE? is winner-relative for IT. Normal named GET-OBJECT continues
+; to search PLAYER inventory, which is a distinct original parser contract.
+@Z_PRONOUN_ACCESSIBLE(Z_O)
+#FUNCTION
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_I
+; The active source has its LAST-PSEUDO-LOC exception commented out.
+; Do not make IT accessible merely because the name was just selected.
+SIF Z_O == O_PSEUDO_OBJECT
+    RETURNF 0
+SIF !Z_ORDER_ACTOR
+    RETURNF Z_ACCESS(Z_O, 1)
+SIF Z_O <= 0 || Z_O > Z_OBJECT_COUNT || Z_HAS(Z_O, ZF_HIDDEN)
+    RETURNF 0
+SIF Z_SCOPE_CLASS:Z_O == 3 || Z_SCOPE:Z_O:Z_HERE
+    RETURNF 1
+Z_P = Z_O
+FOR Z_I, 0, Z_OBJECT_COUNT
+    Z_P = Z_PARENT:Z_P
+    SIF Z_P == Z_ORDER_ACTOR || Z_P == Z_HERE || Z_P == Z_PARENT:Z_ORDER_ACTOR
+        RETURNF 1
+    SIF Z_P <= 0 || Z_P > Z_OBJECT_COUNT || !Z_HAS(Z_P, ZF_OPEN)
+        RETURNF 0
+NEXT
+RETURNF 0
+
+; Read-only check of BUT-MERGE before action-time TAKE filtering.
+@Z_ALL_EXCLUSION_EMPTY
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_MATCHES
+#DIM DYNAMIC Z_REMAIN
+CALL Z_SEARCH_DEPTH, 1, -1
+FOR Z_I, 0, Z_SCAN_COUNT
+    Z_O = Z_SCAN:Z_I
+    SIF !Z_ACCESS(Z_O, 0)
+        CONTINUE
+    SIF Z_ALL_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_ALL_FILTER, !Z_PHRASE_HAS_NOUN(Z_ALL_FILTER))
+        CONTINUE
+    Z_MATCHES += 1
+    SIF !Z_EXCLUDED:Z_O
+        Z_REMAIN += 1
+NEXT
+RETURN Z_MATCHES > 0 && Z_REMAIN == 0
+
+@Z_PREPARE_EXAMINE_ALL
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_COUNT
+#DIM DYNAMIC Z_CAND, 256
+#DIMS DYNAMIC Z_FILTER
+Z_ALL = 1
+IF SUBSTRING(Z_NOUN, 0, 11) == "all except "
+    CALL Z_RESOLVE_LIST, SUBSTRING(Z_NOUN, 11), 1
+    SIF Z_ABORT || !RESULT
+        RETURN
+ELSEIF SUBSTRING(Z_NOUN, 0, 4) == "all "
+    Z_FILTER '= Z_TRIM(SUBSTRING(Z_NOUN, 4))
+    SIF Z_FILTER == "of" || SUBSTRING(Z_FILTER, 0, 3) == "of "
+        Z_FILTER =
+ENDIF
+Z_ALL_FILTER '= Z_FILTER
+IF Z_VERB == "inside"
+    CALL Z_SEARCH_DEPTH, 1, 1
+    FOR Z_I, 0, Z_SCAN_COUNT
+        Z_O = Z_SCAN:Z_I
+        SIF !Z_ACCESS(Z_O, 0)
+            CONTINUE
+        SIF Z_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_FILTER, !Z_PHRASE_HAS_NOUN(Z_FILTER))
+            CONTINUE
+        Z_CAND:Z_COUNT = Z_O
+        Z_COUNT += 1
+    NEXT
+ENDIF
+IF Z_COUNT == 0
+    FOR Z_I, 0, Z_ROOM_GLOBAL_COUNT:Z_HERE
+        Z_O = Z_ROOM_GLOBALS:Z_HERE:Z_I
+        SIF !Z_ACCESS(Z_O, 0)
+            CONTINUE
+        SIF Z_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_FILTER, !Z_PHRASE_HAS_NOUN(Z_FILTER))
+            CONTINUE
+        Z_CAND:Z_COUNT = Z_O
+        Z_COUNT += 1
+    NEXT
+ENDIF
+; GLOBAL-CHECK appends a specifically named PSEUDO to local GLOBALs, but
+; unqualified ALL never enumerates P?PSEUDO names.
+IF Z_FILTER != ""
+    CALL Z_SELECT_PSEUDO, Z_FILTER
+    IF RESULT
+        Z_CAND:Z_COUNT = O_PSEUDO_OBJECT
+        Z_COUNT += 1
+    ENDIF
+ENDIF
+IF Z_COUNT == 0
+    FOR Z_I, 0, Z_OBJECT_COUNT
+        Z_O = Z_INITIAL_ORDER:Z_I
+        SIF Z_SCOPE_CLASS:Z_O != 3 || !Z_ACCESS(Z_O, 0)
+            CONTINUE
+        SIF Z_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_FILTER, !Z_PHRASE_HAS_NOUN(Z_FILTER))
+            CONTINUE
+        Z_CAND:Z_COUNT = Z_O
+        Z_COUNT += 1
+    NEXT
+ENDIF
+Z_LIST_COUNT = 0
+FOR Z_I, 0, Z_COUNT
+    Z_O = Z_CAND:Z_I
+    SIF Z_EXCLUDED:Z_O
+        CONTINUE
+    Z_LIST:Z_LIST_COUNT = Z_O
+    Z_LIST_COUNT += 1
+NEXT
+SIF Z_LIST_COUNT
+    Z_DOBJ = Z_LIST:0
+Z_VALID = 1
+RETURN

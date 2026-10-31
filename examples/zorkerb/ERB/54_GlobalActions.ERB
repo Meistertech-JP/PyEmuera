@@ -1,0 +1,33 @@
+﻿; gglobals.zil ZORKMID-FUNCTION and 1actions.zil TEETH-F.
+; PERFORM calls PRSI's ACTION before PRSO's ACTION. The action owner is
+; explicit so a direct-only condition is not accidentally used for PRSI.
+@Z_R20_GLOBAL_ACTION(Z_ACTION_OBJECT, Z_O, Z_TARGET)
+#DIM DYNAMIC Z_ACTION_OBJECT
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_ACTION_OBJECT == O_ZORKMID
+    IF Z_VERB == "examine"
+        PRINTL The zorkmid is the unit of currency of the Great Underground Empire.
+        RETURN 1
+    ELSEIF Z_VERB == "find"
+        PRINTL The best way to find zorkmids is to go out and look for them.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_ACTION_OBJECT == O_TEETH && Z_VERB == "brush" && Z_O == O_TEETH
+    ; IN? is direct ownership, not recursive HELD?. BRUSH has neither
+    ; HAVE nor TAKE, so the tool remains in its actual parsed location.
+    IF Z_TARGET == O_PUTTY && Z_PARENT:O_PUTTY == Z_PLAYER
+        PRINTL Well, you seem to have been brushing your teeth with some sort of
+        PRINTL glue. As a result, your mouth gets glued together (with your nose)
+        PRINTL and you die of respiratory failure.
+        CALL Z_FATAL_BOUNDARY
+    ELSEIF !Z_TARGET
+        PRINTL Dental hygiene is highly recommended, but I'm not sure what you want
+        PRINTL to brush them with.
+    ELSE
+        PRINTFORML A nice idea, but with a %Z_OBJ_NAME:Z_TARGET%?
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0

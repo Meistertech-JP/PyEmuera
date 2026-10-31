@@ -1,0 +1,888 @@
+﻿@Z_PERFORM
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_N
+IF (Z_VERB == "hello" || Z_VERB == "examine" || Z_VERB == "inside") && Z_ALL
+    IF Z_LIST_COUNT == 0
+        IF Z_ALL_FILTER != "" && (Z_VERB == "examine" || Z_VERB == "inside")
+            PRINTL The object that you mentioned isn't here.
+        ELSE
+            PRINTL It's not clear what you're referring to.
+        ENDIF
+        RETURN
+    ENDIF
+    SIF Z_LIST_COUNT == 1
+        PRINTFORM %Z_OBJ_NAME:Z_DOBJ%: 
+    Z_ALL = 0
+ENDIF
+IF Z_LIST_COUNT > 1
+    CALL Z_PERFORM_LIST
+    RETURN
+ENDIF
+; PERFORM resolves IT before changing PRSO/P-IT-OBJECT. An unavailable
+; pronoun is an action-time fatal result (unlike TAKE-CHECK failure).
+IF Z_DOBJ == O_IT_OBJECT || Z_IOBJ == O_IT_OBJECT
+    IF !Z_IT || !Z_PRONOUN_ACCESSIBLE(Z_IT)
+        PRINTL I don't see what you are referring to.
+        Z_ABORT = 1
+        Z_PENDING =
+        RETURN
+    ENDIF
+    ; Earlier elements in a MANY list may establish a referent before this
+    ; element is performed. Resolve the placeholder at dispatch time too.
+    SIF Z_DOBJ == O_IT_OBJECT
+        Z_DOBJ = Z_IT
+    SIF Z_IOBJ == O_IT_OBJECT
+        Z_IOBJ = Z_IT
+ENDIF
+; Set the direct-object referent before callbacks, including NOT-HERE.
+SIF Z_DOBJ && Z_VERB != "walk"
+    Z_IT = Z_DOBJ
+IF Z_ORDER_ACTOR
+    ; NOT-HERE runs even before the actor callback in original PERFORM.
+    IF Z_DOBJ == O_NOT_HERE_OBJECT || Z_IOBJ == O_NOT_HERE_OBJECT
+        IF Z_DOBJ == O_NOT_HERE_OBJECT && Z_IOBJ == O_NOT_HERE_OBJECT
+            PRINTL Those things aren't here!
+        ELSEIF Z_IOBJ == O_NOT_HERE_OBJECT
+            CALL Z_MISSING_OBJECT, Z_SP_NOTHERE_TEXT(2, Z_NOTHERE_I)
+        ELSE
+            CALL Z_MISSING_OBJECT, Z_SP_NOTHERE_TEXT(1, Z_NOTHERE_D)
+        ENDIF
+        Z_ABORT = 1
+    ELSEIF Z_ALL
+        CALL Z_PERFORM_ALL
+    ELSE
+        CALL Z_ACTOR_RESPONSE
+    ENDIF
+    RETURN
+ENDIF
+; PERFORM: NOT-HERE-OBJECT-F precedes the WINNER's ACTION (DEAD-FUNCTION),
+; the vehicle/room M-BEG and the PREACTION (gmain.zil).
+IF Z_DOBJ == O_NOT_HERE_OBJECT || Z_IOBJ == O_NOT_HERE_OBJECT
+    IF Z_DOBJ == O_NOT_HERE_OBJECT && Z_IOBJ == O_NOT_HERE_OBJECT
+        PRINTL Those things aren't here!
+    ELSEIF Z_IOBJ == O_NOT_HERE_OBJECT
+        CALL Z_MISSING_OBJECT, Z_SP_NOTHERE_TEXT(2, Z_NOTHERE_I)
+    ELSE
+        CALL Z_MISSING_OBJECT, Z_SP_NOTHERE_TEXT(1, Z_NOTHERE_D)
+    ENDIF
+    Z_PENDING =
+    RETURN
+ENDIF
+CALL Z_GHOST_ACTION
+SIF RESULT
+    RETURN
+CALL Z_BOAT_PRE_ACTION
+SIF RESULT
+    RETURN
+CALL Z_SIMPLE_ACTION
+SIF RESULT
+    RETURN
+IF Z_VERB == "burn"
+    IF !Z_IOBJ
+        PRINTL You didn't say with what!
+        RETURN
+    ELSEIF !Z_HAS(Z_IOBJ, ZF_FLAME) || !Z_HAS(Z_IOBJ, ZF_ON)
+        PRINTFORML With a %Z_OBJ_NAME:Z_IOBJ%??!?
+        RETURN
+    ENDIF
+ENDIF
+SELECTCASE Z_VERB
+CASE "swim"
+    IF !Z_DOBJ
+        CALL Z_SWIM, 0
+        RETURN
+    ENDIF
+CASE "leap"
+    IF !Z_DOBJ
+        CALL Z_LEAP, 0
+        RETURN
+    ENDIF
+CASE "follow"
+    IF !Z_DOBJ
+        PRINTL You're nuts!
+        RETURN
+    ENDIF
+CASE "say"
+    CALL Z_SAY
+    RETURN
+CASE "hello"
+    IF !Z_DOBJ
+        CALL Z_HELLO
+        RETURN
+    ENDIF
+CASE "stand"
+    IF Z_IN_BOAT
+        CALL Z_DISEMBARK
+    ELSE
+        PRINTL You are already standing, I think.
+    ENDIF
+    RETURN
+CASE "launch"
+    ; V-LAUNCH defaults; the boat's own ACTION launches it.
+    IF Z_DOBJ && !(Z_DOBJ == O_INFLATED_BOAT && Z_IN_BOAT)
+        IF Z_SRC_ATTR:Z_DOBJ & (1 << 27)
+            PRINTL You can't launch that by saying "launch"!
+        ELSE
+            PRINTL That's pretty weird.
+        ENDIF
+        RETURN
+    ENDIF
+    CALL Z_LAUNCH
+    RETURN
+CASE "land"
+    CALL Z_LAND
+    RETURN
+CASE "disembark"
+    IF Z_DOBJ == O_ME
+        CALL Z_ME_ACTION, Z_DOBJ, Z_IOBJ
+    ELSEIF Z_DOBJ && Z_DOBJ != O_INFLATED_BOAT
+        PRINTL You're not in that!
+        Z_ABORT = 1
+        Z_PENDING =
+    ELSE
+        CALL Z_DISEMBARK
+    ENDIF
+    RETURN
+CASE "pray"
+    IF Z_HERE == R_SOUTH_TEMPLE
+        Z_HERE = R_FOREST_1
+        CALL Z_FOREST_ENTER
+        CALL Z_LOOK, 1
+    ELSE
+        PRINTL If you pray enough, your prayers may be answered.
+    ENDIF
+    RETURN
+CASE "exorcise"
+    ; LLD-ROOM M-BEG precedes the object ACTIONs and V-EXORCISE.
+    IF Z_HERE == R_ENTRANCE_TO_HADES && !Z_LLD_OPEN
+        IF Z_PARENT:O_BELL == Z_PLAYER && Z_PARENT:O_BOOK == Z_PLAYER && Z_PARENT:O_CANDLES == Z_PLAYER
+            PRINTL You must perform the ceremony.
+        ELSE
+            PRINTL You aren't equipped for an exorcism.
+        ENDIF
+        RETURN
+    ENDIF
+CASE "echo"
+    ; V-ECHO: the last typed word twice, then "...".
+    PRINTFORML %Z_SP_LAST_WORD()% %Z_SP_LAST_WORD()% ...
+    RETURN
+CASE "odysseus"
+    CALL Z_ODYSSEUS
+    RETURN
+CASE "walk"
+    CALL Z_WALK, Z_DIRECTION
+    RETURN
+CASE "diagnose"
+    CALL Z_DIAGNOSE
+    RETURN
+CASE "look"
+    CALL Z_LOOK, 1
+    RETURN
+CASE "inventory"
+    CALL Z_INVENTORY
+    RETURN
+CASE "wait"
+    PRINTL Time passes...
+    ; V-WAIT: at most three clocks; a scheduled event can interrupt waiting.
+    ; The regular end-of-command clock is suppressed after these clocks.
+    FOR Z_N, 0, 3
+        CALL Z_TICK
+        SIF RESULT
+            BREAK
+    NEXT
+    Z_CLOCK_WAIT = !Z_GAME_OVER
+    RETURN
+ENDSELECT
+IF Z_ALL
+    CALL Z_PERFORM_ALL
+    RETURN
+ENDIF
+SIF !Z_DOBJ
+    RETURN
+; GET-OBJECT already omits dark room searches while keeping GLOBALs and
+; inventory available. Only PRE-READ rejects darkness at action time;
+; EXAMINE/LOOK-INSIDE/LOOK-UNDER and object ACTIONs have no blanket LIT gate.
+IF Z_VERB == "read" && !Z_IS_LIT()
+    PRINTL It is impossible to read in the dark.
+    RETURN
+ENDIF
+CALL Z_OBJECT_ACTION, Z_DOBJ, Z_IOBJ
+RETURN
+
+@Z_PERFORM_ALL
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_CAND, 256
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_COUNT
+#DIM DYNAMIC Z_EXCEPT
+#DIM DYNAMIC Z_PARENT_ID
+#DIM DYNAMIC Z_ALL_TARGET
+#DIM DYNAMIC Z_NAMED_FOUND
+#DIM DYNAMIC Z_ALL_EXCLUDED
+Z_EXCEPT = Z_DOBJ
+Z_ALL_TARGET = Z_IOBJ
+IF Z_VERB == "take"
+    CALL Z_ALL_EXCLUSION_EMPTY
+    IF RESULT
+        PRINTL It's not clear what you're referring to.
+        RETURN
+    ENDIF
+ENDIF
+IF !Z_IS_LIT() && Z_VERB == "take"
+    PRINTL It's too dark to see.
+    RETURN
+ENDIF
+; Snapshot candidate IDs before modifying containment. TAKE ALL does not
+; indiscriminately strip the contents of every nested carried container.
+CALL Z_SEARCH_ORDER
+FOR Z_INDEX, 0, Z_SCAN_COUNT
+    Z_O = Z_SCAN:Z_INDEX
+    ; ALL collects visible matches. A transparent closed parent is rejected
+    ; later by PRE-TAKE, so the individual object and its refusal are printed.
+    SIF Z_O == Z_EXCEPT || Z_EXCLUDED:Z_O || !Z_ACCESS(Z_O, 0)
+        CONTINUE
+    SIF Z_ALL_FILTER != "" && !Z_WORD_MATCH(Z_O, Z_ALL_FILTER, !Z_PHRASE_HAS_NOUN(Z_ALL_FILTER))
+        CONTINUE
+    IF Z_VERB == "take"
+        ; MAIN-LOOP-1 permits TRYTAKEBIT as well as TAKEBIT. NDESC does not
+        ; exclude a physical room child such as the dam, bubble, or bolt.
+        SIF !Z_HAS(Z_O, ZF_TAKE) && !Z_TRYTAKE:Z_O
+            CONTINUE
+        Z_PARENT_ID = Z_PARENT:Z_O
+        SIF Z_PARENT_ID == Z_PLAYER
+            CONTINUE
+        IF Z_IOBJ
+            ; Explicit FROM includes contents of a container we already carry.
+            SIF Z_PARENT_ID != Z_IOBJ
+                CONTINUE
+        ELSE
+            SIF Z_WITHIN(Z_O, Z_PLAYER)
+                CONTINUE
+            SIF Z_PARENT_ID != Z_HERE && !Z_HAS(Z_PARENT_ID, ZF_SURFACE)
+                CONTINUE
+        ENDIF
+    ELSE
+        SIF !Z_HAS(Z_O, ZF_TAKE) || Z_PARENT:Z_O != Z_PLAYER || Z_O == Z_IOBJ
+            CONTINUE
+    ENDIF
+    Z_CAND:Z_COUNT = Z_O
+    Z_COUNT += 1
+NEXT
+IF !Z_COUNT
+    ; Excluding every room GLOBAL leaves no referent; the original answers
+    ; in ACTION and charges a turn, rather than rejecting in GLOBAL-CHECK.
+    IF Z_VERB == "drop" && Z_ALL_FILTER == "" && Z_ROOM_GLOBAL_COUNT:Z_HERE > 0
+        Z_ALL_EXCLUDED = 1
+        FOR Z_INDEX, 0, Z_ROOM_GLOBAL_COUNT:Z_HERE
+            Z_O = Z_ROOM_GLOBALS:Z_HERE:Z_INDEX
+            IF !Z_EXCLUDED:Z_O
+                Z_ALL_EXCLUDED = 0
+                BREAK
+            ENDIF
+        NEXT
+        IF Z_ALL_EXCLUDED
+            PRINTL It's not clear what you're referring to.
+            RETURN
+        ENDIF
+    ENDIF
+    ; The original distinguishes a visible but ineligible target from a
+    ; restrictive ALL noun not referring to anything in present scope.
+    IF Z_VERB == "take" && Z_ALL_FILTER != ""
+        FOR Z_INDEX, 0, Z_SCAN_COUNT
+            Z_O = Z_SCAN:Z_INDEX
+            IF Z_ACCESS(Z_O, 0) && Z_WORD_MATCH(Z_O, Z_ALL_FILTER, !Z_PHRASE_HAS_NOUN(Z_ALL_FILTER))
+                Z_NAMED_FOUND = 1
+                BREAK
+            ENDIF
+        NEXT
+        IF !Z_NAMED_FOUND
+            CALL Z_SELECT_PSEUDO, Z_ALL_FILTER
+            Z_NAMED_FOUND = RESULT != 0
+        ENDIF
+        IF !Z_NAMED_FOUND
+            PRINTL The object that you mentioned isn't here.
+            RETURN
+        ENDIF
+    ENDIF
+    PRINTL There's nothing here you can take.
+    RETURN
+ENDIF
+FOR Z_INDEX, 0, Z_COUNT
+    Z_O = Z_CAND:Z_INDEX
+    IF Z_O
+        PRINTFORM %Z_OBJ_NAME:Z_O%: 
+        Z_IT = Z_O
+        ; PRE-TAKE consumes a valid FROM for one PERFORM only. Preserve the
+        ; command's indirect object for the next member of the ALL list.
+        Z_IOBJ = Z_ALL_TARGET
+        IF Z_ORDER_ACTOR
+            CALL Z_ACTOR_RESPONSE
+        ELSE
+            CALL Z_OBJECT_ACTION, Z_O, Z_ALL_TARGET
+        ENDIF
+        SIF Z_ABORT || Z_DEATH_THIS_TURN || Z_GAME_OVER
+            BREAK
+    ENDIF
+NEXT
+RETURN
+
+@Z_OBJECT_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+; PRE-TAKE runs before either object's ACTION. A valid FROM is consumed,
+; preventing an indirect scenery ACTION from intercepting the actual TAKE.
+IF Z_VERB == "take"
+    IF Z_PARENT:Z_O == Z_PLAYER
+        PRINTL You already have that!
+        RETURN
+    ELSEIF Z_HAS(Z_PARENT:Z_O, ZF_CONTAINER) && !Z_HAS(Z_PARENT:Z_O, ZF_OPEN)
+        PRINTL You can't reach something that's inside a closed container.
+        RETURN
+    ELSEIF Z_TARGET
+        IF Z_TARGET != O_GROUND && Z_PARENT:Z_O != Z_TARGET
+            PRINTFORML The %Z_OBJ_NAME:Z_O% isn't in the %Z_OBJ_NAME:Z_TARGET%.
+            RETURN
+        ENDIF
+        Z_TARGET = 0
+        Z_IOBJ = 0
+    ELSEIF Z_IN_BOAT && Z_O == O_INFLATED_BOAT
+        PRINTL You're inside of it!
+        RETURN
+    ENDIF
+ENDIF
+; PRE-MOVE precedes both indirect and direct object ACTIONs. HELD? follows
+; containment recursively, including objects inside a carried container.
+IF Z_VERB == "move" && Z_SP_ACTION != "V-PUSH" && Z_WITHIN(Z_O, Z_PLAYER)
+    PRINTL You aren't an accomplished enough juggler.
+    RETURN
+ENDIF
+CALL Z_SELF_PREACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+; PRE-BOARD precedes both objects' ACTIONs (the vehicle checks are in the
+; boat's code, which runs them in the same order).
+IF Z_VERB == "board" && Z_O && !(Z_SRC_ATTR:Z_O & (1 << 27))
+    IF Z_O == O_WATER || Z_O == O_GLOBAL_WATER
+        CALL Z_GENERIC_REPERFORM, "swim", Z_O, 0
+    ELSE
+        PRINTFORML You have a theory on how to board a %Z_OBJ_NAME:Z_O%, perhaps?
+        Z_PENDING =
+    ENDIF
+    RETURN
+ENDIF
+; PRE-TURN (gverbs.zil) precedes any object's ACTION, except the book.
+; Zork I requires an explicit tool for all other TURN commands.
+IF Z_VERB == "turn"
+    IF !Z_TARGET && Z_O != O_BOOK
+        PRINTL Your bare hands don't appear to be enough.
+        RETURN
+    ENDIF
+    ; TURNBIT in the pinned Zork I data belongs to exactly these objects.
+    ; PRE-TURN runs before either object's ACTION, including a target lamp.
+    IF Z_O != O_BOLT && Z_O != O_BOOK && Z_O != O_MACHINE_SWITCH
+        PRINTL You can't turn that!
+        RETURN
+    ENDIF
+ENDIF
+IF !Z_ACCESS(Z_O, 1) && !Z_WATER_REACH_HANDLED(Z_O) && !(Z_VERB == "give" && Z_WITHIN(Z_O, Z_PLAYER)) && !(Z_VERB == "put" && Z_WITHIN(Z_O, Z_PLAYER)) && Z_VERB != "examine" && Z_VERB != "read" && Z_VERB != "inside" && Z_VERB != "under" && Z_VERB != "listen" && Z_VERB != "count" && Z_VERB != "brush" && Z_VERB != "swim" && Z_VERB != "melt" && Z_VERB != "oil" && Z_VERB != "spray" && Z_VERB != "sspray" && Z_VERB != "breathe" && Z_VERB != "blast_object" && !(Z_SOURCE_VERB == "blow" && Z_VERB == "inflate")
+    PRINTL You can't reach it through a closed container.
+    RETURN
+ENDIF
+IF Z_TARGET && !Z_ACCESS(Z_TARGET, 1)
+    IF Z_VERB == "inflate" || Z_VERB == "dig" || Z_VERB == "put" || Z_VERB == "attack" || Z_VERB == "give" || Z_VERB == "throw" || Z_VERB == "on" || Z_VERB == "burn" || Z_VERB == "turn" || Z_VERB == "unlock" || Z_VERB == "tie" || Z_VERB == "plug" || Z_VERB == "rub" || Z_VERB == "open" || Z_VERB == "break"
+        PRINTL You can't reach it through a closed container.
+        RETURN
+    ENDIF
+ENDIF
+; New indirect-object ACTIONs run before direct-object handlers.
+CALL Z_INDIRECT_OVERRIDES, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+; PSEUDO's selected ACTION is independent of which slot selected it last.
+IF Z_O == O_PSEUDO_OBJECT
+    CALL Z_PSEUDO_DISPATCH, Z_O, Z_TARGET
+    SIF RESULT
+        RETURN
+ENDIF
+; Object ACTION functions precede the generic verb fallback (gmain PERFORM).
+CALL Z_THIEF_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_EGG_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_END_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_RIVER_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_MINE_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_DAM_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_TEMPLE_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_LIGHT_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_TROLL_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+IF Z_O == O_CYCLOPS || Z_TARGET == O_CYCLOPS
+    CALL Z_CYCLOPS_ACTION, Z_O, Z_TARGET
+    SIF RESULT
+        RETURN
+ENDIF
+IF (Z_O == O_GRATE && (Z_VERB == "open" || Z_VERB == "close" || Z_VERB == "unlock" || Z_VERB == "lock" || Z_VERB == "pick")) || (Z_VERB == "put" && Z_TARGET == O_GRATE)
+    CALL Z_GRATE_ACTION, Z_O, Z_TARGET
+    RETURN
+ENDIF
+CALL Z_OBJECT_OVERRIDES, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_SOURCE_OBJECT_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_WATER_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+CALL Z_MISC_ACTION, Z_O, Z_TARGET
+SIF RESULT
+    RETURN
+SELECTCASE Z_VERB
+CASE "pick"
+    PRINTL You can't pick that.
+CASE "make"
+    PRINTL You can't do that.
+CASE "brush"
+    PRINTL If you wish, but heaven only knows why.
+CASE "examine"
+    CALL Z_EXAMINE, Z_O
+CASE "read"
+    IF Z_TARGET && !Z_HAS(Z_TARGET, ZF_TRANSPARENT)
+        PRINTFORML How does one look through a %Z_OBJ_NAME:Z_TARGET%?
+        RETURN
+    ENDIF
+    IF Z_TEXT:Z_O != ""
+        PRINTVL Z_TEXT:Z_O
+    ELSE
+        PRINTFORML How does one read a %Z_OBJ_NAME:Z_O%?
+    ENDIF
+CASE "inside"
+    CALL Z_LOOK_INSIDE, Z_O
+CASE "under"
+    CALL Z_LOOK_UNDER, Z_O
+CASE "take"
+    CALL Z_TAKE, Z_O, Z_TARGET
+CASE "drop"
+    CALL Z_DROP, Z_O
+CASE "put"
+    CALL Z_PUT, Z_O, Z_TARGET
+CASE "open", "close"
+    CALL Z_OPEN_CLOSE, Z_O
+CASE "on", "off"
+    CALL Z_LIGHT, Z_O
+CASE "move", "raise"
+    ; Object ACTIONs see PUSH as MOVE; only the default is V-PUSH's.
+    IF Z_VERB == "move" && Z_SP_ACTION == "V-PUSH"
+        CALL Z_HACK_HACK, "Pushing the ", Z_O
+    ELSE
+        CALL Z_MOVE_SCENERY, Z_O
+    ENDIF
+CASE "climb", "enter"
+    CALL Z_CLIMB, Z_O
+CASE "eat", "drink"
+    CALL Z_CONSUME, Z_O
+CASE "burn"
+    CALL Z_BURN, Z_O
+CASE "pour_on"
+    CALL Z_POUR_ON, Z_O, Z_TARGET
+CASE "fill"
+    CALL Z_FILL, Z_O, Z_TARGET
+CASE "drink_from"
+    PRINTL How peculiar!
+CASE "cut"
+    CALL Z_CUT, Z_O, Z_TARGET
+CASE "follow"
+    PRINTL You're nuts!
+CASE "count"
+    IF Z_O == O_LEAVES
+        PRINTL There are 69,105 leaves here.
+    ELSEIF Z_O == O_BLESSINGS
+        PRINTL Well, for one, you are playing Zork...
+    ELSE
+        PRINTL You have lost your mind.
+    ENDIF
+CASE "rub"
+    CALL Z_HACK_HACK, "Fiddling with the ", Z_O
+CASE "smell"
+    PRINTFORML It smells like a %Z_OBJ_NAME:Z_O%.
+CASE "listen"
+    IF Z_O == O_FOREST
+        PRINTL The pines and the hemlocks seem to be murmuring.
+    ELSEIF Z_O == O_SONGBIRD
+        PRINTL You can't hear the songbird now.
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_O% makes no sound.
+    ENDIF
+CASE "attack"
+    CALL Z_HERO_ATTACK, Z_O, Z_TARGET
+CASE "give"
+    IF !Z_HAS(Z_TARGET, ZF_ACTOR)
+        PRINTFORML You can't give a %Z_OBJ_NAME:Z_O% to a %Z_OBJ_NAME:Z_TARGET%!
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_TARGET% refuses it politely.
+    ENDIF
+CASE "throw"
+    CALL Z_THROW, Z_O, Z_TARGET
+CASE "unlock", "lock"
+    ; Object ACTIONs (GRATE/TRAP-DOOR) have already had their turn.
+    PRINTL It doesn't seem to work.
+CASEELSE
+    CALL Z_GENERIC_OBJECT_ACTION, Z_O, Z_TARGET
+    ; Every SYNTAX action of the story has a default above or in
+    ; Z_GENERIC_OBJECT_ACTION / Z_SOURCE_VERB_OBJECT (exhaustive probe of all
+    ; 267 SYNTAX lines: tests/r29_probes/syntax_all.txt).
+    SIF !RESULT
+        THROW Zork invariant: a SYNTAX action has no default routine.
+ENDSELECT
+RETURN
+
+@Z_TAKE(Z_O, Z_FROM)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_FROM
+IF Z_FROM && Z_PARENT:Z_O != Z_FROM
+    PRINTFORML The %Z_OBJ_NAME:Z_O% is not in the %Z_OBJ_NAME:Z_FROM%.
+    RETURN
+ENDIF
+IF Z_PARENT:Z_O == Z_PLAYER
+    PRINTL You already have that!
+    RETURN
+ENDIF
+IF !Z_ACCESS(Z_O, 1)
+    PRINTL You can't reach it through a closed container.
+    RETURN
+ENDIF
+IF Z_O == O_WATER
+    PRINTL It's in the bottle. Perhaps you should take that instead.
+    RETURN
+ENDIF
+IF Z_O == O_RUG
+    PRINTL The rug is extremely heavy and cannot be carried.
+    RETURN
+ENDIF
+IF Z_O == O_TROPHY_CASE
+    PRINTL The trophy case is securely fastened to the wall.
+    RETURN
+ENDIF
+IF Z_O == O_BOARD
+    PRINTL The boards are securely fastened.
+    RETURN
+ENDIF
+IF !Z_HAS(Z_O, ZF_TAKE)
+    ; ITAKE(VB=true) uses the shared YUKS permutation for fixed objects.
+    CALL Z_YUKS_RESPONSE
+    RETURN
+ENDIF
+IF !Z_WITHIN(Z_O, Z_PLAYER) && Z_LOAD_WEIGHT(Z_PLAYER) + Z_OBJECT_WEIGHT(Z_O) > Z_LOAD_LIMIT
+    ; ITAKE: LOAD-ALLOWED below LOAD-MAX (100) after wounds.
+    IF Z_LOAD_LIMIT < 100
+        PRINTL Your load is too heavy, especially in light of your condition.
+    ELSE
+        PRINTL Your load is too heavy.
+    ENDIF
+    Z_ABORT = 1
+    RETURN
+ENDIF
+; ITAKE: TAKE with more than FUMBLE-NUMBER (7) items fails with PROB 8*count.
+IF Z_VERB == "take" && Z_CHILD_COUNT(Z_PLAYER) > 7
+    IF Z_PROB(Z_CHILD_COUNT(Z_PLAYER) * 8)
+        PRINTL You're holding too many things already!
+        RETURN
+    ENDIF
+ENDIF
+SIF Z_O == O_LEAVES
+    CALL Z_REVEAL_GRATE
+IF Z_O == O_RUSTY_KNIFE && Z_PARENT:O_SWORD == Z_PLAYER
+    PRINTL As you touch the rusty knife, your sword gives a single pulse of blinding
+    PRINTL blue light.
+ENDIF
+CALL Z_MOVE_OBJECT, Z_O, Z_PLAYER
+Z_TOUCHED:Z_O = 1
+Z_FLAGS:Z_O &= ~ZF_NDESC
+SIF Z_O == O_SWORD
+    CALL Z_ENABLE, ZE_SWORD, 1
+CALL Z_AWARD_TAKE, Z_O
+PRINTL Taken.
+RETURN
+
+@Z_DROP(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_DEST
+CALL Z_DROP_CHECK, Z_O
+SIF !RESULT
+    RETURN
+Z_DEST = Z_HERE
+SIF Z_IN_BOAT
+    Z_DEST = O_INFLATED_BOAT
+IF Z_HERE == R_UP_A_TREE
+    CALL Z_TREE_DROP, Z_O
+    RETURN
+ENDIF
+CALL Z_MOVE_OBJECT, Z_O, Z_DEST
+IF Z_HERE == R_UP_A_TREE
+    PRINTL It falls to the ground below.
+ELSE
+    PRINTL Dropped.
+ENDIF
+RETURN
+
+@Z_PUT(Z_O, Z_TO)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TO
+IF Z_HISTORY_PREP == "on" && !Z_HAS(Z_TO, ZF_SURFACE)
+    PRINTFORML There's no good surface on the %Z_OBJ_NAME:Z_TO%.
+    RETURN
+ENDIF
+IF !Z_TO || !Z_HAS(Z_TO, ZF_CONTAINER)
+    PRINTL You can't do that.
+    RETURN
+ENDIF
+IF !Z_HAS(Z_TO, ZF_OPEN)
+    PRINTFORML The %Z_OBJ_NAME:Z_TO% isn't open.
+    Z_IT = Z_TO
+    RETURN
+ENDIF
+IF Z_O == Z_TO
+    PRINTL How can you do that?
+    RETURN
+ENDIF
+IF Z_PARENT:Z_O == Z_TO
+    PRINTFORML The %Z_OBJ_NAME:Z_O% is already in the %Z_OBJ_NAME:Z_TO%.
+    RETURN
+ENDIF
+IF !Z_WITHIN(Z_O, Z_PLAYER)
+    PRINTL You aren't holding that.
+    RETURN
+ENDIF
+IF Z_LOAD_WEIGHT(Z_TO) + Z_OBJECT_WEIGHT(Z_O) > Z_CAPACITY:Z_TO
+    PRINTL There's no room.
+    RETURN
+ENDIF
+; A natural nested-container attempt reaches the original capacity check
+; first. The safety guard below only prevents an otherwise cyclic tree.
+IF Z_WITHIN(Z_TO, Z_O)
+    PRINTL You can't put something inside itself.
+    RETURN
+ENDIF
+CALL Z_MOVE_OBJECT, Z_O, Z_TO
+Z_TOUCHED:Z_O = 1
+CALL Z_AWARD_TAKE, Z_O
+SIF Z_TO == O_TROPHY_CASE
+    CALL Z_TOUCH_TREE, Z_O
+PRINTL Done.
+RETURN
+
+@Z_OPEN_CLOSE(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_OPENING
+Z_OPENING = Z_VERB == "open"
+IF !Z_ACCESS(Z_O, 1)
+    PRINTL You can't reach it through a closed container.
+    RETURN
+ENDIF
+IF Z_O == O_KITCHEN_WINDOW
+    Z_WINDOW_HANDLED = 1
+ELSEIF Z_O == O_FRONT_DOOR || Z_O == O_WOODEN_DOOR
+    IF Z_OPENING
+        PRINTL The door cannot be opened.
+    ELSE
+        PRINTL It is already closed.
+    ENDIF
+    RETURN
+ELSEIF Z_O == O_BOARDED_WINDOW && Z_OPENING
+    ; BOARDED-WINDOW-FCN handles OPEN only; CLOSE reaches V-CLOSE.
+    PRINTL The windows are boarded and can't be opened.
+    RETURN
+ELSEIF Z_O == O_TRAP_DOOR && Z_HERE == R_CELLAR
+    IF Z_OPENING && !Z_HAS(Z_O, ZF_OPEN)
+        PRINTL The door is locked from above.
+    ELSEIF !Z_OPENING && !Z_HAS(Z_O, ZF_OPEN)
+        ; Preserve the original's CLOSED-bit condition, including its quirk.
+        Z_TOUCHED:Z_O = 0
+        Z_FLAGS:Z_O &= ~ZF_OPEN
+        PRINTL The door closes and locks.
+    ELSE
+        CALL Z_DUMMY_RESPONSE
+    ENDIF
+    RETURN
+ELSEIF Z_O == O_GRATE
+    PRINTL The grating is locked.
+    RETURN
+ELSEIF Z_HAS(Z_O, ZF_SURFACE)
+    IF Z_OPENING
+        PRINTL It is already open.
+    ELSE
+        PRINTL You cannot close that.
+    ENDIF
+    RETURN
+ENDIF
+; The kitchen window and trap door keep their object ACTIONs (1actions.zil).
+IF Z_O == O_KITCHEN_WINDOW || (Z_O == O_TRAP_DOOR && Z_HERE == R_LIVING_ROOM)
+    IF Z_OPENING == Z_HAS(Z_O, ZF_OPEN)
+        CALL Z_DUMMY_RESPONSE
+        RETURN
+    ENDIF
+    IF Z_OPENING
+        Z_FLAGS:Z_O |= ZF_OPEN
+    ELSE
+        Z_FLAGS:Z_O &= ~ZF_OPEN
+    ENDIF
+    IF Z_O == O_KITCHEN_WINDOW
+        IF Z_OPENING
+            PRINTL With great effort, you open the window far enough to allow entry.
+        ELSE
+            PRINTL The window closes (more easily than it opened).
+        ENDIF
+    ELSEIF Z_OPENING
+        PRINTL The door reluctantly opens to reveal a rickety staircase descending into
+        PRINTL darkness.
+    ELSE
+        PRINTL The door swings shut and closes.
+    ENDIF
+    RETURN
+ENDIF
+IF Z_OPENING
+    CALL Z_V_OPEN, Z_O
+ELSE
+    CALL Z_V_CLOSE, Z_O
+ENDIF
+RETURN
+
+; V-OPEN (gverbs.zil).
+@Z_V_OPEN(Z_O)
+#DIM DYNAMIC Z_O
+IF Z_HAS(Z_O, ZF_CONTAINER) && Z_CAPACITY:Z_O != 0
+    IF Z_HAS(Z_O, ZF_OPEN)
+        PRINTL It is already open.
+    ELSE
+        Z_FLAGS:Z_O |= ZF_OPEN
+        CALL Z_CONTAINER_OPENED, Z_O
+    ENDIF
+ELSEIF Z_HAS(Z_O, ZF_DOOR)
+    IF Z_HAS(Z_O, ZF_OPEN)
+        PRINTL It is already open.
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_O% opens.
+        Z_FLAGS:Z_O |= ZF_OPEN
+    ENDIF
+ELSE
+    PRINTFORML You must tell me how to do that to a %Z_OBJ_NAME:Z_O%.
+ENDIF
+RETURN
+
+; V-CLOSE (gverbs.zil).
+@Z_V_CLOSE(Z_O)
+#DIM DYNAMIC Z_O
+IF !Z_HAS(Z_O, ZF_CONTAINER) && !Z_HAS(Z_O, ZF_DOOR)
+    PRINTFORML You must tell me how to do that to a %Z_OBJ_NAME:Z_O%.
+ELSEIF !Z_HAS(Z_O, ZF_SURFACE) && Z_CAPACITY:Z_O != 0
+    IF Z_HAS(Z_O, ZF_OPEN)
+        Z_FLAGS:Z_O &= ~ZF_OPEN
+        PRINTL Closed.
+        SIF !Z_IS_LIT()
+            PRINTL It is now pitch black.
+    ELSE
+        PRINTL It is already closed.
+    ENDIF
+ELSEIF Z_HAS(Z_O, ZF_DOOR)
+    IF Z_HAS(Z_O, ZF_OPEN)
+        Z_FLAGS:Z_O &= ~ZF_OPEN
+        PRINTFORML The %Z_OBJ_NAME:Z_O% is now closed.
+    ELSE
+        PRINTL It is already closed.
+    ENDIF
+ELSE
+    PRINTL You cannot close that.
+ENDIF
+RETURN
+
+@Z_LIGHT(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_WAS_LIT
+Z_WAS_LIT = Z_IS_LIT()
+IF Z_O != O_LAMP
+    ; Generic V-LAMP-ON/OFF, after object ACTIONs (candles/torch/match).
+    IF !Z_HAS(Z_O, ZF_LIGHT)
+        IF Z_VERB == "off"
+            PRINTL You can't turn that off.
+        ELSEIF Z_BURNABLE:Z_O
+            PRINTFORML If you wish to burn the %Z_OBJ_NAME:Z_O%, you should say so.
+        ELSE
+            PRINTL You can't turn that on.
+        ENDIF
+    ELSEIF Z_VERB == "on"
+        IF Z_HAS(Z_O, ZF_ON)
+            PRINTL It is already on.
+        ELSE
+            Z_FLAGS:Z_O |= ZF_ON
+            PRINTFORML The %Z_OBJ_NAME:Z_O% is now on.
+            SIF !Z_WAS_LIT && Z_IS_LIT()
+                CALL Z_LOOK, 1
+        ENDIF
+    ELSEIF Z_HAS(Z_O, ZF_ON)
+        Z_FLAGS:Z_O &= ~ZF_ON
+        PRINTFORML The %Z_OBJ_NAME:Z_O% is now off.
+        SIF !Z_IS_LIT()
+            PRINTL It is now pitch black.
+    ELSE
+        PRINTL It is already off.
+    ENDIF
+    RETURN
+ENDIF
+IF !Z_ACCESS(Z_O, 1)
+    PRINTL You can't reach it through a closed container.
+    RETURN
+ENDIF
+IF Z_LAMP_TICKS >= 385
+    IF Z_VERB == "on"
+        PRINTL A burned-out lamp won't light.
+    ELSE
+        PRINTL The lamp has already burned out.
+    ENDIF
+    RETURN
+ENDIF
+IF Z_VERB == "on"
+    CALL Z_ENABLE, ZE_LANTERN, 1
+    IF Z_HAS(Z_O, ZF_ON)
+        PRINTL It is already on.
+    ELSE
+        Z_FLAGS:Z_O |= ZF_ON
+        PRINTL The brass lantern is now on.
+    ENDIF
+ELSE
+    CALL Z_ENABLE, ZE_LANTERN, 0
+    IF Z_HAS(Z_O, ZF_ON)
+        Z_FLAGS:Z_O &= ~ZF_ON
+        PRINTL The brass lantern is now off.
+    ELSE
+        PRINTL It is already off.
+    ENDIF
+ENDIF
+IF !Z_WAS_LIT && Z_IS_LIT()
+    CALL Z_LOOK, 1
+ELSEIF Z_WAS_LIT && !Z_IS_LIT()
+    PRINTL It is now pitch black.
+ENDIF
+RETURN
+
+@Z_TICK
+SIF Z_GAME_OVER
+    RETURN 1
+CALL Z_CLOCKER, 1
+RETURN RESULT
+

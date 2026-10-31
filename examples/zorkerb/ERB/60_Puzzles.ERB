@@ -1,0 +1,409 @@
+﻿; Reviewed source subset: 1actions.zil, the white house and adjoining region.
+@Z_WALK(Z_DIR)
+#DIM DYNAMIC Z_DIR
+#DIM DYNAMIC Z_DEST
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_HELD
+#DIM DYNAMIC Z_WAS_LIT
+#DIM DYNAMIC Z_LINK_CURSOR1
+SIF Z_DIR < 0 || Z_DIR > 11
+    RETURN
+IF Z_HERE == R_STONE_BARROW && (Z_DIR == 3 || Z_DIR == 10)
+    CALL Z_FINISH_ADVENTURE
+    RETURN
+ENDIF
+IF Z_HERE == R_WEST_OF_HOUSE && (Z_DIR == 7 || Z_DIR == 10) && !Z_WON
+    PRINTL You can't go that way.
+    RETURN
+ENDIF
+Z_DEST = Z_EXITS:Z_HERE:Z_DIR
+Z_WAS_LIT = Z_IS_LIT()
+CALL Z_REGION_EXIT, Z_DEST, Z_DIR
+Z_DEST = RESULT
+SIF Z_DEST < 0
+    RETURN
+IF Z_HERE == R_EAST_OF_HOUSE && (Z_DIR == 3 || Z_DIR == 10)
+    IF !Z_HAS(O_KITCHEN_WINDOW, ZF_OPEN)
+        PRINTL The kitchen window is closed.
+        Z_IT = O_KITCHEN_WINDOW
+        RETURN
+    ENDIF
+    Z_DEST = R_KITCHEN
+ELSEIF Z_HERE == R_KITCHEN && (Z_DIR == 1 || Z_DIR == 11)
+    IF !Z_HAS(O_KITCHEN_WINDOW, ZF_OPEN)
+        PRINTL The kitchen window is closed.
+        Z_IT = O_KITCHEN_WINDOW
+        RETURN
+    ENDIF
+    Z_DEST = R_EAST_OF_HOUSE
+ELSEIF Z_HERE == R_LIVING_ROOM && Z_DIR == 9
+    IF !Z_RUG_MOVED
+        PRINTL You can't go that way.
+        RETURN
+    ELSEIF !Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+        PRINTL The trap door is closed.
+        Z_IT = O_TRAP_DOOR
+        RETURN
+    ENDIF
+    Z_DEST = R_CELLAR
+ELSEIF Z_HERE == R_CELLAR && Z_DIR == 8
+    IF !Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+        PRINTL The trap door is closed.
+        Z_IT = O_TRAP_DOOR
+        RETURN
+    ENDIF
+    Z_DEST = R_LIVING_ROOM
+ELSEIF (Z_HERE == R_GRATING_CLEARING && Z_DIR == 9) || (Z_HERE == R_GRATING_ROOM && Z_DIR == 8)
+    IF Z_HERE == R_GRATING_CLEARING && !Z_GRATE_REVEALED
+        PRINTL You can't go that way.
+        RETURN
+    ENDIF
+    IF !Z_HAS(O_GRATE, ZF_OPEN)
+        ; GRATING-EXIT (FEXIT, clearing) / the DEXIT's door text (grating room)
+        IF Z_HERE == R_GRATING_CLEARING
+            PRINTL The grating is closed!
+        ELSE
+            PRINTL The grating is closed.
+        ENDIF
+        Z_IT = O_GRATE
+        RETURN
+    ENDIF
+ELSEIF Z_HERE == R_TROLL_ROOM && (Z_DIR == 1 || Z_DIR == 3)
+    IF !Z_TROLL_PASS
+        PRINTL The troll fends you off with a menacing gesture.
+        RETURN
+    ENDIF
+ELSEIF Z_HERE == R_LIVING_ROOM && Z_DIR == 3
+    IF !Z_MAGIC_FLAG
+        PRINTL The door is nailed shut.
+        RETURN
+    ENDIF
+ELSEIF Z_HERE == R_CYCLOPS_ROOM
+    IF Z_DIR == 1 && !Z_MAGIC_FLAG
+        PRINTL The east wall is solid rock.
+        RETURN
+    ELSEIF Z_DIR == 8 && !Z_CYCLOPS_SLEEP && !Z_MAGIC_FLAG
+        PRINTL The cyclops doesn't look like he'll let you past.
+        RETURN
+    ENDIF
+ELSEIF Z_HERE == R_STUDIO && Z_DIR == 8
+    Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_PLAYER)
+    WHILE Z_LINK_CURSOR1
+        Z_I = Z_LINK_CURSOR1
+        Z_LINK_CURSOR1 = Z_NEXT:Z_I
+        SIF Z_PARENT:Z_I == Z_PLAYER
+            Z_HELD += 1
+    WEND
+    IF !Z_HELD
+        PRINTL Going up empty-handed is a bad idea.
+        RETURN
+    ELSEIF Z_HELD > 2 || Z_PARENT:O_LAMP != Z_PLAYER
+        PRINTL You can't get up there with what you're carrying.
+        RETURN
+    ENDIF
+    SIF !Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+        Z_TOUCHED:O_TRAP_DOOR = 0
+    Z_DEST = R_KITCHEN
+ENDIF
+CALL Z_EAST_EXIT, Z_DEST, Z_DIR
+Z_DEST = RESULT
+SIF Z_DEST < 0
+    RETURN
+IF !Z_DEST
+    IF Z_EXIT_TEXT:Z_HERE:Z_DIR != ""
+        PRINTVL Z_EXIT_TEXT:Z_HERE:Z_DIR
+    ELSEIF !Z_SRC_EXIT_SIZE:Z_HERE:Z_DIR && !Z_IS_LIT() && Z_ROOM_IS_LAND(Z_HERE) && Z_PROB(80)
+        ; V-WALK: no exit property, in the dark, on land (SPRAYED? is false).
+        PRINTL Oh, no! You have walked into the slavering fangs of a lurking grue!
+        CALL Z_FATAL_BOUNDARY
+    ELSE
+        PRINTL You can't go that way.
+    ENDIF
+    RETURN
+ENDIF
+IF Z_DIR == 9 && (Z_HERE == R_MAZE_2 || Z_HERE == R_MAZE_7 || Z_HERE == R_MAZE_9 || Z_HERE == R_MAZE_12)
+    PRINTL You won't be able to get back up to the tunnel you are going through
+    PRINTL when it gets to the next room.
+    PRINTL
+ENDIF
+CALL Z_GOTO_ROOM, Z_DEST, Z_WAS_LIT
+RETURN
+
+; GOTO (gverbs.zil) after the exit has been chosen: relocation, darkness,
+; M-ENTER, SCORE-OBJ and V-FIRST-LOOK. Used by walking and by V-TREASURE.
+@Z_GOTO_ROOM(Z_DEST, Z_WAS_LIT)
+#DIM DYNAMIC Z_DEST
+#DIM DYNAMIC Z_WAS_LIT
+; GOTO: a vehicle reaching land from water comes to rest first.
+IF Z_IN_BOAT && !Z_DEAD && Z_ROOM_IS_LAND(Z_DEST) && !Z_ROOM_IS_LAND(Z_HERE)
+    PRINTFORML The %Z_OBJ_NAME:O_INFLATED_BOAT% comes to a rest on the shore.
+    PRINTL
+ENDIF
+Z_HERE = Z_DEST
+IF Z_IN_BOAT
+    CALL Z_MOVE_OBJECT, O_INFLATED_BOAT, Z_HERE
+    SIF !Z_IS_RIVER(Z_HERE)
+        CALL Z_QUEUE, ZE_RIVER, 0
+ENDIF
+; GOTO evaluates darkness after relocation, before M-ENTER and room scoring.
+IF !Z_WAS_LIT && !Z_IS_LIT()
+    IF Z_PROB(80)
+        PRINT Oh, no! A lurking grue slithered into the 
+        IF Z_IN_BOAT
+            PRINT magic boat
+        ELSE
+            PRINT room
+        ENDIF
+        PRINTL  and devoured you!
+        CALL Z_FATAL_BOUNDARY
+        RETURN
+    ENDIF
+ENDIF
+IF !Z_IS_LIT()
+    PRINTL You have moved into a dark place.
+ENDIF
+CALL Z_FOREST_ENTER
+CALL Z_MINE_ENTER
+SIF RESULT
+    RETURN
+IF Z_HERE == R_DOME_ROOM && Z_DEAD
+    ; DOME-ROOM-FCN M-ENTER; GOTO then sees HERE changed and stops.
+    PRINTL As you enter the dome you feel a strong pull as if from a wind
+    PRINTL drawing you over the railing and down.
+    Z_HERE = R_TORCH_ROOM
+    RETURN
+ENDIF
+SIF Z_HERE == R_CYCLOPS_ROOM && Z_CYCLOPS_HUNGER
+    CALL Z_SCHEDULE, ZE_CYCLOPS, -1
+IF Z_HERE == R_GRATING_ROOM
+    Z_FLAGS:O_GRATE &= ~ZF_HIDDEN
+ELSEIF Z_HERE == R_GRATING_CLEARING && !Z_GRATE_REVEALED
+    Z_FLAGS:O_GRATE |= ZF_HIDDEN
+ENDIF
+IF !Z_ROOM_AWARDED:Z_HERE
+    Z_BASE_SCORE += Z_ROOM_POINTS:Z_HERE
+    Z_ROOM_AWARDED:Z_HERE = 1
+ENDIF
+IF Z_HERE == R_CELLAR && Z_HAS(O_TRAP_DOOR, ZF_OPEN) && !Z_TOUCHED:O_TRAP_DOOR
+    Z_FLAGS:O_TRAP_DOOR &= ~ZF_OPEN
+    Z_TOUCHED:O_TRAP_DOOR = 1
+    PRINTL The trap door crashes shut, and you hear someone barring it.
+    PRINTL
+ENDIF
+CALL Z_SCORE_UPDATED
+CALL Z_TREASURE_ENTER
+CALL Z_LOOK, 0
+CALL Z_LOUD_ENTER
+RETURN
+
+@Z_EXAMINE(Z_O)
+#DIM DYNAMIC Z_O
+SELECTCASE Z_O
+CASE O_WHITE_HOUSE
+    IF Z_HERE >= R_WEST_OF_HOUSE && Z_HERE <= R_EAST_OF_HOUSE
+        PRINTL The house is a beautiful colonial house which is painted white.
+        PRINTL It is clear that the owners must have been extremely wealthy.
+    ELSE
+        PRINTL You're not at the house.
+    ENDIF
+CASE O_BOARD
+    PRINTL The boards are securely fastened.
+CASE O_KITCHEN_WINDOW
+    IF !Z_WINDOW_HANDLED
+        PRINTL The window is slightly ajar, but not enough to allow entry.
+    ELSEIF Z_HAS(Z_O, ZF_OPEN)
+        PRINTL The kitchen window is open, but I can't tell what's beyond it.
+    ELSE
+        PRINTL The kitchen window is closed.
+    ENDIF
+CASE O_LAMP
+    IF Z_LAMP_TICKS >= 385
+        PRINTL The lamp has burned out.
+    ELSEIF Z_HAS(Z_O, ZF_ON)
+        PRINTL The lamp is on.
+    ELSE
+        PRINTL The lamp is turned off.
+    ENDIF
+CASE O_CHIMNEY
+    IF Z_HERE == R_KITCHEN
+        PRINTL The chimney leads downward, and looks climbable.
+    ELSE
+        PRINTL The chimney leads upward, and looks climbable.
+    ENDIF
+CASE O_SONGBIRD
+    PRINTL You can't see any songbird here.
+CASEELSE
+    IF Z_HAS(Z_O, ZF_READ) && Z_TEXT:Z_O != ""
+        PRINTVL Z_TEXT:Z_O
+    ELSEIF Z_HAS(Z_O, ZF_CONTAINER) || Z_HAS(Z_O, ZF_DOOR)
+        CALL Z_LOOK_INSIDE, Z_O
+    ELSE
+        PRINTFORML There's nothing special about the %Z_OBJ_NAME:Z_O%.
+    ENDIF
+ENDSELECT
+RETURN
+
+@Z_LOOK_INSIDE(Z_O)
+#DIM DYNAMIC Z_O
+IF Z_O == O_KITCHEN_WINDOW
+    IF Z_HERE == R_KITCHEN
+        PRINTL You can see a clear area leading towards a forest.
+    ELSE
+        PRINTL You can see what appears to be a kitchen.
+    ENDIF
+    RETURN
+ENDIF
+IF Z_HAS(Z_O, ZF_DOOR)
+    IF Z_HAS(Z_O, ZF_OPEN)
+        PRINTFORML The %Z_OBJ_NAME:Z_O% is open, but I can't tell what's beyond it.
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_O% is closed.
+    ENDIF
+ELSEIF !Z_HAS(Z_O, ZF_CONTAINER)
+    PRINTFORML You can't look inside a %Z_OBJ_NAME:Z_O%.
+ELSEIF Z_HAS(Z_O, ZF_ACTOR)
+    PRINTL There is nothing special to be seen.
+ELSEIF !Z_HAS(Z_O, ZF_OPEN) && !Z_HAS(Z_O, ZF_TRANSPARENT)
+    PRINTFORML The %Z_OBJ_NAME:Z_O% is closed.
+ELSE
+    ; V-LOOK-INSIDE: <AND <FIRST? PRSO> <PRINT-CONT PRSO>>, else empty.
+    RESULT = 0
+    SIF Z_FIRST_CHILD(Z_O)
+        CALL Z_PRINT_CONT, Z_O, 0
+    SIF !RESULT
+        PRINTFORML The %Z_OBJ_NAME:Z_O% is empty.
+ENDIF
+RETURN
+
+@Z_LOOK_UNDER(Z_O)
+#DIM DYNAMIC Z_O
+IF Z_O == O_RUG && !Z_RUG_MOVED && !Z_HAS(O_TRAP_DOOR, ZF_OPEN)
+    PRINTL Underneath the rug is a closed trap door. As you drop the corner of the
+    PRINTL rug, the trap door is once again concealed from view.
+ELSEIF Z_O == O_LEAVES && !Z_GRATE_REVEALED
+    PRINTL Underneath the pile of leaves is a grating. As you release the leaves,
+    PRINTL the grating is once again concealed from view.
+ELSEIF Z_O == O_TRAP_DOOR
+    IF Z_HAS(Z_O, ZF_OPEN)
+        PRINTL You see a rickety staircase descending into darkness.
+    ELSE
+        PRINTL It's closed.
+    ENDIF
+ELSE
+    PRINTL There is nothing but dust there.
+ENDIF
+RETURN
+
+@Z_MOVE_SCENERY(Z_O)
+#DIM DYNAMIC Z_O
+IF !Z_ACCESS(Z_O, 1)
+    PRINTL You can't reach it through a closed container.
+    RETURN
+ENDIF
+IF Z_O == O_RUG
+    IF Z_VERB == "raise"
+        PRINT The rug is too heavy to lift
+        IF Z_RUG_MOVED
+            PRINTL .
+        ELSE
+            PRINTL , but in trying to take it you have
+            PRINTL noticed an irregularity beneath it.
+        ENDIF
+        RETURN
+    ENDIF
+    IF Z_RUG_MOVED
+        PRINTL Having moved the carpet previously, you find it impossible to move it again.
+    ELSE
+        Z_RUG_MOVED = 1
+        Z_FLAGS:O_TRAP_DOOR &= ~ZF_HIDDEN
+        Z_IT = O_TRAP_DOOR
+        PRINTL With a great effort, the rug is moved to one side of the room, revealing
+        PRINTL the dusty cover of a closed trap door.
+    ENDIF
+ELSEIF Z_O == O_LEAVES
+    PRINTL Done.
+    CALL Z_REVEAL_GRATE
+ELSEIF Z_O == O_TRAP_DOOR && Z_VERB == "raise"
+    Z_VERB = open
+    CALL Z_OPEN_CLOSE, Z_O
+ELSEIF Z_VERB == "move"
+    ; V-MOVE after object ACTIONs. PRE-MOVE handles HELD? earlier.
+    IF Z_HAS(Z_O, ZF_TAKE)
+        PRINTFORML Moving the %Z_OBJ_NAME:Z_O% reveals nothing.
+    ELSE
+        PRINTFORML You can't move the %Z_OBJ_NAME:Z_O%.
+    ENDIF
+ELSE
+    CALL Z_HACK_HACK, "Playing in this way with the ", Z_O
+ENDIF
+RETURN
+
+@Z_REVEAL_GRATE
+; LEAVES-APPEAR
+IF !Z_GRATE_REVEALED && !Z_HAS(O_GRATE, ZF_OPEN)
+    IF Z_VERB == "move" || Z_VERB == "take"
+        PRINTL In disturbing the pile of leaves, a grating is revealed.
+    ELSE
+        PRINTL With the leaves moved, a grating is revealed.
+    ENDIF
+    Z_FLAGS:O_GRATE &= ~ZF_HIDDEN
+    Z_GRATE_REVEALED = 1
+ENDIF
+RETURN
+
+@Z_CLIMB(Z_O)
+#DIM DYNAMIC Z_O
+; CLIMB [UP|DOWN] OBJECT run V-CLIMB-UP/DOWN/FOO and CLIMB/WALK THROUGH runs
+; V-THROUGH, unless the object's own ACTION takes the verb first.
+IF Z_O == O_KITCHEN_WINDOW && Z_VERB == "enter"
+    ; KITCHEN-WINDOW-F: WALK BOARD THROUGH
+    IF Z_HERE == R_KITCHEN
+        CALL Z_WALK, 1
+    ELSE
+        CALL Z_WALK, 3
+    ENDIF
+    RETURN
+ENDIF
+IF Z_O == O_MOUNTAIN_RANGE && Z_VERB == "climb"
+    PRINTL Don't you believe me? The mountains are impassable!
+    RETURN
+ENDIF
+IF Z_O == O_SLIDE
+    ; SLIDE-FUNCTION: THROUGH CLIMB-UP CLIMB-DOWN CLIMB-FOO
+    IF Z_HERE == R_CELLAR
+        CALL Z_WALK, 3
+    ELSE
+        PRINTL You tumble down the slide....
+        CALL Z_RELOCATE, R_CELLAR
+    ENDIF
+    RETURN
+ENDIF
+IF Z_VERB == "enter"
+    ; gverbs.zil V-THROUGH, after doors/vehicles and object ACTIONs.
+    IF !Z_HAS(Z_O, ZF_TAKE)
+        PRINTFORML You hit your head against the %Z_OBJ_NAME:Z_O% as you attempt this feat.
+    ELSEIF Z_PARENT:Z_O == Z_PLAYER
+        PRINTL That would involve quite a contortion!
+    ELSE
+        CALL Z_YUKS_RESPONSE
+    ENDIF
+ELSE
+    CALL Z_CLIMB_DEFAULT, Z_O
+ENDIF
+RETURN
+
+@Z_CONSUME(Z_O)
+#DIM DYNAMIC Z_O
+IF Z_HAS(Z_O, ZF_FOOD)
+    IF Z_PARENT:Z_O != Z_PLAYER && (Z_PARENT:Z_O <= 0 || Z_PARENT:Z_O > Z_OBJECT_COUNT || Z_PARENT:(Z_PARENT:Z_O) != Z_PLAYER)
+        PRINTL You're not holding that.
+    ELSEIF Z_VERB == "drink"
+        PRINTL How can you drink that?
+    ELSE
+        PRINTL Thank you very much. It really hit the spot.
+        CALL Z_REMOVE_CAREFULLY, Z_O
+    ENDIF
+ELSE
+    PRINTFORML I don't think that the %Z_OBJ_NAME:Z_O% would agree with you.
+ENDIF
+RETURN

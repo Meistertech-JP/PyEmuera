@@ -1,0 +1,233 @@
+﻿; Additional source-backed generic actions, kept separate from puzzle handlers.
+@Z_MISC_ACTION(Z_O, Z_TO)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TO
+#DIM DYNAMIC Z_P
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_DEST
+#DIM DYNAMIC Z_FOUND
+#DIM DYNAMIC Z_LINK_CURSOR1
+#DIM DYNAMIC Z_LINK_CURSOR2
+#DIMS DYNAMIC Z_OLD_VERB
+SELECTCASE Z_VERB
+CASE "hello"
+    IF Z_O == O_THIEF && Z_THIEF_STRENGTH < 0
+        PRINTL The thief, being temporarily incapacitated, is unable to acknowledge
+        PRINTL your greeting with his usual graciousness.
+    ELSEIF Z_O == O_TROLL && Z_TROLL_PASS
+        PRINTL Unfortunately, the troll can't hear you.
+    ELSEIF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTFORML The %Z_OBJ_NAME:Z_O% bows his head to you in greeting.
+    ELSE
+        PRINTFORML It's a well known fact that only schizophrenics say "Hello" to a %Z_OBJ_NAME:Z_O%.
+    ENDIF
+    RETURN 1
+CASE "shake"
+    IF Z_HAS(Z_O, ZF_ACTOR)
+        PRINTL This seems to have no effect.
+    ELSEIF !Z_HAS(Z_O, ZF_TAKE)
+        PRINTL You can't take it; thus, you can't shake it!
+    ELSEIF Z_HAS(Z_O, ZF_CONTAINER)
+        Z_FOUND = 0
+        Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_O)
+        WHILE Z_LINK_CURSOR1
+            Z_I = Z_LINK_CURSOR1
+            Z_LINK_CURSOR1 = Z_NEXT:Z_I
+            SIF Z_PARENT:Z_I == Z_O
+                Z_FOUND = 1
+        WEND
+        IF !Z_HAS(Z_O, ZF_OPEN)
+            IF Z_FOUND
+                PRINTFORML It sounds like there is something inside the %Z_OBJ_NAME:Z_O%.
+            ELSE
+                PRINTFORML The %Z_OBJ_NAME:Z_O% sounds empty.
+            ENDIF
+        ELSEIF Z_FOUND
+            Z_DEST = Z_HERE
+            SIF Z_HERE == R_UP_A_TREE
+                Z_DEST = R_PATH
+            ; SHAKE-LOOP keeps sunk contents as children of the same PSEUDO
+            ; object. It does not SELECT a new name/ACTION or REMOVE the items.
+            SIF !Z_ROOM_LAND:Z_HERE && !(Z_HERE == R_RESERVOIR && Z_LOW_TIDE)
+                Z_DEST = O_PSEUDO_OBJECT
+            Z_LINK_CURSOR2 = Z_FIRST_CHILD(Z_O)
+            WHILE Z_LINK_CURSOR2
+                Z_I = Z_LINK_CURSOR2
+                Z_LINK_CURSOR2 = Z_NEXT:Z_I
+                CALL Z_MOVE_OBJECT, Z_I, Z_DEST
+                Z_TOUCHED:Z_I = 1
+            WEND
+            IF Z_DEST != O_PSEUDO_OBJECT
+                PRINTFORML The contents of the %Z_OBJ_NAME:Z_O% spill to the ground.
+            ELSE
+                PRINTFORML The contents of the %Z_OBJ_NAME:Z_O% spill out and disappears.
+            ENDIF
+        ELSE
+            PRINTL Shaken.
+        ENDIF
+    ELSE
+        PRINTL Shaken.
+    ENDIF
+    RETURN 1
+CASE "find"
+    IF Z_O == O_LUNGS
+        PRINTL Within six feet of your head, assuming you haven't left that
+        PRINTL somewhere.
+        RETURN 1
+    ELSEIF Z_O == O_ME
+        PRINTL You're around here somewhere...
+        RETURN 1
+    ELSEIF Z_SCOPE_CLASS:Z_O == 3
+        PRINTL You find it.
+        RETURN 1
+    ENDIF
+    Z_P = Z_PARENT:Z_O
+    IF Z_P == Z_PLAYER
+        PRINTL You have it.
+    ELSEIF Z_P == Z_HERE || Z_SCOPE:Z_O:Z_HERE || Z_O == O_PSEUDO_OBJECT
+        PRINTL It's right here.
+    ELSEIF Z_HAS(Z_P, ZF_ACTOR)
+        PRINTFORML The %Z_OBJ_NAME:Z_P% has it.
+    ELSEIF Z_HAS(Z_P, ZF_SURFACE)
+        PRINTFORML It's on the %Z_OBJ_NAME:Z_P%.
+    ELSEIF Z_HAS(Z_P, ZF_CONTAINER)
+        PRINTFORML It's in the %Z_OBJ_NAME:Z_P%.
+    ELSE
+        PRINTL Beats me.
+    ENDIF
+    RETURN 1
+CASE "search"
+    PRINTL You find nothing unusual.
+    RETURN 1
+CASE "knock"
+    IF Z_HAS(Z_O, ZF_DOOR)
+        PRINTL Nobody's home.
+    ELSE
+        PRINTFORML Why knock on a %Z_OBJ_NAME:Z_O%?
+    ENDIF
+    RETURN 1
+CASE "dig"
+    ; Specific objects (GROUND, PATHOBJ, SAND) have already had ACTIONs.
+    ; V-DIG defaults to HANDS; Zork I checks SHOVEL before TOOLBIT.
+    Z_P = Z_TO
+    SIF !Z_P
+        Z_P = O_HANDS
+    IF Z_P == O_SHOVEL
+        PRINTL There's no reason to be digging here.
+    ELSEIF Z_HAS(Z_P, ZF_TOOL)
+        PRINTFORML Digging with the %Z_OBJ_NAME:Z_P% is slow and tedious.
+    ELSE
+        PRINTFORML Digging with a %Z_OBJ_NAME:Z_P% is silly.
+    ENDIF
+    RETURN 1
+CASE "stab"
+    Z_P = Z_TO
+    SIF !Z_P
+        Z_P = Z_WEAPON(Z_PLAYER)
+    IF Z_P
+        ; V-STAB uses PERFORM ATTACK so the target's ACTION gets priority.
+        Z_OLD_VERB '= Z_VERB
+        Z_VERB = attack
+        CALL Z_OBJECT_ACTION, Z_O, Z_P
+        Z_VERB '= Z_OLD_VERB
+    ELSE
+        PRINTFORML No doubt you propose to stab the %Z_OBJ_NAME:Z_O% with your pinky?
+    ENDIF
+    RETURN 1
+ENDSELECT
+RETURN 0
+
+@Z_DROP_CHECK(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_P
+Z_P = Z_PARENT:Z_O
+IF Z_P == Z_PLAYER
+    RETURN 1
+ENDIF
+IF Z_P <= 0 || Z_P > Z_OBJECT_COUNT || Z_PARENT:Z_P != Z_PLAYER
+    PRINTFORML You're not carrying the %Z_OBJ_NAME:Z_O%.
+    RETURN 0
+ENDIF
+IF !Z_HAS(Z_P, ZF_OPEN)
+    PRINTFORML The %Z_OBJ_NAME:Z_O% is closed.
+    RETURN 0
+ENDIF
+RETURN 1
+
+@Z_THROW(Z_O, Z_TO)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TO
+#DIM DYNAMIC Z_DEST
+CALL Z_DROP_CHECK, Z_O
+IF !RESULT
+    SIF Z_TO == O_ME
+        PRINTL Huh?
+    RETURN
+ENDIF
+Z_DEST = Z_HERE
+SIF Z_IN_BOAT
+    Z_DEST = O_INFLATED_BOAT
+CALL Z_MOVE_OBJECT, Z_O, Z_DEST
+IF Z_TO == O_ME
+    PRINTFORML A terrific throw! The %Z_OBJ_NAME:Z_O% hits you squarely in the head. Normally,
+    PRINTL this wouldn't do much damage, but by incredible mischance, you fall over
+    PRINTL backwards trying to duck, and break your neck, justice being swift and
+    PRINTL merciful in the Great Underground Empire.
+    CALL Z_FATAL_BOUNDARY
+ELSEIF Z_HAS(Z_TO, ZF_ACTOR)
+    PRINTFORML The %Z_OBJ_NAME:Z_TO% ducks as the %Z_OBJ_NAME:Z_O% flies by and crashes to the ground.
+ELSE
+    PRINTL Thrown.
+ENDIF
+RETURN
+
+@Z_REMOVE_CAREFULLY(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_OLD_LIT
+SIF Z_IT == Z_O
+    Z_IT = 0
+Z_OLD_LIT = Z_IS_LIT()
+CALL Z_MOVE_OBJECT, Z_O, 0
+SIF Z_OLD_LIT && !Z_IS_LIT()
+    PRINTL You are left in the dark...
+RETURN
+
+@Z_BURN(Z_O)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_OWNED
+; PRE-BURN has already checked the flame. The unusual LEAF-PILE source checks
+; IN? after REMOVE-CAREFULLY; it therefore always takes its lethal branch.
+IF Z_O == O_WHITE_HOUSE
+    PRINTL You must be joking.
+ELSEIF Z_O == O_FRONT_DOOR || Z_O == O_WOODEN_DOOR
+    PRINTL You cannot burn this door.
+ELSEIF Z_O == O_BOOK
+    CALL Z_REMOVE_CAREFULLY, Z_O
+    PRINTL A booming voice says "Wrong, cretin!" and you notice that you have
+    PRINTL turned into a pile of dust. How, I can't imagine.
+    CALL Z_FATAL_BOUNDARY
+ELSEIF Z_O == O_LEAVES
+    CALL Z_REVEAL_GRATE
+    CALL Z_REMOVE_CAREFULLY, Z_O
+    PRINTL The leaves burn, and so do you.
+    CALL Z_FATAL_BOUNDARY
+ELSEIF Z_BURNABLE:Z_O
+    Z_OWNED = Z_PARENT:Z_O == Z_PLAYER
+    SIF Z_IN_BOAT && Z_O == O_INFLATED_BOAT
+        Z_OWNED = 2
+    CALL Z_REMOVE_CAREFULLY, Z_O
+    IF Z_OWNED
+        PRINTFORM The %Z_OBJ_NAME:Z_O% catches fire. Unfortunately, you were 
+        IF Z_OWNED == 2
+            PRINTL in it at the time.
+        ELSE
+            PRINTL holding it at the time.
+        ENDIF
+        CALL Z_FATAL_BOUNDARY
+    ELSE
+        PRINTFORML The %Z_OBJ_NAME:Z_O% catches fire and is consumed.
+    ENDIF
+ELSE
+    PRINTFORML You can't burn a %Z_OBJ_NAME:Z_O%.
+ENDIF
+RETURN

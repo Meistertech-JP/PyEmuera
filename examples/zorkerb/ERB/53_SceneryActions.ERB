@@ -1,0 +1,34 @@
+﻿; Source: historicalsource/zork1 @ 97b7b3d, 1actions.zil
+; BODY-FUNCTION and CRACK-FCN. The other r20 scenery objects have no ACTION;
+; their flags, TEXT, descriptions, SIZE and containment use common verbs.
+; PERFORM calls PRSI's ACTION before PRSO's ACTION. Z_ACTION_OBJECT is the
+; object whose ACTION is executing; Z_O and Z_TARGET remain the command's
+; PRSO and PRSI. Do not restrict these source routines to the direct slot.
+@Z_R20_SCENERY_ACTION(Z_ACTION_OBJECT, Z_O, Z_TARGET)
+#DIM DYNAMIC Z_ACTION_OBJECT
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+SELECTCASE Z_ACTION_OBJECT
+CASE O_BODIES
+    SELECTCASE Z_VERB
+    CASE "take"
+        PRINTL A force keeps you from taking the bodies.
+        RETURN 1
+    CASE "break", "burn"
+        ; PRE-MUNG and PRE-BURN must have run before this ACTION.
+        PRINTL The voice of the guardian of the dungeon booms out from the darkness,
+        PRINTL "Your disrespect costs you your life!" and places your head on a sharp
+        PRINTL pole.
+        CALL Z_FATAL_BOUNDARY
+        RETURN 1
+    ENDSELECT
+CASE O_CRACK
+    ; ENTER OBJECT, WALK THROUGH and CLIMB THROUGH all mean V-THROUGH.
+    ; Accept the current internal ENTER spelling and a dedicated THROUGH
+    ; spelling if the parser separates it from V-CLIMB in this revision.
+    IF Z_VERB == "enter" || Z_VERB == "through"
+        PRINTL You can't fit through the crack.
+        RETURN 1
+    ENDIF
+ENDSELECT
+RETURN 0

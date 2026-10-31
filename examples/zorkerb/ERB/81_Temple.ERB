@@ -1,0 +1,345 @@
+﻿; Dome, mirrors and the bell/book/candles ceremony.
+@Z_TEMPLE_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_OTHER_ROOM
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_ORIGIN
+#DIM DYNAMIC Z_LINK_CURSOR1
+#DIM DYNAMIC Z_LINK_CURSOR2
+IF Z_O == O_MIRROR_1 || Z_O == O_MIRROR_2 || ((Z_TARGET == O_MIRROR_1 || Z_TARGET == O_MIRROR_2) && Z_VERB == "throw")
+    SELECTCASE Z_VERB
+    CASE "rub"
+        IF Z_MIRROR_BROKEN
+            PRINTL The mirror is broken into many pieces.
+        ELSEIF Z_TARGET
+            PRINTFORML You feel a faint tingling transmitted through the %Z_OBJ_NAME:Z_TARGET%.
+        ELSE
+            Z_ORIGIN = Z_HERE
+            IF Z_HERE == R_MIRROR_ROOM_1
+                Z_OTHER_ROOM = R_MIRROR_ROOM_2
+            ELSE
+                Z_OTHER_ROOM = R_MIRROR_ROOM_1
+            ENDIF
+            ; Cache BOTH original heads before moving anything. MOVE prepends,
+            ; so each original list is transferred once and its order reverses.
+            Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_ORIGIN)
+            Z_LINK_CURSOR2 = Z_FIRST_CHILD(Z_OTHER_ROOM)
+            WHILE Z_LINK_CURSOR1
+                Z_I = Z_LINK_CURSOR1
+                Z_LINK_CURSOR1 = Z_NEXT:Z_I
+                CALL Z_MOVE_OBJECT, Z_I, Z_OTHER_ROOM
+            WEND
+            WHILE Z_LINK_CURSOR2
+                Z_I = Z_LINK_CURSOR2
+                Z_LINK_CURSOR2 = Z_NEXT:Z_I
+                CALL Z_MOVE_OBJECT, Z_I, Z_ORIGIN
+            WEND
+            Z_HERE = Z_OTHER_ROOM
+            PRINTL There is a rumble from deep within the earth and the room shakes.
+        ENDIF
+        RETURN 1
+    CASE "examine", "inside"
+        IF Z_MIRROR_BROKEN
+            PRINTL The mirror is broken into many pieces.
+        ELSE
+            PRINTL There is an ugly person staring back at you.
+        ENDIF
+        RETURN 1
+    CASE "take"
+        PRINTL The mirror is many times your size. Give up.
+        RETURN 1
+    CASE "break", "attack", "throw"
+        IF Z_MIRROR_BROKEN
+            PRINTL Haven't you done enough damage already?
+        ELSE
+            Z_MIRROR_BROKEN = 1
+            Z_LUCKY = 0
+            PRINTL You have broken the mirror. I hope you have a seven years' supply of
+            PRINTL good luck handy.
+        ENDIF
+        RETURN 1
+    ENDSELECT
+ENDIF
+IF Z_O == O_ROPE || Z_TARGET == O_ROPE
+    ; ROPE-FUNCTION (called for the rope as PRSO or PRSI)
+    IF Z_HERE != R_DOME_ROOM
+        Z_DOME_TIED = 0
+        IF Z_VERB == "tie" && Z_SP_ACTION != "V-TIE-UP"
+            PRINTL You can't tie the rope to that.
+            RETURN 1
+        ENDIF
+        RETURN 0
+    ENDIF
+    IF Z_VERB == "tie" && Z_SP_ACTION != "V-TIE-UP"
+        SIF Z_TARGET != O_RAILING
+            RETURN 0
+        IF Z_DOME_TIED
+            PRINTL The rope is already tied to it.
+        ELSE
+            PRINTL The rope drops over the side and comes within ten feet of the floor.
+            Z_DOME_TIED = 1
+            Z_FLAGS:O_ROPE |= ZF_NDESC
+            ; Only a rope that is not lying in a room is moved there.
+            SIF Z_PARENT:O_ROPE < 256
+                CALL Z_MOVE_OBJECT, O_ROPE, Z_HERE
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "climb" && Z_O == O_ROPE && Z_DOME_TIED && Z_SP_ACTION == "V-CLIMB-DOWN"
+        CALL Z_WALK, 9
+        RETURN 1
+    ELSEIF Z_VERB == "tie" && Z_TARGET == O_ROPE
+        ; TIE UP OBJECT WITH ROPE
+        IF Z_HAS(Z_O, ZF_ACTOR)
+            IF (Z_O == O_TROLL && Z_TROLL_STRENGTH < 0) || (Z_O == O_THIEF && Z_THIEF_STRENGTH < 0)
+                PRINTFORM Your attempt to tie up the %Z_OBJ_NAME:Z_O% awakens him.
+                IF Z_O == O_TROLL
+                    CALL Z_AWAKEN_TROLL
+                ELSE
+                    CALL Z_AWAKEN_THIEF
+                ENDIF
+            ELSE
+                PRINTFORML The %Z_OBJ_NAME:Z_O% struggles and you cannot tie him up.
+            ENDIF
+        ELSE
+            PRINTFORML Why would you tie up a %Z_OBJ_NAME:Z_O%?
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "untie"
+        IF Z_DOME_TIED
+            Z_DOME_TIED = 0
+            Z_FLAGS:O_ROPE &= ~ZF_NDESC
+            PRINTL The rope is now untied.
+        ELSE
+            PRINTL It is not tied to anything.
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "drop" && !Z_DOME_TIED
+        CALL Z_MOVE_OBJECT, O_ROPE, R_TORCH_ROOM
+        PRINTL The rope drops gently to the floor below.
+        RETURN 1
+    ELSEIF Z_VERB == "take" && Z_DOME_TIED
+        PRINTL The rope is tied to the railing.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_TORCH
+    IF Z_VERB == "off"
+        PRINTL You nearly burn your hand trying to extinguish the flame.
+        RETURN 1
+    ELSEIF Z_VERB == "examine"
+        PRINTL The torch is burning.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_HOT_BELL && Z_VERB == "take"
+    PRINTL The bell is very hot and cannot be taken.
+    RETURN 1
+ENDIF
+IF Z_O == O_HOT_BELL && (Z_VERB == "rub" || (Z_VERB == "ring" && Z_TARGET))
+    ; HOT-BELL-F RUB / RING WITH
+    IF Z_TARGET && Z_BURNABLE:Z_TARGET
+        PRINTFORML The %Z_OBJ_NAME:Z_TARGET% burns and is consumed.
+        CALL Z_REMOVE_CAREFULLY, Z_TARGET
+    ELSEIF Z_TARGET == O_HANDS
+        PRINTL The bell is too hot to touch.
+    ELSE
+        PRINTL The heat from the bell is too intense.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_HOT_BELL && Z_VERB == "ring"
+    PRINTL The bell is too hot to reach.
+    RETURN 1
+ENDIF
+IF Z_O == O_BELL && Z_VERB == "ring"
+    IF Z_HERE == R_ENTRANCE_TO_HADES && !Z_LLD_OPEN
+        Z_EXORCISM_BELL = 1
+        CALL Z_MOVE_OBJECT, O_BELL, 0
+        CALL Z_MOVE_OBJECT, O_HOT_BELL, Z_HERE
+        Z_IT = O_HOT_BELL
+        PRINTL The bell suddenly becomes red hot and falls to the ground. The
+        PRINTL wraiths, as if paralyzed, stop their jeering and slowly turn to face
+        PRINTL you. On their ashen faces, the expression of a long-forgotten terror
+        PRINTL takes shape.
+        IF Z_PARENT:O_CANDLES == Z_PLAYER
+            PRINTL In your confusion, the candles drop to the ground (and they are out).
+            CALL Z_MOVE_OBJECT, O_CANDLES, Z_HERE
+            Z_FLAGS:O_CANDLES &= ~ZF_ON
+            CALL Z_ENABLE, ZE_CANDLES, 0
+        ENDIF
+        CALL Z_SCHEDULE, ZE_XB, 6
+        CALL Z_SCHEDULE, ZE_XBH, 20
+    ELSE
+        PRINTL Ding, dong.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_BOOK && Z_VERB == "read" && Z_HERE == R_ENTRANCE_TO_HADES && Z_EXORCISM_CANDLES && !Z_LLD_OPEN
+    PRINTL Each word of the prayer reverberates through the hall in a deafening
+    PRINTL confusion. As the last word fades, a voice, loud and commanding,
+    PRINTL speaks: "Begone, fiends!" A heart-stopping scream fills the cavern,
+    PRINTL and the spirits, sensing a greater power, flee through the walls.
+    CALL Z_MOVE_OBJECT, O_GHOSTS, 0
+    Z_LLD_OPEN = 1
+    CALL Z_ENABLE, ZE_XC, 0
+    RETURN 1
+ENDIF
+IF Z_O == O_BONES && (Z_VERB == "take" || Z_VERB == "rub" || Z_VERB == "move" || Z_VERB == "raise" || Z_VERB == "attack" || Z_VERB == "kick" || Z_VERB == "kiss")
+    PRINTL A ghost appears in the room and is appalled at your desecration of
+    PRINTL the remains of a fellow adventurer. He casts a curse on your valuables
+    PRINTL and banishes them to the Land of the Living Dead. The ghost leaves,
+    PRINTL muttering obscenities.
+    ; Source SKELETON uses ROB in this order: room (100), then player.
+    ; ROB owns TOUCHBIT and caches NEXT before every relocation.
+    CALL Z_ROB, Z_HERE, R_LAND_OF_LIVING_DEAD, 100
+    CALL Z_ROB, Z_PLAYER, R_LAND_OF_LIVING_DEAD
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_LIGHT_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_WAS_LIT
+IF Z_O == O_CANDLES || Z_TARGET == O_CANDLES
+    SIF !Z_TOUCHED:O_CANDLES
+        CALL Z_ENABLE, ZE_CANDLES, 1
+ENDIF
+IF Z_O == O_MATCH
+    SELECTCASE Z_VERB
+    CASE "on", "burn"
+        Z_WAS_LIT = Z_IS_LIT()
+        SIF Z_MATCH_COUNT > 0
+            Z_MATCH_COUNT -= 1
+        IF Z_MATCH_COUNT <= 0
+            PRINTL I'm afraid that you have run out of matches.
+        ELSEIF Z_HERE == R_LOWER_SHAFT || Z_HERE == R_TIMBER_ROOM
+            PRINTL This room is drafty, and the match goes out instantly.
+        ELSE
+            Z_FLAGS:O_MATCH |= ZF_FLAME | ZF_ON
+            CALL Z_SCHEDULE, ZE_MATCH, 2
+            PRINTL One of the matches starts to burn.
+            SIF !Z_WAS_LIT
+                CALL Z_LOOK, 1
+        ENDIF
+        RETURN 1
+    CASE "off"
+        SIF !Z_HAS(O_MATCH, ZF_FLAME)
+            RETURN 0
+        Z_FLAGS:O_MATCH &= ~(ZF_FLAME | ZF_ON)
+        CALL Z_QUEUE, ZE_MATCH, 0
+        PRINTL The match is out.
+        SIF !Z_IS_LIT()
+            PRINTL It's pitch black in here!
+        RETURN 1
+    CASE "count", "open"
+        IF Z_MATCH_COUNT - 1 <= 0
+            PRINTL You have no matches.
+        ELSEIF Z_MATCH_COUNT - 1 == 1
+            PRINTL You have 1 match.
+        ELSE
+            PRINTFORML You have {Z_MATCH_COUNT - 1} matches.
+        ENDIF
+        RETURN 1
+    CASE "examine"
+        IF Z_HAS(O_MATCH, ZF_ON)
+            PRINTL The match is burning.
+        ELSE
+            PRINTL The matchbook isn't very interesting, except for what's written on it.
+        ENDIF
+        RETURN 1
+    ENDSELECT
+ELSEIF Z_O == O_CANDLES
+    SELECTCASE Z_VERB
+    CASE "on", "burn"
+        IF Z_CANDLE_TICKS >= 75
+            PRINTL Alas, there's not much left of the candles. Certainly not enough to
+            PRINTL burn.
+        ELSE
+            IF !Z_TARGET && Z_HAS(O_MATCH, ZF_FLAME)
+                PRINTL (with the match)
+                Z_TARGET = O_MATCH
+            ENDIF
+            IF !Z_TARGET
+                PRINTL You should say what to light them with.
+            ELSEIF Z_TARGET == O_MATCH && Z_HAS(O_MATCH, ZF_ON)
+                IF Z_HAS(O_CANDLES, ZF_ON)
+                    PRINTL The candles are already lit.
+                ELSE
+                    Z_FLAGS:O_CANDLES |= ZF_ON
+                    CALL Z_ENABLE, ZE_CANDLES, 1
+                    PRINTL The candles are lit.
+                ENDIF
+            ELSEIF Z_TARGET == O_TORCH
+                IF Z_HAS(O_CANDLES, ZF_ON)
+                    PRINTL You realize, just in time, that the candles are already lighted.
+                ELSE
+                    PRINTL The heat from the torch is so intense that the candles are vaporized.
+                    CALL Z_MOVE_OBJECT, O_CANDLES, 0
+                ENDIF
+            ELSE
+                PRINTL You have to light them with something that's burning, you know.
+            ENDIF
+        ENDIF
+        RETURN 1
+    CASE "off"
+        CALL Z_ENABLE, ZE_CANDLES, 0
+        IF Z_HAS(O_CANDLES, ZF_ON)
+            Z_FLAGS:O_CANDLES &= ~ZF_ON
+            Z_TOUCHED:O_CANDLES = 1
+            PRINTL The flame is extinguished.
+            SIF !Z_IS_LIT()
+                PRINTL It's really dark in here....
+        ELSE
+            PRINTL The candles are not lighted.
+        ENDIF
+        RETURN 1
+    CASE "count"
+        PRINTL Let's see, how many objects in a pair? Don't tell me, I'll get it.
+        RETURN 1
+    CASE "put"
+        IF Z_TARGET && (Z_SRC_ATTR:Z_TARGET & (1 << 26))
+            PRINTL That wouldn't be smart.
+            RETURN 1
+        ENDIF
+    CASE "examine"
+        IF Z_HAS(O_CANDLES, ZF_ON)
+            PRINTL The candles are burning.
+        ELSE
+            PRINTL The candles are out.
+        ENDIF
+        RETURN 1
+    ENDSELECT
+ENDIF
+RETURN 0
+
+@Z_TEMPLE_END_TURN
+; Room M-END actions precede CLOCKER, as in the original turn loop.
+IF Z_HERE == R_TINY_CAVE && Z_PARENT:O_CANDLES == Z_PLAYER && Z_PROB(50, 1) && Z_HAS(O_CANDLES, ZF_ON)
+    CALL Z_ENABLE, ZE_CANDLES, 0
+    Z_FLAGS:O_CANDLES &= ~ZF_ON
+    PRINTL A gust of wind blows out your candles!
+    SIF !Z_IS_LIT()
+        PRINTL It is now completely dark.
+ENDIF
+IF Z_HERE == R_ENTRANCE_TO_HADES && Z_EXORCISM_BELL && Z_PARENT:O_CANDLES == Z_PLAYER && Z_HAS(O_CANDLES, ZF_ON) && !Z_EXORCISM_CANDLES
+    Z_EXORCISM_CANDLES = 1
+    PRINTL The flames flicker wildly and appear to dance. The earth beneath
+    PRINTL your feet trembles, and your legs nearly buckle beneath you.
+    PRINTL The spirits cower at your unearthly power.
+    CALL Z_ENABLE, ZE_XB, 0
+    CALL Z_SCHEDULE, ZE_XC, 3
+ENDIF
+IF Z_HERE == R_LOUD_ROOM && Z_GATES_OPEN && !Z_LOW_TIDE
+    PRINTL It is unbearably loud here, with an ear-splitting roar seeming to
+    PRINTL come from all around you. There is a pounding in your head which won't
+    PRINTL stop. With a tremendous effort, you scramble out of the room.
+    CALL Z_ESCAPE_LOUD
+ENDIF
+IF Z_HERE == R_RESERVOIR && Z_LOW_TIDE && !Z_GATES_OPEN
+    PRINTL You notice that the water level here is rising rapidly. The currents
+    PRINTL are also becoming stronger. Staying here seems quite perilous!
+ENDIF
+RETURN
+

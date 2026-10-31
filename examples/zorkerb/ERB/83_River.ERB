@@ -1,0 +1,445 @@
+﻿; Native ERB river/boat/rainbow rules, sourced from 1actions.zil 2620-2925.
+; Player vehicle membership is explicit saved state, not an Emuera character.
+@Z_IS_RIVER(Z_ROOM)
+#FUNCTION
+#DIM DYNAMIC Z_ROOM
+RETURNF Z_ROOM >= R_RIVER_1 && Z_ROOM <= R_RIVER_5
+
+@Z_IS_WATER(Z_ROOM)
+#FUNCTION
+#DIM DYNAMIC Z_ROOM
+RETURNF Z_IS_RIVER(Z_ROOM) || Z_ROOM == R_IN_STREAM || (Z_ROOM == R_RESERVOIR && !Z_LOW_TIDE)
+
+@Z_RIVER_SPEED(Z_ROOM)
+#FUNCTION
+#DIM DYNAMIC Z_ROOM
+SELECTCASE Z_ROOM
+CASE R_RIVER_1, R_RIVER_2
+    RETURNF 4
+CASE R_RIVER_3
+    RETURNF 3
+CASE R_RIVER_4
+    RETURNF 2
+CASE R_RIVER_5
+    RETURNF 1
+ENDSELECT
+RETURNF 0
+
+@Z_RELOCATE(Z_DEST)
+#DIM DYNAMIC Z_DEST
+Z_HERE = Z_DEST
+IF Z_IN_BOAT
+    CALL Z_MOVE_OBJECT, O_INFLATED_BOAT, Z_DEST
+ENDIF
+IF !Z_ROOM_AWARDED:Z_DEST
+    Z_BASE_SCORE += Z_ROOM_POINTS:Z_DEST
+    Z_ROOM_AWARDED:Z_DEST = 1
+ENDIF
+CALL Z_LOOK, 0
+RETURN
+
+@Z_REGION_EXIT(Z_DEST, Z_DIR)
+#DIM DYNAMIC Z_DEST
+#DIM DYNAMIC Z_DIR
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_LINK_CURSOR1
+IF Z_IN_BOAT
+    ; RBOAT-FUNCTION M-BEG WALK: only LAND, EAST, WEST (and reservoir
+    ; NORTH/SOUTH, stream SOUTH), on land and water alike.
+    IF Z_DIR != 1 && Z_DIR != 3 && !(Z_HERE == R_RESERVOIR && (Z_DIR == 0 || Z_DIR == 2)) && !(Z_HERE == R_IN_STREAM && Z_DIR == 2)
+        PRINTL Read the label for the boat's instructions.
+        RETURN -1
+    ENDIF
+    ; GOTO: a land-to-land move in a NONLANDBIT vehicle is NO-GO-TELL.
+    IF !Z_IS_WATER(Z_HERE) && Z_DEST && !Z_IS_WATER(Z_DEST)
+        PRINTFORML You can't go there in a %Z_OBJ_NAME:O_INFLATED_BOAT%.
+        RETURN -1
+    ENDIF
+ENDIF
+IF Z_DEST && Z_IS_WATER(Z_DEST) && !Z_IN_BOAT
+    PRINTL You would drown.
+    RETURN -1
+ENDIF
+IF Z_DEST == R_ON_RAINBOW && !Z_RAINBOW
+    PRINTL Can you walk on water vapor?
+    RETURN -1
+ENDIF
+IF (Z_HERE == R_WHITE_CLIFFS_NORTH && (Z_DIR == 2 || Z_DIR == 3)) || (Z_HERE == R_WHITE_CLIFFS_SOUTH && Z_DIR == 0)
+    IF Z_PARENT:O_INFLATED_BOAT == Z_PLAYER
+        PRINTL The path is too narrow.
+        RETURN -1
+    ENDIF
+ENDIF
+IF (Z_HERE == R_TIMBER_ROOM && Z_DIR == 3) || (Z_HERE == R_LOWER_SHAFT && (Z_DIR == 1 || Z_DIR == 11))
+    Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_PLAYER)
+    WHILE Z_LINK_CURSOR1
+        Z_O = Z_LINK_CURSOR1
+        Z_LINK_CURSOR1 = Z_NEXT:Z_O
+        IF Z_PARENT:Z_O == Z_PLAYER && Z_OBJECT_WEIGHT(Z_O) > 4
+            PRINTL You cannot fit through this passage with that load.
+            RETURN -1
+        ENDIF
+    WEND
+ENDIF
+RETURN Z_DEST
+
+@Z_LAUNCH
+#DIM DYNAMIC Z_DEST
+IF !Z_IN_BOAT
+    PRINTL You're not in the boat!
+    RETURN
+ENDIF
+; RBOAT-FUNCTION M-BEG LAUNCH
+IF (Z_IS_RIVER(Z_HERE) && Z_HERE != R_RIVER_5) || Z_HERE == R_RESERVOIR || Z_HERE == R_IN_STREAM
+    PRINT You are on the 
+    IF Z_HERE == R_RESERVOIR
+        PRINT reservoir
+    ELSEIF Z_HERE == R_IN_STREAM
+        PRINT stream
+    ELSE
+        PRINT river
+    ENDIF
+    PRINTL , or have you forgotten?
+    RETURN
+ENDIF
+SELECTCASE Z_HERE
+CASE R_DAM_BASE
+    Z_DEST = R_RIVER_1
+CASE R_WHITE_CLIFFS_NORTH
+    Z_DEST = R_RIVER_3
+CASE R_WHITE_CLIFFS_SOUTH, R_SANDY_BEACH
+    Z_DEST = R_RIVER_4
+CASE R_SHORE
+    Z_DEST = R_RIVER_5
+CASE R_RESERVOIR_NORTH, R_RESERVOIR_SOUTH
+    IF Z_LOW_TIDE
+        ; GO-NEXT: GOTO a RLANDBIT reservoir in a NONLANDBIT vehicle.
+        PRINTFORML You can't go there in a %Z_OBJ_NAME:O_INFLATED_BOAT%.
+        RETURN
+    ENDIF
+    Z_DEST = R_RESERVOIR
+CASE R_STREAM_VIEW
+    Z_DEST = R_IN_STREAM
+CASEELSE
+    PRINTL You can't launch it here.
+    RETURN
+ENDSELECT
+CALL Z_RELOCATE, Z_DEST
+CALL Z_SCHEDULE, ZE_RIVER, Z_RIVER_SPEED(Z_DEST)
+RETURN
+
+@Z_LAND
+; LAND is a direction word (P?LAND): V-WALK through the room's LAND exit.
+#DIM DYNAMIC Z_XSIZE
+Z_XSIZE = Z_SRC_EXIT_SIZE:Z_HERE:12
+IF Z_XSIZE == 1
+    CALL Z_GOTO_ROOM, Z_SRC_EXIT_DEST:Z_HERE:12, Z_IS_LIT()
+ELSEIF Z_XSIZE == 2 && Z_HERE == R_RIVER_2
+    PRINTL There is no safe landing spot here.
+ELSEIF Z_XSIZE == 2 && Z_HERE == R_RIVER_4
+    PRINTL You can land either to the east or the west.
+ELSE
+    PRINTL You can't go that way.
+ENDIF
+RETURN
+
+@Z_DISEMBARK
+; V-DISEMBARK
+IF !Z_IN_BOAT
+    PRINTL You're not in that!
+    Z_ABORT = 1
+    Z_PENDING =
+ELSEIF Z_IS_WATER(Z_HERE)
+    PRINTL You realize that getting out here would be fatal.
+    Z_ABORT = 1
+    Z_PENDING =
+ELSE
+    Z_IN_BOAT = 0
+    PRINTL You are on your own feet again.
+ENDIF
+RETURN
+
+@Z_BOAT_PRE_ACTION
+#DIM DYNAMIC Z_SHARP
+SIF !Z_IN_BOAT
+    RETURN 0
+; RBOAT-FUNCTION M-BEG catches dangerous weapons before the ordinary action.
+IF Z_VERB == "drop" && !Z_ALL && Z_HAS(Z_DOBJ, ZF_WEAPON)
+    Z_SHARP = Z_DOBJ
+ELSEIF Z_VERB == "put" && Z_IOBJ == O_INFLATED_BOAT && Z_HAS(Z_DOBJ, ZF_WEAPON)
+    Z_SHARP = Z_DOBJ
+ELSEIF (Z_VERB == "attack" || Z_VERB == "break") && Z_HAS(Z_IOBJ, ZF_WEAPON)
+    Z_SHARP = Z_IOBJ
+ENDIF
+IF Z_SHARP
+    CALL Z_BOAT_SPILL, Z_SHARP
+    RETURN 1
+ENDIF
+RETURN 0
+
+; RBOAT-FUNCTION M-BEG: a weapon dropped, put into the boat, or used to attack.
+@Z_BOAT_SPILL(Z_SHARP)
+#DIM DYNAMIC Z_SHARP
+CALL Z_MOVE_OBJECT, O_INFLATED_BOAT, 0
+CALL Z_MOVE_OBJECT, O_PUNCTURED_BOAT, Z_HERE
+CALL Z_ROB_VALUABLES, O_INFLATED_BOAT, Z_HERE
+Z_IN_BOAT = 0
+PRINTFORML It seems that the %Z_OBJ_NAME:Z_SHARP% didn't agree with the boat, as evidenced
+PRINTL by the loud hissing noise issuing therefrom. With a pathetic sputter, the
+PRINTL boat deflates, leaving you without.
+IF Z_IS_WATER(Z_HERE)
+    PRINTL
+    IF Z_HERE == R_RESERVOIR || Z_HERE == R_IN_STREAM
+        PRINTL Another pathetic sputter, this time from you, heralds your drowning.
+    ELSE
+        PRINTL In other words, fighting the fierce currents of the Frigid River. You
+        PRINTL manage to hold your own for a bit, but then you are carried over a
+        PRINTL waterfall and into some nasty rocks. Ouch!
+    ENDIF
+    CALL Z_FATAL_BOUNDARY
+ENDIF
+RETURN
+
+; RBOAT-FUNCTION BOARD with a sharp object carried.
+@Z_PUNCTURE_BOAT(Z_SPILL)
+#DIM DYNAMIC Z_SPILL
+CALL Z_MOVE_OBJECT, O_INFLATED_BOAT, 0
+CALL Z_MOVE_OBJECT, O_PUNCTURED_BOAT, Z_HERE
+Z_IT = O_PUNCTURED_BOAT
+PRINTL The boat deflates to the sounds of hissing, sputtering, and cursing.
+RETURN
+
+@Z_RIVER_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_WAS_LIT
+IF Z_IN_BOAT && Z_O == O_INFLATED_BOAT && Z_VERB == "take"
+    PRINTL You are in it!
+    RETURN 1
+ENDIF
+IF Z_IN_BOAT && Z_VERB == "drop" && Z_HAS(Z_O, ZF_WEAPON)
+    CALL Z_BOAT_SPILL, Z_O
+    RETURN 1
+ENDIF
+IF Z_O == O_INFLATABLE_BOAT && Z_VERB == "inflate"
+    IF Z_PARENT:Z_O != Z_HERE
+        PRINTL The boat must be on the ground to be inflated.
+    ELSEIF Z_TARGET == O_LUNGS
+        PRINTL You don't have enough lung power to inflate it.
+    ELSEIF Z_TARGET != O_PUMP
+        PRINTFORML With a %Z_OBJ_NAME:Z_TARGET%? Surely you jest!
+    ELSE
+        PRINTL The boat inflates and appears seaworthy.
+        SIF !Z_TOUCHED:O_BOAT_LABEL
+            PRINTL A tan label is lying inside the boat.
+        CALL Z_MOVE_OBJECT, O_INFLATABLE_BOAT, 0
+        CALL Z_MOVE_OBJECT, O_INFLATED_BOAT, Z_HERE
+        Z_IT = O_INFLATED_BOAT
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_PUNCTURED_BOAT || Z_TARGET == O_PUNCTURED_BOAT
+    IF (Z_VERB == "plug" && Z_TARGET == O_PUTTY) || (Z_VERB == "put" && Z_O == O_PUTTY)
+        PRINTL Well done. The boat is repaired.
+        CALL Z_MOVE_OBJECT, O_INFLATABLE_BOAT, Z_PARENT:O_PUNCTURED_BOAT
+        CALL Z_MOVE_OBJECT, O_PUNCTURED_BOAT, 0
+        RETURN 1
+    ELSEIF Z_VERB == "inflate"
+        PRINTL No chance. Some moron punctured it.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_INFLATED_BOAT
+    IF Z_VERB == "board" || Z_VERB == "enter"
+        ; PRE-BOARD, then RBOAT-FUNCTION BOARD
+        IF Z_PARENT:O_INFLATED_BOAT != Z_HERE
+            PRINTFORML The %Z_OBJ_NAME:O_INFLATED_BOAT% must be on the ground to be boarded.
+        ELSEIF Z_IN_BOAT
+            PRINTFORML You are already in the %Z_OBJ_NAME:O_INFLATED_BOAT%!
+        ELSEIF Z_PARENT:O_SCEPTRE == Z_PLAYER || Z_PARENT:O_KNIFE == Z_PLAYER || Z_PARENT:O_SWORD == Z_PLAYER || Z_PARENT:O_RUSTY_KNIFE == Z_PLAYER || Z_PARENT:O_AXE == Z_PLAYER || Z_PARENT:O_STILETTO == Z_PLAYER
+            PRINTL Oops! Something sharp seems to have slipped and punctured the boat.
+            CALL Z_PUNCTURE_BOAT, 0
+        ELSE
+            Z_IN_BOAT = 1
+            PRINTL You are now in the magic boat.
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "deflate"
+        IF Z_IN_BOAT
+            PRINTL You can't deflate the boat while you're in it.
+        ELSEIF Z_PARENT:O_INFLATED_BOAT != Z_HERE
+            PRINTL The boat must be on the ground to be deflated.
+        ELSE
+            PRINTL The boat deflates.
+            CALL Z_MOVE_OBJECT, O_INFLATED_BOAT, 0
+            CALL Z_MOVE_OBJECT, O_INFLATABLE_BOAT, Z_HERE
+            Z_IT = O_INFLATABLE_BOAT
+        ENDIF
+        RETURN 1
+    ELSEIF Z_VERB == "inflate"
+        PRINTL Inflating it further would probably burst it.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_BUOY && Z_VERB == "open"
+    CALL Z_AWARD_TAKE, O_EMERALD
+    RETURN 0
+ENDIF
+IF Z_O == O_SAND && Z_VERB == "dig"
+    IF Z_TARGET != O_SHOVEL
+        PRINTL Digging sand requires a shovel.
+    ELSE
+        Z_BEACH_DIG += 1
+        SELECTCASE Z_BEACH_DIG
+        CASE 0
+            PRINTL You seem to be digging a hole here.
+        CASE 1
+            PRINTL The hole is getting deeper, but that's about it.
+        CASE 2
+            PRINTL You are surrounded by a wall of sand on all sides.
+        CASE 3
+            IF Z_HAS(O_SCARAB, ZF_HIDDEN)
+                PRINTL You can see a scarab here in the sand.
+                Z_FLAGS:O_SCARAB &= ~ZF_HIDDEN
+                Z_IT = O_SCARAB
+            ENDIF
+        CASEELSE
+            Z_BEACH_DIG = -1
+            SIF Z_PARENT:O_SCARAB == Z_HERE
+                Z_FLAGS:O_SCARAB |= ZF_HIDDEN
+            PRINTL The hole collapses, smothering you.
+            CALL Z_FATAL_BOUNDARY
+        ENDSELECT
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_SCEPTRE && (Z_VERB == "wave" || Z_VERB == "raise")
+    IF Z_HERE == R_ON_RAINBOW
+        Z_RAINBOW = 0
+        PRINTL The structural integrity of the rainbow is severely compromised.
+        CALL Z_FATAL_BOUNDARY
+    ELSEIF Z_HERE == R_ARAGAIN_FALLS || Z_HERE == R_END_OF_RAINBOW
+        IF !Z_RAINBOW
+            Z_RAINBOW = 1
+            Z_FLAGS:O_POT_OF_GOLD &= ~ZF_HIDDEN
+            PRINTL Suddenly, the rainbow appears to become solid and walkable.
+            IF Z_HERE == R_END_OF_RAINBOW && Z_PARENT:O_POT_OF_GOLD == R_END_OF_RAINBOW
+                PRINTL A shimmering pot of gold appears at the end of the rainbow.
+            ENDIF
+        ELSE
+            CALL Z_ROB_VALUABLES, R_ON_RAINBOW, O_WALL
+            Z_RAINBOW = 0
+            PRINTL The rainbow seems to have become somewhat run-of-the-mill.
+        ENDIF
+    ELSE
+        PRINTL A dazzling display of color briefly emanates from the sceptre.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_RAINBOW && (Z_VERB == "cross" || Z_VERB == "enter" || Z_VERB == "climb")
+    IF Z_HERE == R_CANYON_VIEW
+        PRINTL From here?!?
+    ELSEIF !Z_RAINBOW
+        PRINTL Can you walk on water vapor?
+    ELSEIF Z_HERE == R_ARAGAIN_FALLS
+        CALL Z_RELOCATE, R_END_OF_RAINBOW
+    ELSEIF Z_HERE == R_END_OF_RAINBOW
+        CALL Z_RELOCATE, R_ARAGAIN_FALLS
+    ELSE
+        PRINTL You'll have to say which way...
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_RAINBOW && Z_VERB == "under"
+    PRINTL The Frigid River flows under the rainbow.
+    RETURN 1
+ENDIF
+IF Z_VERB == "leap" && Z_O == O_RIVER
+    PRINTL A look before leaping reveals that the river is wide and dangerous,
+    PRINTL with swift currents and large, half-hidden rocks. You decide to forgo your
+    PRINTL swim.
+    RETURN 1
+ENDIF
+IF Z_VERB == "leap" && Z_O == O_CLIMBABLE_CLIFF
+    PRINTL That would be very unwise. Perhaps even fatal.
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_CLIMBABLE_CLIFF && (Z_VERB == "put" || Z_VERB == "throw_off")
+    ; CLIFF-OBJECT
+    PRINTFORML The %Z_OBJ_NAME:Z_O% tumbles into the river and is seen no more.
+    CALL Z_REMOVE_CAREFULLY, Z_O
+    RETURN 1
+ENDIF
+IF Z_O == O_WHITE_CLIFF && Z_VERB == "climb"
+    PRINTL The cliff is too steep for climbing.
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_RIVER && Z_VERB == "put"
+    ; RIVER-FUNCTION handles PUT only. THROW ... IN parses as PUT, but
+    ; THROW ... AT must still reach the direct ACTION and generic V-THROW.
+    ; PRE-PUT already checked HELD? (including carried containers).
+    IF Z_O == O_INFLATED_BOAT
+        PRINTL You should get in the boat then launch it.
+    ELSE
+        CALL Z_REMOVE_CAREFULLY, Z_O
+        IF Z_BURNABLE:Z_O
+            PRINTFORML The %Z_OBJ_NAME:Z_O% floats for a moment, then sinks.
+        ELSE
+            PRINTFORML The %Z_OBJ_NAME:Z_O% splashes into the water and is gone forever.
+        ENDIF
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_I_RIVER
+IF !Z_IS_RIVER(Z_HERE)
+    CALL Z_ENABLE, ZE_RIVER, 0
+    RETURN 0
+ENDIF
+IF Z_HERE == R_RIVER_5
+    PRINTL Unfortunately, the magic boat doesn't provide protection from
+    PRINTL the rocks and boulders one meets at the bottom of waterfalls.
+    PRINTL Including this one.
+    CALL Z_FATAL_BOUNDARY
+ELSE
+    PRINTL The flow of the river carries you downstream.
+    CALL Z_RELOCATE, Z_HERE + 1
+    CALL Z_SCHEDULE, ZE_RIVER, Z_RIVER_SPEED(Z_HERE)
+ENDIF
+RETURN 1
+
+@Z_REGION_BEGIN
+IF Z_HERE == R_LOWER_SHAFT && !Z_SHAFT_SCORED && Z_IS_LIT()
+    Z_SHAFT_SCORED = 1
+    Z_BASE_SCORE += 13
+ENDIF
+RETURN
+
+@Z_REGION_END
+IF Z_HERE == R_RIVER_4 && Z_PARENT:O_BUOY == Z_PLAYER && Z_BUOY_HINT
+    PRINTL You notice something funny about the feel of the buoy.
+    Z_BUOY_HINT = 0
+ENDIF
+CALL Z_MINE_END
+RETURN
+
+; Original ROB with its optional probability omitted: only direct, visible,
+; non-sacred valuable children move. It consumes NO random numbers.
+; This is not the thief's probabilistic/ordered traversal implementation.
+@Z_ROB_VALUABLES(Z_FROM, Z_TO)
+#DIM DYNAMIC Z_FROM
+#DIM DYNAMIC Z_TO
+#DIM DYNAMIC Z_OBJ
+#DIM DYNAMIC Z_LINK_CURSOR1
+Z_LINK_CURSOR1 = Z_FIRST_CHILD(Z_FROM)
+WHILE Z_LINK_CURSOR1
+    Z_OBJ = Z_LINK_CURSOR1
+    Z_LINK_CURSOR1 = Z_NEXT:Z_OBJ
+    IF Z_PARENT:Z_OBJ == Z_FROM && !Z_HAS(Z_OBJ, ZF_HIDDEN) && !Z_HAS(Z_OBJ, ZF_SACRED) && Z_CURRENT_TVALUE:Z_OBJ > 0
+        CALL Z_MOVE_OBJECT, Z_OBJ, Z_TO
+        Z_TOUCHED:Z_OBJ = 1
+    ENDIF
+WEND
+RETURN

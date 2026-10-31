@@ -1,5 +1,5 @@
 ==============================================================
- PyEmuera 3.0.0 Beta 2（ぱみゅーら） 使い方ガイド
+ PyEmuera 3.0.0 Beta 3（ぱみゅーら） 使い方ガイド
  ― コマンド操作に慣れていない方向け ―
 ==============================================================
 
@@ -172,6 +172,18 @@ PyEmuera を動かすには Python 3.10 以上が必要です。
 --------------------------------------------------------------
 5. バリアントを遊ぶ
 --------------------------------------------------------------
+
+■ 同梱の ZORKERB r29
+
+  ZORKERB フォルダーを Start_PyEmuera.bat にドラッグ＆ドロップします。
+  タイトル画面で 0 を入力して新規開始し、look などの英語を入力します。
+  コマンドでは、展開先で「python PyEmuera.pyz ZORKERB」と入力します。
+  Linux 等では必要に応じて python3 を使います。Z-machine や Frotz は不要です。
+  ZORKERB は Zork I の非公式 ERB 移植で、r29 は I に対応しています。
+  Zork II・III の移植は独立した ZORKERB プロジェクトの将来の目標です。
+  https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29
+  権利とライセンスは ZORKERB 内の LICENSE、THIRD_PARTY_NOTICES.md、
+  licenses フォルダーを参照してください。
 
 ■ 始める前に：バリアントのバックアップ
 
@@ -395,7 +407,7 @@ PyEmuera を動かすには Python 3.10 以上が必要です。
 
   ・PyEmuera のバージョン
       （Diagnose の記録の中の "engine_version"、または 11章の --version で表示されるもの。
-        このガイドの版は 3.0.0b2 です）
+        このガイドの版は 3.0.0b3 です）
   ・Windows のバージョン（Windows 10 / 11 など）
   ・Python のバージョン（2-2 の「python --version」で表示されたもの）
   ・バリアントの名前とバージョン

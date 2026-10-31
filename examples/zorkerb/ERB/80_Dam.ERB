@@ -1,0 +1,338 @@
+﻿; Flood Control Dam #3. All ticking fields use SAVEDATA, not host timers.
+@Z_DAM_ACTION(Z_O, Z_TARGET)
+#DIM DYNAMIC Z_O
+#DIM DYNAMIC Z_TARGET
+IF Z_O == O_BOLT && Z_VERB == "oil"
+    PRINTL Hmm. It appears the tube contained glue, not oil. Turning the bolt
+    PRINTL won't get any easier....
+    RETURN 1
+ENDIF
+IF Z_O == O_BOLT && Z_VERB == "turn"
+    IF Z_TARGET != O_WRENCH
+        PRINTL The bolt won't turn using that.
+    ELSEIF Z_PARENT:O_WRENCH != Z_PLAYER
+        PRINTL You aren't holding the wrench.
+    ELSEIF !Z_GATE_ENABLED
+        PRINTL The bolt won't turn with your best effort.
+    ELSE
+        Z_VISITED:R_RESERVOIR_SOUTH = 0
+        IF Z_GATES_OPEN
+            Z_GATES_OPEN = 0
+            Z_VISITED:R_LOUD_ROOM = 0
+            PRINTL The sluice gates close and water starts to collect behind the dam.
+            CALL Z_SCHEDULE, ZE_RFILL, 8
+            CALL Z_QUEUE, ZE_REMPTY, 0
+        ELSE
+            Z_GATES_OPEN = 1
+            PRINTL The sluice gates open and water pours through the dam.
+            CALL Z_SCHEDULE, ZE_REMPTY, 8
+            CALL Z_QUEUE, ZE_RFILL, 0
+        ENDIF
+    ENDIF
+    RETURN 1
+ENDIF
+IF (Z_O == O_BOLT || Z_O == O_BUBBLE) && Z_VERB == "take"
+    PRINTL It is an integral part of the control panel.
+    RETURN 1
+ENDIF
+IF Z_O >= O_YELLOW_BUTTON && Z_O <= O_BLUE_BUTTON
+    IF Z_VERB == "read"
+        PRINTL They're greek to you.
+        RETURN 1
+    ELSEIF (Z_VERB == "move" && Z_SP_ACTION == "V-PUSH") || Z_VERB == "push"
+        ; BUTTON-F takes PUSH only (MOVE reaches V-MOVE).
+        SELECTCASE Z_O
+        CASE O_YELLOW_BUTTON
+            Z_GATE_ENABLED = 1
+            Z_VISITED:R_DAM_ROOM = 0
+            PRINTL Click.
+        CASE O_BROWN_BUTTON
+            Z_GATE_ENABLED = 0
+            Z_VISITED:R_DAM_ROOM = 0
+            PRINTL Click.
+        CASE O_RED_BUTTON
+            Z_MAINT_LIGHT = !Z_MAINT_LIGHT
+            IF Z_MAINT_LIGHT
+                PRINTL The lights within the room come on.
+            ELSE
+                PRINTL The lights within the room shut off.
+            ENDIF
+        CASE O_BLUE_BUTTON
+            IF Z_WATER_LEVEL == 0
+                Z_WATER_LEVEL = 1
+                Z_FLAGS:O_LEAK &= ~ZF_HIDDEN
+                PRINTL There is a rumbling sound and a stream of water appears to burst
+                PRINTL from the east wall of the room (apparently, a leak has occurred in a
+                PRINTL pipe).
+                CALL Z_SCHEDULE, ZE_MAINT, -1
+            ELSE
+                PRINTL The blue button appears to be jammed.
+            ENDIF
+        ENDSELECT
+        RETURN 1
+    ENDIF
+ENDIF
+IF (Z_O == O_LEAK && Z_VERB == "plug") || (Z_TARGET == O_LEAK && Z_VERB == "put")
+    IF Z_WATER_LEVEL > 0
+        IF (Z_O == O_PUTTY || Z_TARGET == O_PUTTY) && Z_ACCESS(O_PUTTY, 1)
+            Z_WATER_LEVEL = -1
+            CALL Z_QUEUE, ZE_MAINT, 0
+            PRINTL By some miracle of Zorkian technology, you have managed to stop the
+            PRINTL leak in the dam.
+        ELSE
+            PRINTL With that?
+        ENDIF
+    ELSE
+        PRINTL There is no active leak to plug.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_O == O_TUBE && Z_VERB == "squeeze"
+    IF !Z_HAS(O_TUBE, ZF_OPEN)
+        PRINTL The tube is closed.
+    ELSEIF Z_PARENT:O_PUTTY == O_TUBE
+        CALL Z_MOVE_OBJECT, O_PUTTY, Z_PLAYER
+        PRINTL The viscous material oozes into your hand.
+    ELSE
+        PRINTL The tube is apparently empty.
+    ENDIF
+    RETURN 1
+ENDIF
+IF Z_TARGET == O_TUBE && Z_VERB == "put"
+    PRINTL The tube refuses to accept anything.
+    RETURN 1
+ENDIF
+IF Z_O == O_PUTTY && Z_VERB == "put"
+    ; PUTTY-FCN also handles direct PUT, including APPLY's syntax alias.
+    ; The target tube callback above retains PRSI-before-PRSO precedence.
+    PRINTL The all-purpose gunk isn't a lubricant.
+    RETURN 1
+ENDIF
+IF Z_O == O_TOOL_CHEST || (Z_TARGET == O_TOOL_CHEST && Z_VERB == "put")
+    IF Z_VERB == "examine"
+        PRINTL The chests are all empty.
+        RETURN 1
+    ELSEIF Z_VERB == "take" || Z_VERB == "open" || Z_VERB == "put"
+        CALL Z_MOVE_OBJECT, O_TOOL_CHEST, 0
+        PRINTL The chests are so rusty and corroded that they crumble when you
+        PRINTL touch them.
+        RETURN 1
+    ENDIF
+ENDIF
+IF Z_O == O_DAM && (Z_VERB == "open" || Z_VERB == "close")
+    PRINTL Sounds reasonable, but this isn't how.
+    RETURN 1
+ENDIF
+IF Z_O == O_DAM && Z_VERB == "plug"
+    ; DAM-FUNCTION PLUG
+    IF Z_TARGET == O_HANDS
+        PRINTL Are you the little Dutch boy, then? Sorry, this is a big dam.
+    ELSE
+        PRINTFORML With a %Z_OBJ_NAME:Z_TARGET%? Do you know how big this dam is? You could only
+        PRINTL stop a tiny leak with that.
+    ENDIF
+    RETURN 1
+ENDIF
+RETURN 0
+
+@Z_I_RESERVOIR(Z_EMPTY)
+#DIM DYNAMIC Z_EMPTY
+Z_LOW_TIDE = Z_EMPTY
+Z_VISITED:R_DEEP_CANYON = 0
+Z_VISITED:R_LOUD_ROOM = 0
+IF Z_LOW_TIDE
+    Z_FLAGS:O_TRUNK &= ~ZF_HIDDEN
+    IF Z_HERE == R_RESERVOIR && Z_IN_BOAT
+        PRINTL The water level has dropped to the point at which the boat can no
+        PRINTL longer stay afloat. It sinks into the mud.
+    ELSEIF Z_HERE == R_RESERVOIR_NORTH || Z_HERE == R_RESERVOIR_SOUTH
+        PRINTL The water level is now quite low here and you could easily cross over
+        PRINTL to the other side.
+    ELSEIF Z_HERE == R_DEEP_CANYON
+        PRINTL The roar of rushing water is quieter now.
+    ENDIF
+ELSE
+    SIF Z_PARENT:O_TRUNK == R_RESERVOIR
+        Z_FLAGS:O_TRUNK |= ZF_HIDDEN
+    IF Z_HERE == R_RESERVOIR && Z_IN_BOAT
+        PRINTL The boat lifts gently out of the mud and is now floating on
+        PRINTL the reservoir.
+    ELSEIF Z_HERE == R_RESERVOIR
+        PRINTL You are lifted up by the rising river! The currents carry you
+        PRINTL over Flood Control Dam #3 toward the rocks at its base.
+        CALL Z_FATAL_BOUNDARY
+    ELSEIF Z_HERE == R_RESERVOIR_NORTH || Z_HERE == R_RESERVOIR_SOUTH
+        PRINTL You notice that the water level has risen to the point that it
+        PRINTL is impossible to cross.
+    ELSEIF Z_HERE == R_DEEP_CANYON
+        PRINTL A sound, like that of flowing water, starts to come from below.
+    ELSEIF Z_HERE == R_LOUD_ROOM
+        PRINTL All of a sudden, an alarmingly loud roaring sound fills the room.
+        PRINTL Filled with fear, you scramble away.
+        CALL Z_ESCAPE_LOUD
+    ENDIF
+ENDIF
+RETURN 1
+
+@Z_I_MAINT
+IF Z_HERE == R_MAINTENANCE_ROOM
+    PRINT The water level here is now 
+    SELECTCASE Z_WATER_LEVEL / 2
+    CASE 0
+        PRINTL up to your ankles.
+    CASE 1
+        PRINTL up to your shin.
+    CASE 2
+        PRINTL up to your knees.
+    CASE 3
+        PRINTL up to your hips.
+    CASE 4
+        PRINTL up to your waist.
+    CASE 5
+        PRINTL up to your chest.
+    CASEELSE
+        PRINTL up to your neck.
+    ENDSELECT
+ENDIF
+Z_WATER_LEVEL += 1
+IF Z_WATER_LEVEL >= 14
+    CALL Z_QUEUE, ZE_MAINT, 0
+ENDIF
+IF Z_WATER_LEVEL >= 14
+    IF Z_HERE == R_MAINTENANCE_ROOM
+        PRINTL I'm afraid you have done drowned yourself.
+        CALL Z_FATAL_BOUNDARY
+    ENDIF
+ELSEIF Z_IN_BOAT && (Z_HERE == R_MAINTENANCE_ROOM || Z_HERE == R_DAM_ROOM || Z_HERE == R_DAM_LOBBY)
+    PRINTL The rising water carries the boat over the dam, down the river, and over
+    PRINTL the falls. Tsk, tsk.
+    CALL Z_FATAL_BOUNDARY
+ENDIF
+RETURN 1
+
+@Z_ESCAPE_LOUD
+#DIM DYNAMIC Z_INDEX
+#DIM DYNAMIC Z_DEST
+Z_INDEX = Z_LOUD_COUNT + (Z_RANDOM(3 - Z_LOUD_COUNT) - 1)
+Z_DEST = Z_LOUD_ORDER:Z_INDEX
+Z_LOUD_ORDER:Z_INDEX = Z_LOUD_ORDER:Z_LOUD_COUNT
+Z_LOUD_ORDER:Z_LOUD_COUNT = Z_DEST
+Z_LOUD_COUNT += 1
+SIF Z_LOUD_COUNT == 3
+    Z_LOUD_COUNT = 0
+Z_HERE = Z_DEST
+CALL Z_LOOK, 1
+RETURN
+
+; LOUD-ROOM-FCN M-ENTER: in the noisy state (neither quiet nor flooded) the
+; room runs its own READ loop inside GOTO. The turn that entered the room is
+; finished (room M-END, CLOCKER) only when the loop returns.
+@Z_LOUD_ENTER
+IF Z_HERE != R_LOUD_ROOM || Z_LOUD_SOLVED || (Z_LOW_TIDE && !Z_GATES_OPEN) || (Z_GATES_OPEN && !Z_LOW_TIDE)
+    RETURN
+ENDIF
+IF Z_PENDING != ""
+    PRINTL The rest of your commands have been lost in the noise.
+    Z_PENDING =
+ENDIF
+Z_LOUD_LOOP = 1
+Z_LOUD_DEFER = 1
+RETURN
+
+; One READ of the loop. Z_PENDING holds the normalized line. RESULT 1: the
+; line was consumed; 0: Z_PENDING now holds a SAVE/RESTORE/QUIT for the host.
+@Z_LOUD_LOOP_INPUT
+#DIMS DYNAMIC Z_W
+#DIM DYNAMIC Z_K
+CALL Z_SP_TOKENIZE, Z_PENDING
+; WRD is P-LEXV word 1; after GO/WALK/RUN word 3 (second entry), after SAY
+; word 5 (third entry). An entry past this READ's words keeps the value an
+; earlier, longer input left in P-LEXV.
+Z_K = 0
+IF Z_SP_KEY:0 == "go" || Z_SP_KEY:0 == "walk" || Z_SP_KEY:0 == "run"
+    Z_K = 1
+ELSEIF Z_SP_KEY:0 == "say"
+    Z_K = 2
+ENDIF
+IF Z_K < Z_SP_N
+    Z_W '= Z_SP_KEY:Z_K
+ELSE
+    Z_W '= Z_LEXV_STALE:Z_K
+ENDIF
+CALL Z_LEXV_REMEMBER
+; PORTSTATE: the port's read-only verification command, not a story word.
+SIF Z_PENDING == "portstate"
+    RETURN 0
+SELECTCASE Z_W
+CASE "save", "restor"
+    ; V-SAVE / V-RESTORE (dictionary keys are six letters); the slot number
+    ; is the host's file dialogue.
+    Z_W '= Z_SP_WORD:Z_K
+    IF Z_SP_N > Z_K + 1 && STRLENS(Z_SP_WORD:(Z_K + 1)) == 1 && STRFIND("0123456789", Z_SP_WORD:(Z_K + 1)) >= 0
+        Z_PENDING '= Z_W + " " + Z_SP_WORD:(Z_K + 1)
+    ELSE
+        Z_PENDING '= Z_W
+    ENDIF
+    RETURN 0
+CASE "q", "quit"
+    Z_PENDING '= "quit"
+    RETURN 0
+CASE "w", "west", "e", "east", "u", "up"
+    Z_PENDING =
+    Z_LOUD_LOOP = 0
+    IF Z_W == "w" || Z_W == "west"
+        CALL Z_GOTO_ROOM, R_ROUND_ROOM, Z_IS_LIT()
+    ELSEIF Z_W == "e" || Z_W == "east"
+        CALL Z_GOTO_ROOM, R_DAMP_CAVE, Z_IS_LIT()
+    ELSE
+        CALL Z_GOTO_ROOM, R_DEEP_CANYON, Z_IS_LIT()
+    ENDIF
+    CALL Z_LOUD_FINISH_TURN
+    RETURN 1
+CASE "bug"
+    PRINTL That's only your opinion.
+CASE "echo"
+    Z_PENDING =
+    Z_LOUD_LOOP = 0
+    Z_LOUD_SOLVED = 1
+    Z_FLAGS:O_BAR &= ~ZF_SACRED
+    PRINTL The acoustics of the room change subtly.
+    ; The loop returns to GOTO, which runs V-FIRST-LOOK on the now quiet,
+    ; already visited room.
+    SIF Z_VERBOSE != 0
+        PRINTL
+    CALL Z_LOOK, 0
+    CALL Z_LOUD_FINISH_TURN
+    RETURN 1
+CASEELSE
+    ; V-ECHO: the last word of the input, twice.
+    PRINTFORML %Z_SP_WORD:(Z_SP_N - 1)% %Z_SP_WORD:(Z_SP_N - 1)% ...
+ENDSELECT
+Z_PENDING =
+RETURN 1
+
+; The rest of the turn whose GOTO entered the Loud Room.
+@Z_LOUD_FINISH_TURN
+Z_LOUD_DEFER = 0
+IF !Z_DEATH_THIS_TURN && !Z_GAME_OVER
+    CALL Z_CASE_END_TURN
+    CALL Z_TEMPLE_END_TURN
+    CALL Z_REGION_END
+ENDIF
+CALL Z_TICK
+RETURN
+
+; P-LEXV entries 0..2 as the latest READ left them (see Z_LOUD_LOOP_INPUT).
+@Z_LEXV_REMEMBER
+#DIM DYNAMIC Z_I
+#DIM DYNAMIC Z_N
+; The slot number after SAVE/RESTORE stands for the story's file-name
+; dialogue, which is not read into P-LEXV.
+Z_N = Z_SP_N
+SIF Z_SP_KEY:0 == "save" || Z_SP_KEY:0 == "restor"
+    Z_N = MIN(Z_N, 1)
+FOR Z_I, 0, 3
+    SIF Z_I < Z_N
+        Z_LEXV_STALE:Z_I '= Z_SP_KEY:Z_I
+NEXT
+RETURN
