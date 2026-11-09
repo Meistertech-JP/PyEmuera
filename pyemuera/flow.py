@@ -269,6 +269,7 @@ def run_flow(vm, initial='TITLE'):
 
 def shop(vm, loaded=False, *, autosave=True):
     from .shop_purchase import item_on_sale, buy_item, callback_keeps_input
+    from .system_input import acquire, echo, reject
 
     if not loaded:
         phase_call(vm, 'EVENTSHOP', event=True)
@@ -286,7 +287,9 @@ def shop(vm, loaded=False, *, autosave=True):
         vm.tick()
         phase_call(vm, 'SHOW_SHOP', optional=False)
         while True:
-            choice = vm.console.input()
+            receipt = acquire(vm.console)
+            choice = receipt.value
+            owner = echo(vm.console, receipt)
             if not 0 <= choice < vm.data.settings.shop_limit:
                 vm.set('RESULT', choice)
                 phase_call(vm, 'USERSHOP', optional=False)
@@ -294,10 +297,10 @@ def shop(vm, loaded=False, *, autosave=True):
                     continue
                 break
             if not item_on_sale(vm.data, choice):
-                vm.console.reuse_line('売っていません。')
+                reject(vm.console, owner, '売っていません。')
                 continue
             if not buy_item(vm, choice):
-                vm.console.reuse_line('お金が足りません。')
+                reject(vm.console, owner, 'お金が足りません。')
                 continue
             phase_call(vm, 'EVENTBUY', event=True)
             if callback_keeps_input(vm.console):

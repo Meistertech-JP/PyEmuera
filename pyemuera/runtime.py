@@ -9,6 +9,7 @@ from pathlib import Path
 import copy
 import random
 import re
+import os
 from . import builtins
 from .console import Console
 from .data import GameData, Variable, Ref
@@ -45,6 +46,8 @@ COMMANDS = frozenset(COMMAND_SPECS)
 INTERNAL_OPS = frozenset(
     '_ASSIGN _IF _JMP _FOR _REPEAT _STEP _BREAK _DO _LOOP _SELECT _CASE _ENDSELECT _DATA _TRYLIST'.split()
 )
+
+_LOOKUP_MISSING = object()
 
 _SPECIAL_NAMES = frozenset(
     (
@@ -125,6 +128,7 @@ class VM:
         max_steps=0,
         max_frames=4096,
         journal=None,
+        expression_backend=None,
     ):
         if program.load_errors and not getattr(program, "analysis_driver", False):
             raise program.load_errors[0]
@@ -149,6 +153,26 @@ class VM:
         self._expression_cache = {}
         self._assignment_cache = {}
         self._loop_cache = {}
+        self.expression_backend = (
+            expression_backend if expression_backend is not None
+            else os.environ.get('PYEMUERA_EXPRESSION_BACKEND', 'legacy')
+        )
+        if self.expression_backend not in ('legacy', 'closures'):
+            raise ValueError('Unknown expression evaluator backend')
+        self._closure_plans = None
+        # Experimental selection happens only during construction. The public
+        # legacy method stays live and has no experimental dispatch or alias.
+        if self.expression_backend == 'closures':
+            from . import expr as expression_source
+
+            # Select once. Preinstalled evaluator replacements use the direct
+            # live legacy method; selected closures never poll evaluator hooks.
+            if (evaluate is expression_source._BASE_EVALUATE
+                    and expression_source.evaluate is expression_source._BASE_EVALUATE):
+                from .closure_entry import eval_node
+
+                if 'eval_node' not in self.__dict__ and type(self).eval_node is VM._LEGACY_EVAL_NODE:
+                    self.eval_node = eval_node.__get__(self, type(self))
         self.ui = {
             'color': 0xC0C0C0,
             'bgcolor': 0,
@@ -226,6 +250,9 @@ class VM:
     def eval_node(self, node):
         return evaluate(node, self)
 
+    # Original public entry identity, independent of later host replacements.
+    _LEGACY_EVAL_NODE = eval_node
+
     def format(self, text):
         return render(text, self)
 
@@ -258,76 +285,166 @@ class VM:
                     code='E_VARIABLE_FORBIDDEN',
                 )
             return var
-        if name in self.active_init:
-            var = self.active_init[name]
+        # Native valid declarations cannot shadow a global with a private or
+        # LOCAL/ARG name. Keep qualified handling above; fetch the live global
+        # descriptor on every access without caching its storage or metadata.
+        var = self.data.variables.get(name, _LOOKUP_MISSING)
+        if var is not _LOOKUP_MISSING:
+            if var.forbidden:
+                raise EraError(
+                    f'Variable {name} is disabled by VariableSize.csv',
+                    code='E_VARIABLE_FORBIDDEN',
+                )
+            return var
+        var = self.active_init.get(name, _LOOKUP_MISSING)
+        if var is not _LOOKUP_MISSING:
             if var is not None and var.forbidden:
                 raise EraError(
                     f'{name} is disabled by VariableSize.csv',
                     code='E_VARIABLE_FORBIDDEN',
                 )
             return var
-        if self.frames and name in self.frames[-1].scope:
-            v = self.frames[-1].scope[name]
-            if v is None:
-                raise EraError(f'Unbound REF variable {name}', code='E_REFERENCE')
-            var = v.variable if isinstance(v, Ref) else v
-            if var.forbidden:
-                raise EraError(
-                    f'{name} is disabled by VariableSize.csv',
-                    code='E_VARIABLE_FORBIDDEN',
-                )
-            return var
-        if name not in self.data.variables:
-            raise EraError(f'Unknown variable {name}', code='E_VARIABLE')
-        var = self.data.variables[name]
-        if var.forbidden:
-            raise EraError(
-                f'Variable {name} is disabled by VariableSize.csv',
-                code='E_VARIABLE_FORBIDDEN',
-            )
-        return var
+        if self.frames:
+            v = self.frames[-1].scope.get(name, _LOOKUP_MISSING)
+            if v is not _LOOKUP_MISSING:
+                if v is None:
+                    raise EraError(f'Unbound REF variable {name}', code='E_REFERENCE')
+                var = v.variable if isinstance(v, Ref) else v
+                if var.forbidden:
+                    raise EraError(
+                        f'{name} is disabled by VariableSize.csv',
+                        code='E_VARIABLE_FORBIDDEN',
+                    )
+                return var
+        raise EraError(f'Unknown variable {name}', code='E_VARIABLE')
 
     def _resolve_ref(self, node, allow_character_descriptor=False):
         if node[0] != 'var':
             raise EraError('Expected a variable reference', code='E_REFERENCE')
         name, indices = node[1], node[2]
-        var = self.lookup(name)
-        alias = self.frames[-1].scope.get(name) if self.frames else None
+        var = self.data.variables.get(name)
+        if var is None:
+            var = self.lookup(name)
+            alias = self.frames[-1].scope.get(name) if self.frames else None
+        else:
+            if var.forbidden:
+                raise EraError(
+                    f'Variable {name} is disabled by VariableSize.csv',
+                    code='E_VARIABLE_FORBIDDEN',
+                )
+            alias = None
         if isinstance(alias, Ref):
             if var.character:
                 raise Unsupported('REF to a character array')
             if any(alias.key):
                 raise Unsupported('REF with a nonzero base index')
         rank = len(var.dims)
-        total = rank + bool(var.character)
-        implicit = bool(var.character and len(indices) <= rank)
-        if len(indices) + implicit > total:
-            raise EraError(f'{name}: too many array indices', code='E_INDEX')
-        values = []
-        if implicit:
-            values.append(
-                0 if allow_character_descriptor else self.lookup('TARGET').get((0,))
-            )
-        for position, node_index in enumerate(indices):
-            axis = position + implicit
-            if node_index[0] == 'lit':
-                value = node_index[1]
-            elif node_index[0] == 'var' and not node_index[2]:
-                try:
+        # Ordinary scalar/literal references have no evaluated operands. Keep
+        # lookup and REF-base checks above this shortcut: bindings, forbidden
+        # variables and shape metadata remain live on every access. Character
+        # variables use the separate bounded path below or the general path.
+        if not var.character:
+            if not indices:
+                key = (0,) * rank
+                if not (rank == 1 and 0 <= key[0] < var.dims[0]):
+                    var.validate(key)
+                return var, key
+            if rank and len(indices) == 1 and indices[0][0] == 'lit':
+                value = indices[0][1]
+                if isinstance(value, int):
+                    key = (value,) + (0,) * (rank - 1)
+                    if not (rank == 1 and 0 <= key[0] < var.dims[0]):
+                        var.validate(key)
+                    return var, key
+            if rank in (1, 2) and len(indices) == 1:
+                # The common dynamic single index needs no iterator or
+                # index list. Preserve the bare-name fallback boundary.
+                node_index = indices[0]
+                if node_index[0] == 'lit':
+                    value = node_index[1]
+                elif node_index[0] == 'var' and not node_index[2]:
+                    try:
+                        value = self.eval_node(node_index)
+                    except EraError as e:
+                        if e.code != 'E_VARIABLE':
+                            raise
+                        value = self.data.index_of(name, node_index[1], 0)
+                else:
                     value = self.eval_node(node_index)
-                except EraError as e:
-                    if e.code != 'E_VARIABLE':
-                        raise
-                    value = self.data.index_of(name, node_index[1], axis)
+                if isinstance(value, str):
+                    value = self.data.index_of(name, value, 0)
+                if type(value) is not int:
+                    value = integer(value)
+                key = (value,) if rank == 1 else (value, 0)
+                if not (rank == 1 and 0 <= key[0] < var.dims[0]):
+                    var.validate(key)
+                return var, key
+        if (
+            var.character
+            and rank == 1
+            and len(indices) in (1, 2)
+            and indices[-1][0] == 'lit'
+            and isinstance(indices[-1][1], int)
+        ):
+            # Only a literal element index is bypassed. Capture/evaluate the
+            # character index exactly once, then share all live checks below.
+            if len(indices) == 1:
+                character = (
+                    0 if allow_character_descriptor else self.lookup('TARGET').get((0,))
+                )
             else:
-                value = self.eval_node(node_index)
-            if isinstance(value, str):
-                value = self.data.index_of(name, value, axis)
-            values.append(integer(value))
-        if len(values) < total:
-            values.extend((0,) * (total - len(values)))
-        key = tuple(values)
-        var.validate(key)
+                node_index = indices[0]
+                if node_index[0] == 'lit':
+                    character = node_index[1]
+                elif node_index[0] == 'var' and not node_index[2]:
+                    try:
+                        character = self.eval_node(node_index)
+                    except EraError as e:
+                        if e.code != 'E_VARIABLE':
+                            raise
+                        character = self.data.index_of(name, node_index[1], 0)
+                else:
+                    character = self.eval_node(node_index)
+                if isinstance(character, str):
+                    character = self.data.index_of(name, character, 0)
+                if type(character) is not int:
+                    character = integer(character)
+            key = (character, indices[-1][1])
+        else:
+            total = rank + bool(var.character)
+            implicit = bool(var.character and len(indices) <= rank)
+            if len(indices) + implicit > total:
+                raise EraError(f'{name}: too many array indices', code='E_INDEX')
+            values = []
+            if implicit:
+                values.append(
+                    0 if allow_character_descriptor else self.lookup('TARGET').get((0,))
+                )
+            for position, node_index in enumerate(indices):
+                axis = position + implicit
+                if node_index[0] == 'lit':
+                    value = node_index[1]
+                elif node_index[0] == 'var' and not node_index[2]:
+                    try:
+                        value = self.eval_node(node_index)
+                    except EraError as e:
+                        if e.code != 'E_VARIABLE':
+                            raise
+                        value = self.data.index_of(name, node_index[1], axis)
+                else:
+                    value = self.eval_node(node_index)
+                if isinstance(value, str):
+                    value = self.data.index_of(name, value, axis)
+                values.append(value if type(value) is int else integer(value))
+            if len(values) < total:
+                values.extend((0,) * (total - len(values)))
+            key = tuple(values)
+        # Native CharaInt1D/CharaStr1D getters index the live character/element.
+        # Rank-1 keys here already contain two integer indices; keep failures
+        # on validate, and keep the descriptor-aware character_count check below.
+        if not (var.character and rank == 1 and key[0] >= 0
+                and 0 <= key[1] < var.dims[0]):
+            var.validate(key)
         if (
             var.character
             and not allow_character_descriptor
@@ -386,6 +503,32 @@ class VM:
             if name == 'PRINTCPERLINE':
                 return max(1, int(self.data.config.get('PRINTCを並べる数', '3')))
             return max(1, int(self.data.config.get('PRINTCの文字数', '25')))
+        if not indices:
+            # Scalar reads need neither a Ref nor the resolver's return pair.
+            # Bindings and shape stay live, including zero-base REF aliases.
+            var = self.data.variables.get(name)
+            if var is None:
+                var = self.lookup(name)
+                alias = self.frames[-1].scope.get(name) if self.frames else None
+            else:
+                if var.forbidden:
+                    raise EraError(
+                        f'Variable {name} is disabled by VariableSize.csv',
+                        code='E_VARIABLE_FORBIDDEN',
+                    )
+                alias = None
+            if var is not None and not var.character:
+                if isinstance(alias, Ref) and any(alias.key):
+                    raise Unsupported('REF with a nonzero base index')
+                rank = len(var.dims)
+                # Native Int1D/Str1D getters index array[0] directly (VariableToken.cs).
+                # Live rank1 and positive length make the builtin zero index valid.
+                # Empty/negative dimensions and other ranks keep original validation.
+                if rank == 1 and var.dims[0] > 0:
+                    return var.values.get((0,), var.default)
+                key = (0,) if rank == 1 else (0,) * rank
+                var.validate(key)
+                return var.values.get(key, var.default)
         # A read has no Ref lifetime. Validate once, then read sparse storage.
         var, key = self._resolve_ref(node)
         return var.values.get(key, var.default)
@@ -1026,7 +1169,10 @@ class VM:
             raise EraError('Expected a variable reference', code='E_REFERENCE')
         variable = self.lookup(lhs[1])
         if op == '=' and variable.string:
-            value = self.format(rhs)
+            # Rescan only a live string destination; numeric plans stay unchanged.
+            # Trim boundary literal segments after decoding, not substituted values.
+            rhs = find_assignment(text, preserve_rhs=True)[2]
+            value = render(rhs, self, trim_edges=True)
             self.ref_node(lhs).set(value)
             return
         if op in ('=', "'="):
@@ -1036,7 +1182,7 @@ class VM:
             if len(nodes) == 1:
                 value = self.eval(nodes[0])
                 ref = self.ref_node(lhs)
-                ref.variable.validate(ref.key)
+                # ref_node checks the live key; Ref.set retains write-time validation.
                 if ref.variable.readonly or ref.variable.string != isinstance(
                     value, str
                 ):
@@ -1075,7 +1221,14 @@ class VM:
             # All other compound paths are lowered to a binary source term.
             # Its read resolves LHS once; SetValue resolves it again afterward.
             # / and % retain OperatorMethod's RHS-first/zero-check behavior.
-            value = self.eval_node(('binary', op[:-1], lhs, source))
+            # Retain syntax only; restructure and destination checks above
+            # still run on every operation. Fresh folded children invalidate it.
+            lowered = plan[3]
+            if (lowered is None or lowered[2] is not lhs
+                    or lowered[3] is not source):
+                lowered = ('binary', op[:-1], lhs, source)
+                plan[3] = lowered
+            value = self.eval_node(lowered)
             self.ref_node(lhs).set(value)
 
     def _execute_loop(self, frame, ins, pc):

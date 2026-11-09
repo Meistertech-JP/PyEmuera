@@ -46,8 +46,8 @@ def _slot(vm, name, arg):
         description = values[1] if len(values) > 1 else ''
         if not isinstance(description, str):
             raise EraError('Save description must be string', code='E_TYPE')
+        # Native SAVEDATA does not overwrite RESULT after argument evaluation.
         vm.saves.write(slot, description)
-        vm.set('RESULT', 1)
     elif name == 'CHKDATA':
         status, message = vm.saves.check(slot)
         vm.set('RESULT', status)

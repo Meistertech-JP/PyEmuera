@@ -1,0 +1,28 @@
+{
+  "input": "Archived native execution log identified by the unchanged sha256 field; provenance only",
+  "sha256": "50f934fd7d47bd873ccdc5dc5103be33cc8612a64fb6f1bbce2322049ecb2080",
+  "passed": true,
+  "errors": [],
+  "rendered_mismatches_advisory": [],
+  "observed": {
+    "INIT": [
+      "SC14|INIT|NEXT=0|PREV=0"
+    ],
+    "SENTINEL_AFTER_SAVE97": [
+      "SC14|SENTINEL_AFTER_SAVE97|RESULT=77"
+    ],
+    "INC_CONTROL": [
+      "SC14|INC_CONTROL|A=1"
+    ],
+    "CALLEE_BEFORE_SAVE98": [
+      "SC14|CALLEE_BEFORE_SAVE98|RESULT=20261108180122854"
+    ],
+    "CALLEE_AFTER_SAVE98": [
+      "SC14|CALLEE_AFTER_SAVE98|RESULT=20261108180122854"
+    ],
+    "AFTER_CALLEE_FALLTHROUGH": [
+      "SC14|AFTER_CALLEE_FALLTHROUGH|RESULT=0"
+    ]
+  },
+  "note": "Fixed EXE identity and new saved file hashes must be recorded by parent separately."
+}

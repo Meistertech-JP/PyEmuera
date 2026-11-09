@@ -46,6 +46,9 @@ def restructure(node, vm):
     if kind == 'unary':
         child = restructure(node[2], vm)
         if child[0] != 'lit':
+            if (type(node) is tuple and len(node) == 3
+                    and type(kind) is str and child is node[2]):
+                return node
             return ('unary', node[1], child)
         # Preserve existing v24 unary-minus MinValue warning semantics.
         return ('lit', vm.eval_node(('unary', node[1], child)))
@@ -54,11 +57,18 @@ def restructure(node, vm):
         right = restructure(node[3], vm)
         if left[0] == right[0] == 'lit':
             return ('lit', apply_binary(node[1], left[1], right[1]))
+        if (type(node) is tuple and len(node) == 4 and type(kind) is str
+                and left is node[2] and right is node[3]):
+            return node
         return ('binary', node[1], left, right)
     if kind == 'ternary':
         children = tuple(restructure(x, vm) for x in node[1:])
         if all(x[0] == 'lit' for x in children):
             return children[1] if integer(children[0][1]) else children[2]
+        if (type(node) is tuple and len(node) == 4 and type(kind) is str
+                and all(child is node[i + 1]
+                        for i, child in enumerate(children))):
+            return node
         return ('ternary',) + children
     if (
         kind == 'call'
@@ -80,5 +90,9 @@ def restructure(node, vm):
         args = tuple(restructure(x, vm) for x in node[2])
         if all(x[0] in ('lit', 'missing') for x in args):
             return ('lit', vm.call_expr(node[1], args))
+        if (type(node) is tuple and len(node) == 3 and type(kind) is str
+                and type(node[2]) is tuple
+                and all(arg is node[2][i] for i, arg in enumerate(args))):
+            return node
         return ('call', node[1], args)
     return node

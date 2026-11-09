@@ -49,9 +49,13 @@ def show(vm):
 
 
 def select(vm):
+    from .system_input import acquire, echo, reject
+
     while True:
-        value = vm.console.input()
+        receipt = acquire(vm.console)
+        value = receipt.value
+        owner = echo(vm.console, receipt)
         vm.set('RESULT', value)
         if value in (0, 1):
             return value
-        vm.console.write('無効な値です', True)
+        reject(vm.console, owner, '無効な値です', title=True)

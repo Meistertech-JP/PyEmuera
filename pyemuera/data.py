@@ -571,7 +571,8 @@ class GameData:
             self.variables[name] = Variable(name, (100, 100, 100), saved=True)
         for name, spec in VARIABLE_SPECS.items():
             self.variables[name].dims = tuple(spec['dimensions'])
-        for name in ('TARGET', 'ASSI', 'PREVCOM', 'NEXTCOM'):
+        # Native command arrays start at zero; BEGIN TRAIN sets them to -1.
+        for name in ('TARGET', 'ASSI'):
             self.variables[name].set((0,), -1)
         for name in (
             'AUTHOR',

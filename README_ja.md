@@ -9,9 +9,27 @@ Emuera専用バリアントが動くeramakerだと思ってください。
 
 フォント描画は本家GUI固有の機能を指し、端末そのもののフォント設定は利用できます。ERHにも対応し、本家 Emuera と同じ評価順序・状態変化・保存・文字出力になることを目標にしています。
 
-この版は **PyEmuera 3.0.0 Beta 3（`3.0.0b3`）** です。ベータ版で、すべての Emuera 機能・すべてのバリアントでの互換性は保証しません。確認できている範囲と、まだ確認していない条件は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) にまとめています。
+この版は **PyEmuera 3.0.0（`3.0.0`）** です。すべての Emuera 機能・すべてのバリアントでの互換性は保証しません。確認できている範囲と、まだ確認していない条件は [COMPATIBILITY_ja.md](COMPATIBILITY_ja.md) にまとめています。
 
 PyEmuera は Emuera の公式版ではなく、Emuera やバリアントの作者による承認を受けたものではありません。
+
+## 3.0.0 の主な変更
+
+- 変数・参照・添字に対する重複した検査を減らしました。実行時間の変化はバリアントや経路によって異なります。
+- raw文字列代入では、リテラル部分の境界にあるASCII空白を本家に合わせて処理し、全角空白（U+3000）と展開値の空白を保持します。
+- 新規状態の `NEXTCOM`・`PREVCOM` は0です。`BEGIN TRAIN` で-1になる動作とは区別しています。
+- `SAVEDATA` は保存成功時に `RESULT` を上書きしません（引数評価による変更は維持します）。
+- システムメニューでは入力した文字列をそのまま一度だけ表示し、不正な入力では再入力を求めます。
+
+## 性能の確認範囲
+
+複数のバリアントの固定入力経路で、**Beta 3比26.7～35.0%の実行時間短縮と、入力応答の改善**を確認しました。
+
+Windows 10・Python 3.12.10で、固定入力経路と同じ初期ファイル・乱数seed・時計条件を使い、実行順を交互にして測定しました。ウォームアップを除外した後の実行時間の中央値を比較しています。
+
+本家仕様へ合わせる互換修正を含む版全体の比較で、効果はバリアントや経路によって異なります。
+
+規模の大きいバリアントでは、起動や初回の初期化に時間がかかることがあります。リアルタイム性の高いバリアントでは、本家と同じ更新テンポに届かない場合があります。
 
 ## 参照している本家 Emuera
 
@@ -22,17 +40,25 @@ PyEmuera は Emuera の公式版ではなく、Emuera やバリアントの作�
 ## 動作環境
 
 - Python 3.10 以上（Python 本体は同梱しません）
-- Windows または Linux の端末。実行には Python 標準ライブラリだけを使い、追加のパッケージ、.NET、実行中のダウンロードは必要ありません。
+- Windows または Linux の端末。実行には Python 標準ライブラリだけを使い、追加のパッケージ、.NET、実行中のダウンロードは必要ありません。環境の確認例には過去版の記録を含み、現行3.0.0の全環境での合格を示すものではありません。
 - 文字列の比較（並べ替え）は、Windows では OS の照合機能（NLS API）を使います。それ以外の環境では、Microsoft が公開している Windows 10 の照合データを元にした、同梱の `ja-JP` 互換実装を使います。
 
 ## 起動方法
 
 ```console
-python PyEmuera.pyz --version
-python PyEmuera.pyz --help
 python PyEmuera.pyz "バリアントフォルダー"
-python PyEmuera.pyz ZORKERB
 ```
+
+Windowsでは、`ERB` と `CSV` が入った通常のバリアントフォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップして起動できます。
+
+同梱サンプルを使う場合の例：
+
+```console
+python PyEmuera.pyz ZORKERB
+python PyEmuera.pyz sample --inputs sample/replay.txt --no-wait
+```
+
+版やオプションは `python PyEmuera.pyz --version`、`python PyEmuera.pyz --help` で確認できます。
 
 実行用 ZIP には「ぱみゅーら散歩帳」（`sample/`）と [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29)（`ZORKERB/`）を同梱しています。ZORKERB は1970年代の大型計算機で生まれたテキストアドベンチャー Zork を起源とする、Zork I の非公式 ERB 移植です。独立した [ZORKERB プロジェクト](https://github.com/Meistertech-JP/ZORKERB)は I・II・III の移植を目指しており、r29 が対応するのは I です。入力は英語で、Z-machine や Frotz は必要ありません。Windows では `ZORKERB` フォルダーを `Start_PyEmuera.bat` にドラッグ＆ドロップできます。権利とライセンスは同梱の `ZORKERB/LICENSE`、`ZORKERB/THIRD_PARTY_NOTICES.md` および `ZORKERB/licenses/` を参照してください。
 
@@ -101,7 +127,7 @@ python PyEmuera.pyz "バリアントフォルダー" --save-format emuera-binary
 
 ## バリアントを遊ぶだけの場合
 
-実行用 ZIP とソース用 ZIP は別です。通常の起動には実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使用します。ソース用 ZIP は開発・テスト・ビルドに使います。
+実行用 `PyEmuera-3.0.0-runtime.zip` とソース用 `PyEmuera-3.0.0-source.zip` は別です。通常の起動には実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使用します。ソース用 ZIP は開発・テスト・ビルドに使います。
 
 ## 関連文書
 

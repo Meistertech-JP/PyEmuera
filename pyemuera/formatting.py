@@ -1,5 +1,7 @@
 from __future__ import annotations
+from functools import lru_cache
 from .errors import EraError
+from . import text as _lexical_text
 from .expr import integer
 from .internal_state import successful_validation_cache
 from .text import (
@@ -14,6 +16,30 @@ from .text import (
 _end = placeholder_end
 
 
+_FORM_PARTS_MAX_TEXT = 4096
+_FORM_PARTS_CACHE_SIZE = 1024
+
+
+def _parse_placeholder_parts(text, start, close):
+    end = _end(text, start, close)
+    return end, tuple(split_args(text[start:end]))
+
+
+_cached_placeholder_parts = lru_cache(maxsize=_FORM_PARTS_CACHE_SIZE)(
+    _parse_placeholder_parts
+)
+
+
+def _placeholder_parts(text, start, close):
+    # Cache only lexical work reached by the existing lazy walk, never an entire
+    # FORM pre-scan: without frames, a later parse error must follow earlier
+    # operand effects. Failed scans are not retained by lru_cache. The immutable
+    # result contains source strings only, with no VM/value/validation state.
+    if type(text) is str and len(text) <= _FORM_PARTS_MAX_TEXT:
+        return _cached_placeholder_parts(text, start, close)
+    return _parse_placeholder_parts(text, start, close)
+
+
 def form_components(text, level=0):
     """Non-executing FORM walk; uses the same delimiters as render()."""
     if level > 32:
@@ -21,8 +47,7 @@ def form_components(text, level=0):
     i = 0
     while i < len(text):
         if text.startswith('\\@', i):
-            end = conditional_end(text, i) - 2
-            condition, yes, no, _ = _conditional_parts(text[i + 2 : end])
+            end, condition, yes, no, _ = _conditional_lexical_parts(text, i)
             yield condition, 'Int64', 'condition'
             yield from form_components(yes, level + 1)
             yield from form_components(no, level + 1)
@@ -33,8 +58,7 @@ def form_components(text, level=0):
             i += 2
             continue
         if c in '{%':
-            end = _end(text, i + 1, '}' if c == '{' else '%')
-            parts = split_args(text[i + 1 : end])
+            end, parts = _placeholder_parts(text, i + 1, '}' if c == '{' else '%')
             yield parts[0], 'Int64' if c == '{' else 'string', c
             if len(parts) > 1 and parts[1]:
                 yield parts[1], 'Int64', 'width'
@@ -119,6 +143,54 @@ def _conditional_parts(body: str):
     return body[:q], body[q + 1 :], '', False
 
 
+_BASE_CONDITIONAL_END = conditional_end
+_BASE_CONDITIONAL_PARTS = _conditional_parts
+_BASE_PLACEHOLDER_END = placeholder_end
+_BASE_QUOTED_END = quoted_end
+_BASE_CONDITIONAL_END_STATE = (conditional_end.__code__, conditional_end.__defaults__, conditional_end.__kwdefaults__)
+_BASE_CONDITIONAL_PARTS_STATE = (_conditional_parts.__code__, _conditional_parts.__defaults__, _conditional_parts.__kwdefaults__)
+_BASE_PLACEHOLDER_END_STATE = (placeholder_end.__code__, placeholder_end.__defaults__, placeholder_end.__kwdefaults__)
+_BASE_QUOTED_END_STATE = (quoted_end.__code__, quoted_end.__defaults__, quoted_end.__kwdefaults__)
+
+
+def _parse_conditional_lexical_parts(text, start, _render=False):
+    end = conditional_end(text, start) - 2
+    if _render and end < 0:
+        raise EraError('Unclosed FORM conditional', code='E_FORMAT')
+    condition, yes, no, has_false = _conditional_parts(text[start + 2 : end])
+    return end, condition, yes, no, has_false
+
+
+_cached_conditional_lexical_parts = lru_cache(maxsize=_FORM_PARTS_CACHE_SIZE)(
+    _parse_conditional_lexical_parts
+)
+
+
+def _conditional_lexical_parts(text, start, _render=False):
+    # Lexical successes only; helper rebinding and custom strings stay live.
+    if (type(text) is str and type(start) is int and len(text) <= _FORM_PARTS_MAX_TEXT
+            and conditional_end is _BASE_CONDITIONAL_END
+            and _conditional_parts is _BASE_CONDITIONAL_PARTS
+            and placeholder_end is _BASE_PLACEHOLDER_END and quoted_end is _BASE_QUOTED_END
+            and _lexical_text.conditional_end is _BASE_CONDITIONAL_END
+            and _lexical_text.placeholder_end is _BASE_PLACEHOLDER_END
+            and _lexical_text.quoted_end is _BASE_QUOTED_END
+            and _BASE_CONDITIONAL_END.__code__ is _BASE_CONDITIONAL_END_STATE[0]
+            and _BASE_CONDITIONAL_END.__defaults__ is _BASE_CONDITIONAL_END_STATE[1]
+            and _BASE_CONDITIONAL_END.__kwdefaults__ is _BASE_CONDITIONAL_END_STATE[2]
+            and _BASE_CONDITIONAL_PARTS.__code__ is _BASE_CONDITIONAL_PARTS_STATE[0]
+            and _BASE_CONDITIONAL_PARTS.__defaults__ is _BASE_CONDITIONAL_PARTS_STATE[1]
+            and _BASE_CONDITIONAL_PARTS.__kwdefaults__ is _BASE_CONDITIONAL_PARTS_STATE[2]
+            and _BASE_PLACEHOLDER_END.__code__ is _BASE_PLACEHOLDER_END_STATE[0]
+            and _BASE_PLACEHOLDER_END.__defaults__ is _BASE_PLACEHOLDER_END_STATE[1]
+            and _BASE_PLACEHOLDER_END.__kwdefaults__ is _BASE_PLACEHOLDER_END_STATE[2]
+            and _BASE_QUOTED_END.__code__ is _BASE_QUOTED_END_STATE[0]
+            and _BASE_QUOTED_END.__defaults__ is _BASE_QUOTED_END_STATE[1]
+            and _BASE_QUOTED_END.__kwdefaults__ is _BASE_QUOTED_END_STATE[2]):
+        return _cached_conditional_lexical_parts(text, start)
+    return _parse_conditional_lexical_parts(text, start, _render)
+
+
 def render(text: str, vm, level=0, trim_edges=False) -> str:
     if level > 32:
         raise EraError('FORM nesting limit', code='E_LIMIT')
@@ -141,11 +213,7 @@ def render(text: str, vm, level=0, trim_edges=False) -> str:
     while i < len(text):
         c = text[i]
         if text.startswith('\\@', i):
-            end = conditional_end(text, i) - 2
-            if end < 0:
-                raise EraError('Unclosed FORM conditional', code='E_FORMAT')
-            body = text[i + 2 : end]
-            condition, yes, no, has_false = _conditional_parts(body)
+            end, condition, yes, no, has_false = _conditional_lexical_parts(text, i, _render=True)
             if not has_false:
                 vm.console.warning(
                     'conditional-missing-false',
@@ -166,8 +234,7 @@ def render(text: str, vm, level=0, trim_edges=False) -> str:
             continue
         if c in '{%':
             close = '}' if c == '{' else '%'
-            end = _end(text, i + 1, close)
-            parts = split_args(text[i + 1 : end])
+            end, parts = _placeholder_parts(text, i + 1, close)
             val = vm.eval(parts[0])
             if (c == '{' and not isinstance(val, int)) or (
                 c == '%' and not isinstance(val, str)

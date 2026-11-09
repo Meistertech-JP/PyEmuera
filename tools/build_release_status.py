@@ -42,7 +42,7 @@ def generate(reports, beta_accepted=False):
         raise ValueError('beta acceptance needs reviewed reports without unexplained failures')
     return {
         'schema': 'pyemuera-release-status-1', 'engine_version': __version__,
-        'display_name': 'PyEmuera 3.0.0 Beta 1',
+        'display_name': 'PyEmuera 3.0.0',
         'formal_a10_release_gate': False, 'beta_release_gate': beta_accepted,
         'full_compatibility': False, 'published': False,
         'definition_counts': {'commands': len(COMMAND_SPECS), 'functions': len(FUNCTION_SPECS),
@@ -52,7 +52,7 @@ def generate(reports, beta_accepted=False):
         'expression_runtime_bindings': {n: describe_value_binding(n) for n in FUNCTION_SPECS},
         'test_populations': populations,
         'scope': 'Registration inventory and recorded regressions; no combined compatibility rate.',
-        'acceptance_scope': 'Beta gate also requires the separate release integrity and acceptance records.',
+        'acceptance_scope': 'Formal release acceptance requires separate final validation and integrity records; legacy Beta fields do not certify formal acceptance.',
         'historical_audits': ['SOURCE_AUDIT_1824.json', 'SOURCE_AUDIT_1824_v24.json'],
     }
 

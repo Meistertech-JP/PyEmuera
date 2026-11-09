@@ -1,6 +1,6 @@
-# PyEmuera 3.0.0 Beta 3 開発者向けガイド
+# PyEmuera 3.0.0 開発者向けガイド
 
-このソース用 ZIP には PyEmuera `3.0.0b3` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
+このソース用 ZIP には PyEmuera `3.0.0` のソースコード、単体テスト、テスト用データ、ビルド用スクリプトが入っています。実行用 ZIP は別です。
 
 バリアントを遊ぶ場合は、実行用 ZIP の `PyEmuera.pyz` と起動用バッチを使います。使い方は実行用 ZIP の `README_ja.txt` と `HOW_TO_USE_ja.txt` を参照してください。
 
@@ -8,7 +8,7 @@
 
 ## 必要な Python
 
-| 用途 | 必要なバージョン | 確認実績のある環境（例） |
+| 用途 | 必要なバージョン | 過去版を含む確認環境の例 |
 | --- | --- | --- |
 | バリアントの実行（`PyEmuera.pyz`、ソースからの実行、インストール版） | 3.10 以上 | Windows 10、Linux x86_64で動作確認 |
 | 単体テスト、ビルド・検証用スクリプト | 3.11 以上 | Windows 10のPython 3.12、LinuxのPython 3.13で実行 |
@@ -17,6 +17,7 @@
 - バリアントの実行と単体テストには、Python 標準ライブラリ以外のパッケージは使いません。
 - 単体テストと一部のスクリプトは `hashlib.file_digest`（3.11 以上）を使います。Python 3.10 で全テストを実行すると、配布用スクリプトのテストがエラーになり、`tomllib` を使うテストはスキップされます。これはテスト用の要件で、バリアントの実行には 3.10 で問題ありません。
 - Python 3.15 以降は確認していません。
+- 表の環境例と過去版の試験記録は、現行3.0.0の各環境での合格を示すものではありません。現行版の結果は、実行した版・環境が記録された結果JSONで確認してください。
 
 ## ディレクトリ構成
 
@@ -62,19 +63,30 @@ python run_pyemuera.py examples/smoke --inputs examples/smoke/replay.txt --no-wa
 
 ## 単体テストを実行する
 
-### 全テスト
+### 公開版の検証（release）
 
 ```console
-python tools/run_final_tests_r47.py --pyz PyEmuera.pyz --baseline-ids verification/b1/r51_test_ids.json --out ../test-result/result.json
+python -X utf8 -B tools/run_final_tests_r47.py --pyz PyEmuera.pyz --suite release --out ../test-result/release.json
 ```
 
 - `--pyz` で指定した pyz からエンジンを読み込んでテストします（ソースの `pyemuera/` は使いません）。ソースを変更した場合は、先に pyz をビルドし（次の章）、そのファイルを `--pyz` に指定してください。なお `test_r35_diagnostics` は、このフォルダーの `PyEmuera.pyz` を直接実行します。ソースを変更したときは、原本を保管した別の開発用コピーで、直下の `PyEmuera.pyz` と `--pyz` の両方を変更後の pyz に揃えてテストしてください。
-- `--baseline-ids` の一覧にあるテストIDが一つでも見つからない場合は、実行前に停止します（テストの削除や改名を検出するためです）。
+- テストIDの一覧とscopeは、ソース内の `tests/fixtures/public_suite/` から読みます。`--baseline-ids` を省略すると同梱の初期3,384 IDsを使い、IDの削除・改名があれば実行前に停止します。明示的な別一覧も指定できます。
+- 全3,678 IDsを保持し、release 3,656件とcharacterization 22件を重複なく分けます。releaseには、新規状態の `NEXTCOM`・`PREVCOM` が0である検証も含みます。`BEGIN TRAIN` で-1になる条件とは別です。
 - 結果は `--out` の JSON（全テストID・成否・スキップ理由・失敗の詳細）と、同名の `.log`（詳細なログ）に保存されます。`--out` はこのフォルダーの外を指定することをおすすめします。
-- 画面の最後に要約が表示され、`"successful": true` で終了コード 0 なら全件成功です。失敗・エラーが1件でもあれば終了コードは 1 です。
-- テストはテストデータを UTF-8 として読みます。runner は Python の UTF-8 モード（環境変数 `PYTHONUTF8=1`）で自分自身を起動し直すため、日本語版 Windows（CP932）でもそのまま実行できます。
+- 画面の最後に要約が表示され、`"successful": true` で終了コード 0 なら、選択したsuiteで失敗・エラーはありません。失敗・エラーが1件でもあれば終了コードは 1 です。SKIPの有無と理由は結果JSONで別に確認してください。
+- テストはテストデータを UTF-8 として読みます。runner はUTF-8モードでの実行を確保し、子プロセスにも `PYTHONUTF8=1` を引き継ぎます。既に `-X utf8` などでUTF-8モードになっている場合は再起動せず、そのまま実行します。
 - 全テストには数分かかります。途中で `[PyEmuera warning] ...` が多数表示されますが、テストが意図的に起こしている警告です。
 - テストの実行中に `examples/smoke/.pyemuera/` などが作られることがあります。
+
+### characterizationを別に実行する
+
+```console
+python -X utf8 -B tools/run_final_tests_r47.py --pyz PyEmuera.pyz --suite characterization --out ../test-result/characterization.json
+```
+
+この22件はPython内部のメソッド置き換え・呼び出し回数など、NativeのERB互換契約外の条件を記録します。元のテストID・本文を残して実行し、FAIL・ERRORはそのまま出力して終了コード1を返します。スキップ・xfailによって成功扱いにはしません。releaseの成否と混ぜず、元の失敗ログも保存してください。新規状態のsentinelを0とする検証はreleaseに含み、この22件には含めません。
+
+必要なら `--suite all` で元の3,678 IDs全体を選択できます。その場合もcharacterizationの失敗は失敗のままなので、全体を無条件にPASSと解釈しないでください。標準runnerは、指定したpyzをテストとソースより先に読み込みます。通常の `unittest` discoveryでは展開したソース内の実装を使用します。
 
 ### 一部のテストだけを実行する
 
@@ -154,7 +166,7 @@ python -m build --outdir ../dist
 `../dist` に `.whl`（wheel）と `.tar.gz`（sdist）ができます。
 
 ```console
-python -m pip install ../dist/pyemuera_experimental-3.0.0b3-py3-none-any.whl
+python -m pip install ../dist/pyemuera_experimental-3.0.0-py3-none-any.whl
 ```
 
 インストールした PyEmuera で、文字列の並べ替えが本家の記録と一致するかを確認できます（インストールした仮想環境の Python で実行します。ソースの `pyemuera/` ではなく、インストールされたものを使って確認します）。
@@ -168,10 +180,10 @@ python tools/verify_arraysort_native.py --installed --out ../arraysort-installed
 実行用 ZIP とソース用 ZIP は別の配布物です。公開用の `PyEmuera.pyz` をソースから生成した後、次のコマンドで2種類のZIPとSHA-256一覧を生成できます。出力先はソースの外側に指定してください。
 
 ```console
-python tools/build_release_archives.py --out ../beta2-dist
+python tools/build_release_archives.py --out ../release3-dist
 ```
 
-公開用の分割ZIPは `packaging/public/source-files.txt` に列挙されたソースだけを含み、作業ディレクトリの未登録ファイルは取り込みません。
+生成される分割ZIP名は `PyEmuera-3.0.0-runtime.zip` と `PyEmuera-3.0.0-source.zip` です。公開用の分割ZIPは `packaging/public/source-files.txt` に列挙されたソースだけを含み、作業ディレクトリの未登録ファイルは取り込みません。
 
 `tools/assemble_public.py` と `packaging/public/selection.json` は、旧来の一体型ZIPを作る互換ツールです。現在の正式な分割配布物には使用しません。
 
@@ -197,6 +209,14 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 - `replay_new_framework_r49.py` は互換実装を使います。結果と終了コードは実行した版の記録で確認してください。比較結果の記録では、実行した版とfixtureを必ず明示してください。
 - `.cs` の測定プログラムは、ビルドやテストには必要ありません。各ファイル冒頭のコメントにコンパイル方法があります。生成した実行ファイルは配布していません。
 
+## 3.0.0 の変更範囲
+
+- 変数・参照・添字に対する重複した検査を減らしました。実行時間の変化はバリアントや経路によって異なります。
+- raw文字列代入では、リテラル部分の境界にあるASCII空白を本家に合わせて処理し、全角空白（U+3000）と展開値の空白を保持します。
+- 新規状態の `NEXTCOM`・`PREVCOM` は0です。`BEGIN TRAIN` で-1になる動作とは区別しています。
+- `SAVEDATA` は保存成功時に `RESULT` を上書きしません（引数評価による変更は維持します）。
+- システムメニューでは入力した文字列をそのまま一度だけ表示し、不正な入力では再入力を求めます。
+
 ## 互換性の検証方針
 
 - 参照対象は Emuera1824+v24 です。期待値は、本家ソースの読み取り、本家 Emuera の実行結果、.NET Framework の実測から作り、種類を区別して扱います（`COMPATIBILITY_ja.md`）。
@@ -214,7 +234,22 @@ python tools/replay_new_framework_r49.py --out ../collation-replay.json
 
 ## 検証用メタデータを生成する
 
-`tools/build_release_status.py --tests 結果.json --out ../CAPABILITIES.json` で現行ソースと実行結果からメタデータを生成します。複数環境の結果には `--tests` を繰り返します。受入後に `--beta-accepted` を指定できます。これはリリースの検証メタデータで、過去版の `CAPABILITIES.json` や歴史的な監査・ゲート記録を現行結果として流用しません。β受入の判定は公開操作が済んだことを意味しません。
+`tools/build_release_status.py --tests 結果.json --out ../CAPABILITIES.json` で現行ソースと実行結果からメタデータを生成します。複数環境の結果には `--tests` を繰り返します。正式版の受入は別の最終検証記録に基づいて判定します。`--beta-accepted` は旧Beta用であり、正式版の合格判定には使いません。これはリリースの検証メタデータで、過去版の `CAPABILITIES.json` や歴史的な監査・ゲート記録を現行結果として流用しません。受入の判定は公開操作が済んだことを意味しません。
+
+## 開発中の式評価器を比較する
+
+既定の式評価器は `legacy` です。開発候補の `closures` は、ASTの構造を通常のPythonクロージャへ変換します。Pythonのコード生成・実行機能へERBを渡しません。
+
+```text
+python -m pyemuera バリアントフォルダー --expression-backend legacy
+python -m pyemuera バリアントフォルダー --expression-backend closures
+```
+
+`PYEMUERA_EXPRESSION_BACKEND` 環境変数でも選択できます。明示したCLI引数が優先されます。比較には、同じ初期ファイル・入力・乱数条件を持つ別々のプロセスを使ってください。副作用のある式を一つのVMで二重実行しても差分検証にはなりません。
+
+クロージャの表はVMごとにASTの同一性で管理し、値・変数の参照先・配列寸法・LOCAL/REF・キャラクター添字を保持しません。複合代入の構造を再利用しても、既存の定数処理、参照解決、検査、部分更新は毎回行います。構造だけの表は有界で、値のリセットやロード後も以前の値を返すことはありません。
+
+評価順序の基準は旧評価器です。除算・剰余の右辺先行とゼロ検査、論理演算の短絡、単項マイナスの2回評価を維持します。未実行の分岐を変換時に評価しません。既定の評価器は `legacy` を維持します。
 
 ## ファイル名の rNN / aN について
 

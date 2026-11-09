@@ -26,6 +26,9 @@ def integer(value: Any) -> int:
     return value
 
 
+_BASE_INTEGER = integer
+
+
 def truncdiv(a: int, b: int) -> int:
     if b == 0:
         raise EraError("Division by zero", code="E_ARITH")
@@ -320,6 +323,16 @@ def parse_case_condition(text: str):
 
 
 def apply_binary(op: str, a, b):
+    # Custom operators, operand subclasses and replaced integer helpers
+    # retain the complete original dispatch and its live helper lookups.
+    if (type(op) is str and type(a) is int and type(b) is int
+            and integer is _BASE_INTEGER):
+        if op == '+':
+            return i64(a + b)
+        if op == '-':
+            return i64(a - b)
+        if op == '*':
+            return i64(a * b)
     if op in ('==', '!=', '<', '>', '<=', '>='):
         if type(a) is not type(b):
             raise EraError("Cannot compare a string and an integer", code="E_TYPE")
@@ -432,3 +445,7 @@ def evaluate(node, vm):
             return int(op == '||')
         return apply_binary(op, a, evaluate(node[3], vm))
     raise EraError(f"Invalid AST node: {kind}")
+
+
+# Stable original entry for optional evaluator backends and replacement hooks.
+_BASE_EVALUATE = evaluate

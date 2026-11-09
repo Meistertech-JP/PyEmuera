@@ -432,6 +432,10 @@ class Console:
             self.temporary_line = False
         if newline:
             text += '\n'
+        # Replace a completed system temporary row before adding any new
+        # markup, retained feed or physical presentation. History is later.
+        if '\n' in text:
+            self._before_system_row_commit()
         from .layout import project, terminal_width
 
         rendered = (
@@ -582,6 +586,15 @@ class Console:
         Recording sees the untruncated string. Echo remains the command layer's
         responsibility so input acquisition cannot invent game-output rows.
         """
+        # Only an explicit system adapter installs this per-invocation sink.
+        # Claim before any flush/read/journal callback, so a nested ordinary
+        # input cannot consume or overwrite the outer invocation's receipt.
+        acceptance = self.__dict__.get('_system_integer_acceptance')
+        if acceptance is not None:
+            if acceptance.claimed:
+                acceptance = None
+            else:
+                acceptance.claimed = True
         kind = kind or ('string' if string else 'integer')
         # Emuera returns from DoScript at a value/key wait and PrintFlush(false)
         # commits the pending PRINT buffer before an input value is echoed.
@@ -605,6 +618,9 @@ class Console:
         )
         while True:
             text, timed_out = self._read_input_entry(deadline, one, any_key)
+            # Disposition belongs to this acquisition, not to a nested
+            # validation/journal callback that can perform another input.
+            entry_host_echo = self._host_line_echo
             text, timed_out = self._validate_input_entry(
                 text, timed_out, kind, timeout_ms
             )
@@ -632,30 +648,166 @@ class Console:
                 value = int(stripped, 10)
                 if not -(1 << 63) <= value < 1 << 63:
                     raise ValueError('Int64 overflow')
+                if acceptance is not None:
+                    from .system_input import AcceptedInteger
+
+                    acceptance.receipt = AcceptedInteger(text, value, entry_host_echo)
                 return value
             except ValueError:
                 if self.inputs is not None:
                     raise EraError('Expected integer replay input.', code='E_INPUT')
                 self.write('整数を入力してください。', True)
 
+    def input_system_integer(self):
+        from .system_input import _Acceptance, LegacyInteger
+
+        method = self.input
+        if getattr(method, '__func__', None) is not _CANONICAL_INPUT:
+            return LegacyInteger(method())
+        self._prepare_system_integer_display()
+        acceptance = _Acceptance()
+        previous = self.__dict__.get('_system_integer_acceptance')
+        self._system_integer_acceptance = acceptance
+        try:
+            value = method()  # Existing public method, called exactly once.
+        finally:
+            if previous is None:
+                self.__dict__.pop('_system_integer_acceptance', None)
+            else:
+                self._system_integer_acceptance = previous
+        receipt = acceptance.receipt
+        if receipt is None or receipt.value != value:
+            return LegacyInteger(value)
+        return receipt
+
+    def _prepare_system_integer_display(self):
+        # CLI configure_renderer already owns the retained model. Activate
+        # only an allowed alternate-screen model, before the normal input
+        # flush/present_prompt/read-line/finish_prompt sequence starts.
+        # Pending styled text is already in that model, so do not flush its
+        # stream projection first. No new model/cursor/terminal lease is made.
+        if (self._frame is None and self.renderer_mode != 'stream'
+                and self._retained is not None and self._retained.alternate_screen
+                and self.is_terminal() and self.vt_enabled):
+            self._activate_frame(flush_pending=False)
+        retained = self._frame is not None
+        self.system_input_display_status = {
+            'requested_renderer': self.renderer_mode,
+            'system_input_projection': 'existing-retained' if retained else 'append-only',
+            'physical_retry_row_replacement': retained,
+            'logical_history_replacement': True,
+            'system_retry_transcript_preserved': not retained,
+        }
+
+    def echo_system_integer(self, receipt):
+        from .system_input import _EchoCall
+        from .errors import Unsupported
+
+        call = _EchoCall()
+        previous = self.__dict__.get('_system_integer_echo_call')
+        host_echo = getattr(self, '_host_line_echo', False)
+        self._system_integer_echo_call = call
+        self._host_line_echo = receipt.host_echo
+        try:
+            self._input_echo(receipt.raw)  # Keep the existing echo hook live.
+        finally:
+            self._host_line_echo = host_echo
+            if previous is None:
+                self.__dict__.pop('_system_integer_echo_call', None)
+            else:
+                self._system_integer_echo_call = previous
+        if (call.commits != 1 or call.owner is None
+                or self.__dict__.get('_system_input_row') is not call.owner
+                or self.current or self.log_current):
+            raise Unsupported('System integer echo ownership changed in an output hook')
+        return call.owner
+
+    def _before_system_row_commit(self):
+        owner = self.__dict__.get('_system_input_row')
+        if owner is not None:
+            if owner.temporary:
+                self._remove_system_input_row(owner)
+            else:
+                self.__dict__.pop('_system_input_row', None)
+
+    def _remove_system_input_row(self, owner):
+        # Delete only a positively owned completed row. Unlike clear_lines,
+        # retain pending text/markup: a new completed line may replace a
+        # temporary feedback row while a PRINT prefix is already pending.
+        from .errors import Unsupported
+
+        if (owner.console_key is not self.__dict__.get('_system_input_console_key')
+                or self.__dict__.get('_system_input_row') is not owner
+                or not self.lines or self.lines[-1] is not owner.row
+                or self.line_count != owner.count):
+            raise Unsupported('System input row ownership no longer matches history')
+        self._check_output()
+        if self.batch_output:
+            self._flush_host()
+        if self._retained is not None:
+            pending = list(self._retained.current)
+            alignment = self._retained.alignment
+            try:
+                self._retained.clear(1)
+            finally:
+                # RetainedFrame.clear also empties current. Preserve its
+                # pending styled spans while removing only the completed row.
+                self._retained.current = pending
+                self._retained.alignment = alignment
+        self.lines.pop()
+        for rows in (self.log_lines, self._rule_lines, self.markup_lines):
+            if rows:
+                rows.pop()
+        if self._screen_rows:
+            self._screen_rows.pop()
+        self.line_count -= 1
+        self.__dict__.pop('_system_input_row', None)
+        # A retained backend repaints through its existing presentation path.
+        # An inactive stream backend stays append-only, even on VT: host echo
+        # and a pending prefix may already be physical. Never cursor-up/erase
+        # unknown prompt/shell rows or replay a physically emitted prefix.
+        # Capability is exposed by system_input_display_status; do not print
+        # a new warning here (shared stderr could disturb the pending prefix).
+
     def _input_echo(self, text):
+        echo_call = self.__dict__.get('_system_integer_echo_call')
+        echo_host_echo = (bool(getattr(self, '_host_line_echo', False))
+                          if echo_call is not None else None)
+        if text:
+            self._before_system_row_commit()
+        before = self.line_count
         # Redirect/replay: engine emits echo. Host line-input terminal echo is
         # already physical; retain it logically without emitting a second copy.
         self.input_buffer = text
         if not text:
             return  # Print(empty)/PrintFlush does not invent a blank echo row.
-        if not getattr(self, '_host_line_echo', False) or self._frame is not None:
+        if not (echo_host_echo if echo_call is not None else
+                getattr(self, '_host_line_echo', False)) or self._frame is not None:
             self.write(text, True)
         else:
+            if echo_call is not None:
+                # Only system receipt echo gains these missing projection
+                # records; do not redesign ordinary ERB host echo here.
+                from .layout import project, terminal_width
+                import shutil
+
+                style = self.style_override or (
+                    (self.ui['color'], self.ui['bgcolor'], self.ui['style'])
+                    if self.ui else None)
+                self._append_markup(text + '\n', style)
+                measured = (project(text, self.ambiguous_width)
+                            if self.layout == 'terminal' else text)
+                width = max(1, shutil.get_terminal_size((self.columns, 24)).columns)
+                self._screen_rows.append(max(
+                    1, (terminal_width(measured, self.ambiguous_width) + width - 1) // width))
             self.lines.append(text)
             self.log_lines.append(text)
             self._rule_lines.append(None)
             if self._retained is not None:
-                style = (
-                    (self.ui['color'], self.ui['bgcolor'], self.ui['style'])
-                    if self.ui
-                    else None
-                )
+                if echo_call is None:
+                    style = (
+                        (self.ui['color'], self.ui['bgcolor'], self.ui['style'])
+                        if self.ui else None)
                 self._retained.feed(text + '\n', style)
             self.emitted_columns = 0
             self._row_has_output = False
@@ -665,6 +817,17 @@ class Console:
             self.markup_current = []
             self.line_count += 1
             self._reset_shape_projection()
+        if echo_call is not None:
+            from .system_input import _Row
+
+            echo_call.commits += 1
+            if self.line_count == before + 1 and not self.current and not self.log_current:
+                if '_system_input_console_key' not in self.__dict__:
+                    self._system_input_console_key = object()
+                owner = _Row(self._system_input_console_key, self.lines[-1],
+                             self.line_count, host_echo=echo_host_echo)
+                self._system_input_row = owner
+                echo_call.owner = owner
 
     def wait(self, force=False):
         self.flush(force=True)
@@ -935,6 +1098,7 @@ class Console:
             self._flush_host()
         if n <= 0:
             return
+        self.__dict__.pop('_system_input_row', None)
         count = min(n, len(self.lines))
         physical = 0
         if self._retained is not None:
@@ -1181,3 +1345,7 @@ class Console:
             lease = self.__dict__.get('_output_mode')
             if lease is not None:
                 lease.restore()
+
+
+# Snapshot only for legacy input-only override dispatch, never evaluator guards.
+_CANONICAL_INPUT = Console.input

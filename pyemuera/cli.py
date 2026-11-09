@@ -91,7 +91,7 @@ def write_report(path, obj, root=None, *, overwrite=False):
 def parser():
     p = argparse.ArgumentParser(
         prog='PyEmuera',
-        description='ぱみゅーら - experimental text-only Python ERB interpreter. Real-game compatibility is not certified.',
+        description='ぱみゅーら - text-only independent Python implementation for Emuera1824+v24 variants.',
     )
     p.add_argument(
         'game', nargs='?', help='Game folder with ERB/CSV, ERB folder, or one ERB file'
@@ -260,6 +260,8 @@ def parser():
         help='Cumulative instruction limit; default 0 is unlimited, N > 0 stops at the configured limit',
     )
     p.add_argument('--max-frames', type=int, default=4096, help='ERB call-stack budget')
+    p.add_argument('--expression-backend', choices=('legacy', 'closures'), default=None,
+                   help='Expression evaluator (default: legacy; experimental closures are opt-in)')
     p.add_argument('--debug', action='store_true', help='Enable [IF_DEBUG] blocks')
     p.add_argument(
         '--traceback',
@@ -435,6 +437,8 @@ def main(argv=None, *, interrupts=None):
                 options.max_steps,
                 options.max_frames,
                 journal=journal,
+                **({'expression_backend': options.expression_backend}
+                   if options.expression_backend is not None else {}),
             )
             console.ui = vm.ui
             vm.saves.format = options.save_format

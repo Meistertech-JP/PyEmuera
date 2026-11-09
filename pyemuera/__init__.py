@@ -1,3 +1,3 @@
-"""PyEmuera (ぱみゅーら): independent, experimental ERB interpreter."""
+"""PyEmuera (ぱみゅーら): independent Python implementation for Emuera variants."""
 
-__version__ = "3.0.0b3"
+__version__ = "3.0.0"

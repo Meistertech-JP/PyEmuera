@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyemuera-experimental"
-version = "3.0.0b3"
-description = "Experimental text-only independent Python Emuera-compatible subset"
+version = "3.0.0"
+description = "Text-only independent Python implementation for Emuera1824+v24 game variants"
 readme = "README_ja.md"
 requires-python = ">=3.10"
 license = "MIT"

@@ -26,6 +26,24 @@ for row in REVIEW41['rows']:
         key=change['path'][-1]
         assert target[key]==change['before'],(row['name'],row['index'],change['path'])
         target[key]=change['after']
+NATIVE54=json.loads((ROOT/'native54_routing_reviewed_overrides_v1.json').read_text())
+assert hashlib.sha256((ROOT/'r39_routing_expected.json').read_bytes()).hexdigest()==NATIVE54['baseline_sha256']
+assert hashlib.sha256((ROOT/'r41_routing_reviewed_overrides.json').read_bytes()).hexdigest()==NATIVE54['parent_overrides_sha256']
+assert NATIVE54['after_raw_state']==[[1000],False,[]]
+native54_after=hashlib.sha256(json.dumps([[1000],False,[]],sort_keys=True,ensure_ascii=True,default=str).encode()).hexdigest()
+native54_seen=set()
+for row in NATIVE54['rows']:
+    key=(row['name'],row['index'])
+    assert key not in native54_seen and row['case']==CASES[row['name']][row['index']]
+    native54_seen.add(key)
+    assert row['verdict']=='APPROVE_NATIVE_DEFAULTS_V1'
+    assert [change['path'] for change in row['delta']]==[['variables','NEXTCOM'],['variables','PREVCOM']]
+    for change in row['delta']:
+        assert change['after']==native54_after
+        target=EXPECTED[row['name']][row['index']]['variables']
+        assert target[change['path'][-1]]==change['before']
+        target[change['path'][-1]]=change['after']
+assert native54_seen=={(name,index) for name,entries in CASES.items() for index in range(len(entries))}
 class RoutingContracts(unittest.TestCase):
     pass
 for name,cases in CASES.items():

@@ -192,7 +192,9 @@ def split_form_args(text: str) -> list[str]:
     return out
 
 
-def find_assignment(text: str, *, legacy: bool = False):
+def find_assignment(
+    text: str, *, legacy: bool = False, preserve_rhs: bool = False
+):
     if '=' not in text:
         return None
     quote, escape, depth = False, False, 0
@@ -239,7 +241,10 @@ def find_assignment(text: str, *, legacy: bool = False):
                     text[i : i + 2] == '==' or (i and text[i - 1] in "!<>=+'-*/%&|^")
                 ):
                     continue
-                return text[:i].strip(), op, text[i + len(op) :].lstrip()
+                rhs = text[i + len(op) :]
+                # Native raw '=' skips ASCII space/TAB, not Unicode space.
+                rhs = rhs.lstrip(' \t') if preserve_rhs else rhs.lstrip()
+                return text[:i].strip(), op, rhs
     return None
 
 
