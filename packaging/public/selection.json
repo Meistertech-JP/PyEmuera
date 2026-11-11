@@ -165,6 +165,7 @@
   ],
   "user_files": {
     "README_ja.txt": "packaging/public/README_ja.txt",
+    "README_en.txt": "packaging/public/README_en.txt",
     "HOW_TO_USE_ja.txt": "packaging/public/HOW_TO_USE_ja.txt",
     "KNOWN_ISSUES_ja.txt": "packaging/public/KNOWN_ISSUES_ja.txt",
     "CHANGELOG_ja.txt": "packaging/public/CHANGELOG_ja.txt",

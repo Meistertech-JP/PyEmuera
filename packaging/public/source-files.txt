@@ -96,6 +96,7 @@ packaging/public/Check_PyEmuera.bat
 packaging/public/Diagnose_PyEmuera.bat
 packaging/public/HOW_TO_USE_ja.txt
 packaging/public/KNOWN_ISSUES_ja.txt
+packaging/public/README_en.txt
 packaging/public/README_ja.txt
 packaging/public/Start_PyEmuera.bat
 packaging/public/THIRD_PARTY_NOTICES.txt

@@ -6,6 +6,14 @@ PyEmuera is an independent Python implementation for running Emuera game variant
 
 Images, audio, mouse input, and rendering by Emuera's original GUI are out of scope.
 
+## Why a New Runtime?
+
+The original Emuera developed primarily around Windows, so running it on other operating systems could require extra effort. Investigating or correcting subtle differences in behavior also meant editing and rebuilding C# code. Some operations, including parts of string handling, depend on the .NET runtime or the operating system, which can make their behavior difficult to trace from the application source alone.
+
+PyEmuera was created to make the runtime **easier to inspect, modify, and experiment with** while preserving access to existing Emuera variants. Python lets developers edit the source and try changes without a separate compilation step. Its text-based interface uses standard input and output, making it easier to connect to other programs.
+
+This also opens up AI-assisted variant development and testing, automated play, integration with external tools, and new ways to explore Emuera content. **PyEmuera is not just a way to play Emuera games; it is a runtime for doing new things with them.**
+
 Across three fixed game-variant routes, **median execution time was reduced by 26.7–35.0% compared with Beta 3, with improved input response times**. This compares the complete releases, including corrections toward original Emuera behavior. Results depend on the variant and route. See the [measurement conditions](README_ja.md#性能の確認範囲).
 
 ## Download and run
@@ -27,7 +35,7 @@ python PyEmuera.pyz sample --inputs sample/replay.txt --no-wait
 
 The runtime ZIP includes Pamyura Walkbook (`sample/`) and [ZORKERB r29](https://github.com/Meistertech-JP/ZORKERB/releases/tag/r29) (`ZORKERB/`). ZORKERB is an unofficial ERB port of Zork I, descended from the text adventure Zork created on mainframes in the 1970s. The independent [ZORKERB project](https://github.com/Meistertech-JP/ZORKERB) aims to port Zork I, II, and III; r29 covers I. Input is in English; neither a Z-machine nor Frotz is needed. On Windows, drag the `ZORKERB` folder onto `Start_PyEmuera.bat`. For rights and license terms, see `ZORKERB/LICENSE`, `ZORKERB/THIRD_PARTY_NOTICES.md`, and `ZORKERB/licenses/`.
 
-Use `python3` when appropriate. A variant folder normally contains `ERB` and `CSV` directories. The runtime ZIP includes `HOW_TO_USE_ja.txt` (Japanese usage guide); the [detailed reference](README_ja.md) is also in Japanese.
+Use `python3` when appropriate. A variant folder normally contains `ERB` and `CSV` directories. The published v3.0.0 runtime ZIP includes `HOW_TO_USE_ja.txt` (Japanese usage guide). An English `README_en.txt` has been added to the source tree for the next runtime package; the [detailed reference](README_ja.md) is also in Japanese.
 
 ## Changes in 3.0.0
 
